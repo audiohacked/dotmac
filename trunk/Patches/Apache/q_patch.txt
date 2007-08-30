@@ -1,0 +1,922 @@
+diff -Naur httpd-2.2.2/configure httpd-2.2.2-quota-working/configure
+--- httpd-2.2.2/configure	2006-04-22 05:54:22.000000000 +0200
++++ httpd-2.2.2-quota-working/configure	2007-08-30 16:24:27.000000000 +0200
+@@ -17234,7 +17234,7 @@
+   > $modpath_current/modules.mk
+ 
+ 
+-dav_objects="mod_dav.lo props.lo util.lo util_lock.lo liveprop.lo providers.lo std_liveprop.lo"
++dav_objects="mod_dav.lo props.lo util.lo util_lock.lo liveprop.lo providers.lo std_liveprop.lo quotachk.lo"
+ 
+ if test "$enable_http" = "no"; then
+   dav_enable=no
+diff -Naur httpd-2.2.2/modules/dav/fs/repos.c httpd-2.2.2-quota-working/modules/dav/fs/repos.c
+--- httpd-2.2.2/modules/dav/fs/repos.c	2006-04-22 03:53:06.000000000 +0200
++++ httpd-2.2.2-quota-working/modules/dav/fs/repos.c	2007-08-30 16:24:13.000000000 +0200
+@@ -46,6 +46,9 @@
+     apr_pool_t *pool;        /* memory storage pool associated with request */
+     const char *pathname;   /* full pathname to resource */
+     apr_finfo_t finfo;       /* filesystem info */
++    long long quota_used_bytes;
++	long long quota_assigned_bytes;
++    request_rec *r;
+ };
+ 
+ /* private context for doing a filesystem walk */
+@@ -157,6 +160,48 @@
+         0
+     },
+ 
++    { /* Used by Apple's mount_webdav */
++      DAV_FS_URI_DAV,
++      "quota",
++      DAV_PROPID_quota,
++      0
++    },
++    
++    { /* Used by Apple's mount_webdav */
++      DAV_FS_URI_DAV,
++      "quotaused",
++      DAV_PROPID_quotaused,
++      0
++    },
++
++    { /* From draft-ietf-webdav-quota-02.txt */
++      DAV_FS_URI_DAV,
++      "quota-available-bytes",
++      DAV_PROPID_quotaavailbytes,
++      0
++    },
++
++    { /* From draft-ietf-webdav-quota-02.txt */
++      DAV_FS_URI_DAV,
++      "quota-used-bytes",
++      DAV_PROPID_quotausedbytes,
++      0
++    },
++
++    { /* From draft-ietf-webdav-quota-02.txt */
++      DAV_FS_URI_DAV,
++      "quota-assigned-bytes",
++      DAV_PROPID_quotaassignbytes,
++      0
++    },
++    
++    { /* http://www.ietf.org/rfc/rfc3744.txt">RFC 3744 Section 3.7. */
++      DAV_FS_URI_DAV,
++      "current-user-privilege-set",
++      DAV_PROPID_current_user_privilege_set,
++      0
++    },
++    
+     /* our custom properties */
+     {
+         DAV_FS_URI_MYPROPS,
+@@ -200,6 +245,11 @@
+ **
+ ** PRIVATE REPOSITORY FUNCTIONS
+ */
++request_rec *dav_fs_get_request_rec(const dav_resource *resource)
++{
++    return resource->info->r;
++}
++
+ apr_pool_t *dav_fs_pool(const dav_resource *resource)
+ {
+     return resource->info->pool;
+@@ -638,9 +688,13 @@
+     /* Create private resource context descriptor */
+     ctx = apr_pcalloc(r->pool, sizeof(*ctx));
+     ctx->finfo = r->finfo;
++    ctx->r = r;
+ 
+     /* ### this should go away */
+     ctx->pool = r->pool;
++	/* walinsky */
++	ctx->quota_assigned_bytes = (long long) dav_get_area_size( r );
++	ctx->quota_used_bytes = (long long) dav_qchk_size( r );
+ 
+     /* Preserve case on OSes which fold canonical filenames */
+ #if 0
+@@ -1886,6 +1940,44 @@
+             value = "F";
+         break;
+ 
++ 
++	case DAV_PROPID_quota:
++    /* apple calculates in 512 byte blocks */
++    (void) sprintf(buf, "%" APR_OFF_T_FMT, (resource->info->quota_assigned_bytes * 2));
++        value = buf;
++        break;
++      
++	case DAV_PROPID_quotaassignbytes:
++    (void) sprintf(buf, "%" APR_OFF_T_FMT, resource->info->quota_assigned_bytes);
++        value = buf;
++        break;
++    
++	case DAV_PROPID_quotaused:
++	/* apple calculates in 512 byte blocks */
++	(void) sprintf(buf, "%" APR_OFF_T_FMT, (resource->info->quota_used_bytes * 2));
++        value = buf;
++        break;
++
++	case DAV_PROPID_quotausedbytes:
++	(void) sprintf(buf, "%" APR_OFF_T_FMT, resource->info->quota_used_bytes);
++        value = buf;
++        break;
++
++	case DAV_PROPID_quotaavailbytes:
++    (void) sprintf(buf, "%" APR_OFF_T_FMT, (resource->info->quota_assigned_bytes - resource->info->quota_used_bytes));
++        value = buf;
++        break;
++    
++    case DAV_PROPID_current_user_privilege_set:
++    	value = "<D:privilege><D:read /></D:privilege><D:privilege><I:write-internal xmlns:I=\"http://idisk.mac.com/_namespace\" /></D:privilege><D:privilege><I:manage xmlns:I=\"http://idisk.mac.com/_namespace\" /></D:privilege>";
++		/*
++		for 'main' dir:
++		<D:privilege><D:read /></D:privilege><D:privilege><I:write-internal xmlns:I="http://idisk.mac.com/_namespace" /></D:privilege>
++		for Library, Music, ...:
++		<D:privilege><D:read /></D:privilege><D:privilege><I:write-internal xmlns:I="http://idisk.mac.com/_namespace" /></D:privilege><D:privilege><I:manage xmlns:I="http://idisk.mac.com/_namespace" /></D:privilege>
++    	*/
++    	break;
++
+     default:
+         /* ### what the heck was this property? */
+         return DAV_PROP_INSERT_NOTDEF;
+@@ -1901,11 +1993,23 @@
+     /* DBG3("FS: inserting lp%d:%s  (local %d)", ns, scan->name, scan->ns); */
+ 
+     if (what == DAV_PROP_INSERT_VALUE) {
+-        s = apr_psprintf(p, "<lp%d:%s>%s</lp%d:%s>" DEBUG_CR,
+-                         global_ns, info->name, value, global_ns, info->name);
++        /* s = apr_psprintf(p, "<lp%d:%s>%s</lp%d:%s>" DEBUG_CR,
++                         global_ns, info->name, value, global_ns, info->name); */
++        if (propid == DAV_PROPID_current_user_privilege_set) {
++        	/* use P: prefix to refer to the Apple specivic namespace URI; <P:current-user-privilege-set xmlns:P="DAV:">*/
++			s = apr_psprintf(p, "<P:%s xmlns:P=\"DAV:\">%s</P:%s>" DEBUG_CR,
++							info->name, value, info->name);
++        	}
++        else {
++			/* use D: prefix to refer to the DAV: namespace URI */
++			s = apr_psprintf(p, "<D:%s>%s</D:%s>" DEBUG_CR,
++							info->name, value, info->name);
++			}
+     }
+     else if (what == DAV_PROP_INSERT_NAME) {
+-        s = apr_psprintf(p, "<lp%d:%s/>" DEBUG_CR, global_ns, info->name);
++        /* s = apr_psprintf(p, "<lp%d:%s/>" DEBUG_CR, global_ns, info->name); */
++        /* use D: prefix to refer to the DAV: namespace URI */
++        s = apr_psprintf(p, "<D:%s />" DEBUG_CR, info->name);
+     }
+     else {
+         /* assert: what == DAV_PROP_INSERT_SUPPORTED */
+@@ -2137,7 +2241,18 @@
+                               what, phdr);
+     (void) dav_fs_insert_prop(resource, DAV_PROPID_getetag,
+                               what, phdr);
+-
++    /* don't insert any quota props with allprops! */
++   	(void) dav_fs_insert_prop(resource, DAV_PROPID_quota,
++                              what, phdr);
++    (void) dav_fs_insert_prop(resource, DAV_PROPID_quotaused,
++                              what, phdr);
++    (void) dav_fs_insert_prop(resource, DAV_PROPID_quotausedbytes,
++                              what, phdr);
++    (void) dav_fs_insert_prop(resource, DAV_PROPID_quotaassignbytes,
++                              what, phdr);
++    (void) dav_fs_insert_prop(resource, DAV_PROPID_quotaavailbytes,
++                              what, phdr);
++	
+ #ifdef DAV_FS_HAS_EXECUTABLE
+     /* Only insert this property if it is defined for this platform. */
+     (void) dav_fs_insert_prop(resource, DAV_PROPID_FS_executable,
+diff -Naur httpd-2.2.2/modules/dav/main/config5.m4 httpd-2.2.2-quota-working/modules/dav/main/config5.m4
+--- httpd-2.2.2/modules/dav/main/config5.m4	2004-11-21 19:50:36.000000000 +0100
++++ httpd-2.2.2-quota-working/modules/dav/main/config5.m4	2007-08-30 16:24:12.000000000 +0200
+@@ -2,7 +2,7 @@
+ 
+ APACHE_MODPATH_INIT(dav/main)
+ 
+-dav_objects="mod_dav.lo props.lo util.lo util_lock.lo liveprop.lo providers.lo std_liveprop.lo"
++dav_objects="mod_dav.lo props.lo util.lo util_lock.lo liveprop.lo providers.lo std_liveprop.lo quotachk.lo"
+ 
+ if test "$enable_http" = "no"; then
+   dav_enable=no
+diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modules/dav/main/mod_dav.c
+--- httpd-2.2.2/modules/dav/main/mod_dav.c	2006-04-22 03:53:06.000000000 +0200
++++ httpd-2.2.2-quota-working/modules/dav/main/mod_dav.c	2007-08-30 16:24:13.000000000 +0200
+@@ -58,6 +58,7 @@
+ #include "util_script.h"
+ 
+ #include "mod_dav.h"
++#include "quotachk.h"	// add by satake@goodcrew.ne.jp
+ 
+ 
+ /* ### what is the best way to set this? */
+@@ -79,6 +80,8 @@
+     const char *dir;
+     int locktimeout;
+     int allow_depthinfinity;
++    apr_size_t area_size;		// add by satake@goodcrew.ne.jp
++    const char *area_path;	// add by satake@goodcrew.ne.jp
+ 
+ } dav_dir_conf;
+ 
+@@ -163,6 +166,8 @@
+         conf->dir = d;
+     }
+ 
++    conf->area_path = NULL;	// add by satake@goodcrew.ne.jp
++
+     return conf;
+ }
+ 
+@@ -196,6 +201,9 @@
+     newconf->allow_depthinfinity = DAV_INHERIT_VALUE(parent, child,
+                                                      allow_depthinfinity);
+ 
++	/* add by satake@goodcrew.ne.jp */
++	newconf->area_size = DAV_INHERIT_VALUE( parent , child , area_size );
++	newconf->area_path = DAV_INHERIT_VALUE( parent , child , area_path );
+     return newconf;
+ }
+ 
+@@ -212,6 +220,22 @@
+     return conf->provider;
+ }
+ 
++/** add by satake@goodcrew.ne.jp */
++const apr_size_t   dav_get_area_size( request_rec *r ) {
++
++    dav_dir_conf *conf = ap_get_module_config( r->per_dir_config , &dav_module );
++    return  conf->area_size;
++
++}
++
++/** add by satake@goodcrew.ne.jp */
++const char *dav_get_dir( request_rec *r ) {
++
++    dav_dir_conf *conf = ap_get_module_config( r->per_dir_config , &dav_module );
++    return  conf->area_path;
++
++}
++
+ DAV_DECLARE(const dav_hooks_locks *) dav_get_lock_hooks(request_rec *r)
+ {
+     return dav_get_provider(r)->locks;
+@@ -302,6 +326,23 @@
+ }
+ 
+ /*
++ * Command handler for DAVSATMaxAreaSize directive, which is TAKE1
++ *			add by satake@goodcrew.ne.jp
++ */
++static const char *dav_cmd_davareasize( cmd_parms *cmd , void *config , const char *arg1 ) {
++
++    dav_dir_conf *conf = ( dav_dir_conf * )config;
++
++    conf->area_size = atoi( arg1 );
++    if ( conf->area_size < 0 )
++        return "DAVSATMaxAreaSize requires a non-negative integer.";
++
++    conf->area_path = cmd->path;
++    return NULL;
++
++}
++
++/*
+ ** dav_error_response()
+ **
+ ** Send a nice response back to the user. In most cases, Apache doesn't
+@@ -434,7 +475,7 @@
+       ap_fputs(output, bb, "<D:response>");
+     }
+     else {
+-      ap_fputs(output, bb, "<D:response");
++      ap_fputs(output, bb, "<D:response xmlns:D=\"DAV:\"");
+       for (t = response->propresult.xmlns; t; t = t->next) {
+         ap_fputs(output, bb, t->text);
+       }
+@@ -744,7 +785,14 @@
+     /* if there were any input headers requiring a Vary header in the response,
+      * add it now */
+     dav_add_vary_header(r, r, *res_p);
+-
++    
++    /* ### hmm. maybe even worse */
++    /* If we got here by a careful redirect we might not have a trailing slash in
++     * our request URI; we should set a content-location header if the URI is a
++     * collection */
++    dav_add_content_location_header(r, r, *res_p);
++    
++     
+     return NULL;
+ }
+ 
+@@ -939,6 +987,15 @@
+         return dav_handle_err(r, err, multi_response);
+     }
+ 
++/**
++    check for disk space is enough
++            add by satake@goodcrew.ne.jp
++*/
++    if ( dav_qchk_checksize( r )==DAV_QCHK_NG )
++        return dav_error_response(r, HTTP_INSUFFICIENT_STORAGE,
++                                     "There is not enough storage to write to "
++                                     "this resource.");
++
+     /* make sure the resource can be modified (if versioning repository) */
+     if ((err = dav_auto_checkout(r, resource,
+                                  0 /* not parent_only */,
+@@ -1669,6 +1726,7 @@
+         apr_table_addn(methods, "PROPPATCH", "");
+         apr_table_addn(methods, "COPY", "");
+         apr_table_addn(methods, "MOVE", "");
++        apr_table_addn(methods, "ACL", "");
+ 
+         if (!resource->collection)
+             apr_table_addn(methods, "PUT", "");
+@@ -2494,6 +2552,15 @@
+         return dav_handle_err(r, err, NULL);
+     }
+ 
++/**
++    check for disk space is enough
++            add by satake@goodcrew.ne.jp
++*/
++    if ( dav_qchk_checksize( r )==DAV_QCHK_NG )
++        return dav_error_response(r, HTTP_INSUFFICIENT_STORAGE,
++                                     "There is not enough storage to write to "
++                                     "this resource.");
++
+     /* try to create the collection */
+     resource->collection = 1;
+     err = (*resource->hooks->create_collection)(resource);
+@@ -2779,6 +2846,15 @@
+         return result;
+     }
+ 
++/**
++    check for disk space is enough
++            add by satake@goodcrew.ne.jp
++*/
++    if ( dav_qchk_checksize( r )==DAV_QCHK_NG )
++        return dav_error_response(r, HTTP_INSUFFICIENT_STORAGE,
++                                     "There is not enough storage to write to "
++                                     "this resource.");
++
+     if ((err = dav_open_lockdb(r, 0, &lockdb)) != NULL) {
+         /* ### add a higher-level description? */
+         return dav_handle_err(r, err, NULL);
+@@ -4803,7 +4879,7 @@
+ static const command_rec dav_cmds[] =
+ {
+     /* per directory/location */
+-    AP_INIT_TAKE1("DAV", dav_cmd_dav, NULL, ACCESS_CONF,
++    AP_INIT_TAKE1("DAV", dav_cmd_dav, NULL, ACCESS_CONF|OR_ALL,
+                   "specify the DAV provider for a directory or location"),
+ 
+     /* per directory/location, or per server */
+@@ -4811,6 +4887,12 @@
+                   ACCESS_CONF|RSRC_CONF,
+                   "specify minimum allowed timeout"),
+ 
++    /* per directory/location */
++    /*		add by satake@goodcrew.ne.jp */
++    AP_INIT_TAKE1("DAVSATMaxAreaSize", dav_cmd_davareasize, NULL,
++                  ACCESS_CONF|OR_ALL,
++                  "max size of user storage area, per KByte"),
++
+     /* per directory/location, or per server */
+     AP_INIT_FLAG("DAVDepthInfinity", dav_cmd_davdepthinfinity, NULL,
+                  ACCESS_CONF|RSRC_CONF,
+diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.h httpd-2.2.2-quota-working/modules/dav/main/mod_dav.h
+--- httpd-2.2.2/modules/dav/main/mod_dav.h	2006-04-22 03:53:06.000000000 +0200
++++ httpd-2.2.2-quota-working/modules/dav/main/mod_dav.h	2007-08-30 16:24:12.000000000 +0200
+@@ -948,9 +948,15 @@
+     DAV_PROPID_getetag,
+     DAV_PROPID_getlastmodified,
+     DAV_PROPID_lockdiscovery,
++    DAV_PROPID_quota,
++    DAV_PROPID_quotaassignbytes,
++    DAV_PROPID_quotaavailbytes,
++    DAV_PROPID_quotaused,
++    DAV_PROPID_quotausedbytes,
+     DAV_PROPID_resourcetype,
+     DAV_PROPID_source,
+     DAV_PROPID_supportedlock,
++    DAV_PROPID_current_user_privilege_set,
+ 
+     /* DeltaV properties (from the I-D (#14)) */
+     DAV_PROPID_activity_checkout_set,
+@@ -1943,6 +1949,16 @@
+ };
+ 
+ 
++/* dav_add_content_location_header
++ *
++ * If we got here by a careful redirect we might not have a trailing slash in
++ * our request URI; we should set a content-location header if the URI is a
++ * collection
++ */
++DAV_DECLARE(void) dav_add_content_location_header(request_rec *in_req,
++                                      request_rec *out_req,
++                                      const dav_resource *resource);
++
+ /* --------------------------------------------------------------------
+ **
+ ** VERSIONING FUNCTIONS
+diff -Naur httpd-2.2.2/modules/dav/main/props.c httpd-2.2.2-quota-working/modules/dav/main/props.c
+--- httpd-2.2.2/modules/dav/main/props.c	2006-04-22 03:53:06.000000000 +0200
++++ httpd-2.2.2-quota-working/modules/dav/main/props.c	2007-08-30 16:24:12.000000000 +0200
+@@ -471,9 +471,11 @@
+     if (*name->ns == '\0')
+         s = apr_psprintf(pool, "<%s/>" DEBUG_CR, name->name);
+     else {
++    	/*
+         const char *prefix = dav_xmlns_add_uri(xi, name->ns);
+-
+         s = apr_psprintf(pool, "<%s:%s/>" DEBUG_CR, prefix, name->name);
++        */
++        s = apr_psprintf(pool, "<D:%s/>" DEBUG_CR, name->name);
+     }
+ 
+     apr_text_append(pool, phdr, s);
+diff -Naur httpd-2.2.2/modules/dav/main/quotachk.c httpd-2.2.2-quota-working/modules/dav/main/quotachk.c
+--- httpd-2.2.2/modules/dav/main/quotachk.c	1970-01-01 01:00:00.000000000 +0100
++++ httpd-2.2.2-quota-working/modules/dav/main/quotachk.c	2007-08-30 16:24:12.000000000 +0200
+@@ -0,0 +1,402 @@
++/**
++    disk quota check modules for WebDAV service
++                        author: satake@goodcrew.ne.jp
++*/
++#include "apr_lib.h"            /* for apr_is* */
++#include "apr_tables.h"         /* for apr_is* */
++#include "apr_file_info.h"
++#include "apr_strings.h"
++#include "httpd.h"
++#include "http_log.h"
++
++#include <dirent.h>
++#include <sys/stat.h>
++
++#include "mod_dav.h"
++#include "quotachk.h"
++
++#define VERSION2_3      1
++
++#if VERSION2_3
++/**
++    get slash block number
++    @param dirname  string
++    @return block number
++*/
++static  int     getSlashBlockNum( const char *dirname ) {
++
++    int retnum = 0;
++    while ( *dirname ) {
++
++        if ( *dirname=='/' )
++            retnum++;
++
++        dirname++;
++
++    }
++    return  retnum;
++
++}
++
++/**
++    get real dirname
++    @param  pool    apr_pool_t
++    @param  dirname extend dirname
++    @param  filepath filepath
++    @return real dirname
++*/
++static const char    *dav_getreal_path( apr_pool_t *pool , const char *dirname , const char *filepath ) {
++
++    if ( strstr( dirname , "*" )==NULL )
++        return  dirname;
++
++    int blknum = getSlashBlockNum( dirname );
++    char *retnum = apr_palloc( pool , strlen( filepath ) );
++    *retnum = 0;
++
++    char *moto = ( char * )filepath;
++    char *saki = retnum;
++    int  bn    = 0;
++    while ( *moto ) {
++
++        *saki = *moto;
++        if ( *saki=='/' ) {
++
++            bn++;
++            if ( bn==blknum ) {
++
++                saki++;
++                break;
++
++            }
++
++        }
++        moto++;
++        saki++;
++
++    }
++    *saki = 0;
++
++    return  retnum;
++
++}
++#endif
++
++/**
++    get (dirname) total size ( per 512byte )
++    @param  dirname directory name
++    @return block size
++*/
++static apr_size_t     get_dir_size( const char *dirname , apr_pool_t *pool ) {
++
++    DIR             *dir;
++    struct dirent   *ent;
++    struct stat     status;
++    char            *buffer;
++    apr_size_t      size = 0;
++
++    dir = opendir( dirname );
++    if ( dir==NULL ) {
++
++        return  0;
++
++    }
++
++    while ( ( ent = readdir( dir ) )!=NULL ) {
++
++        if ( ( !strcmp( ent->d_name , "." ) ) || ( !strcmp( ent->d_name , ".." ) ) ) {
++
++            continue;
++
++        }
++
++        apr_filepath_merge( &buffer , dirname , ent->d_name , 0 , pool );
++
++        if ( !lstat( buffer , &status ) ) {
++
++            size += status.st_blocks;
++            if ( status.st_mode & S_IFDIR ) {
++
++                size += get_dir_size( buffer , pool );
++
++            }
++
++        }
++
++    }
++    closedir( dir );
++
++    return  size;
++
++}
++
++/**
++    return  directory total disk space.
++    same as 'du -sk dirname' command.
++    @param  dirname     directory
++    @return     total space
++*/
++static  apr_size_t     dav_qchk_du( const char *dirname , apr_pool_t *pool ) {
++
++    struct stat     status;
++
++    if ( lstat( dirname , &status ) ) {
++    	/*
++		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( pool , "WebDAV-Quota:dav_qchk_du: bailing out for dir %s\n" , dirname )
++                    );
++        */
++        return  0;
++
++    }
++    /*
++    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( pool , "WebDAV-Quota:dav_qchk_du: returning get_dir_size for dir %s\n" , dirname )
++                    );
++    */
++    return  ( status.st_blocks + ( ( status.st_mode & S_IFDIR ) ? get_dir_size( dirname , pool ) : 0 ) ) / 2;
++
++}
++
++/**
++    check size
++    return  0: OK , else: NG
++*/
++int     dav_qchk_checksize( request_rec *request ) {
++
++    apr_size_t                 maxsize;
++    apr_size_t                 nowsize;
++    apr_size_t                 putsize;
++    int                 retnum;
++    const char          *conlen;
++    const char          *dirname;
++    dav_lookup_result   res;
++#if VERSION2_3
++    const char          *dirnameex;
++    int                 errflag1;
++#endif
++
++    /** set default return */
++    retnum = DAV_QCHK_OK;
++
++    /** get max area size */
++    if ( ! ( maxsize = dav_get_area_size( request ) ) ) {
++
++        return  retnum;
++
++    }
++
++    /** get <Directory> directive's parameter */
++    if ( ( dirname = dav_get_dir( request ) )==NULL ) {
++
++        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL, "WebDAV-Quota: dav_qchk_checksize: Directory not detected" );
++        return  retnum;
++
++    }
++
++    /** if <Location> directive without DAVSATAreaPath, then no function */
++#if VERSION2_3
++
++    dirnameex = apr_pstrcat( request->pool , dirname , "*" , NULL );
++    if ( ap_strcmp_match( request->filename , dirnameex )!=0 ) {
++
++#else
++
++    if ( strstr( request->filename , dirname )!=request->filename ) {
++
++#endif
++
++        /** try uri->filename convert */
++        res = dav_lookup_uri( dirname , request , 0 );
++        if ( ( res.err.status )||( res.rnew==NULL ) ) {
++
++            if ( res.err.desc!=NULL )
++                ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota: [%d]: %s\n" , res.err.status, res.err.desc )
++                    );
++            return  retnum;
++
++        }
++
++        dirname = res.rnew->filename;
++#if VERSION2_3
++        errflag1 = ( dirname==NULL );
++        if ( !errflag1 ) {
++
++            dirnameex = apr_pstrcat( request->pool , dirname , "*" , NULL );
++            errflag1 = ( ap_strcmp_match( request->filename , dirnameex )!=0 );
++
++        }
++        if ( errflag1 ) {
++#else
++        if ( ( dirname==NULL )||( strstr( request->filename , dirname )!=request->filename ) ) {
++#endif
++            ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_checksize: request %s doesn't match path %s\n" , request->filename, dirname )
++                    );
++            return  retnum;
++
++        }
++
++    }
++
++#if VERSION2_3
++    dirname = dav_getreal_path( request->pool , dirname , request->filename );
++#endif
++
++    /** get now user used size */
++    nowsize = dav_qchk_du( dirname , request->pool );
++
++    /** get put size */
++    conlen = NULL;
++    putsize = 0;
++    if ( request->headers_in != NULL ) {
++
++        conlen = apr_table_get( request->headers_in , "content-length" );
++
++    }
++    if ( conlen!=NULL ) {
++
++        putsize = ( ( atoi( conlen ) + DAV_CLUSTER_SIZE - 1 ) / DAV_CLUSTER_SIZE ) * ( DAV_CLUSTER_SIZE / 1024 );
++
++    }
++
++    /** check size */
++    retnum = ( nowsize + putsize >= maxsize ) ? DAV_QCHK_NG : DAV_QCHK_OK;
++    if ( retnum==DAV_QCHK_NG ) {
++
++        ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL,
++                        apr_psprintf(
++                            request->pool ,
++                            "WebDAV-Quota: Directory `%s' size `%dKB' is over `%dKB'!" ,
++                            dirname , nowsize + putsize , maxsize
++                            )
++                        );
++
++    }
++    return  retnum;
++
++}
++
++/**
++    check size
++    return  used disk size
++*/
++apr_size_t     dav_qchk_size( request_rec *request ) {
++
++    apr_size_t                 retnum;
++    const char          *dirname;
++    dav_lookup_result   res;
++    const char          *dirnametestrc;
++#if VERSION2_3
++    const char          *dirnameex;
++    int                 errflag1;
++#endif
++
++    /** set default return */
++    retnum = 0;
++	
++    /** get <Directory> directive's parameter */
++    if ( ( dirname = dav_get_dir( request ) )==NULL ) {
++
++        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL, "WebDAV-Quota: dav_qchk_size: Directory not detected" );
++        return  retnum;
++
++    }
++    /*
++	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_size: take 1 dirname is now %s\n" , dirname )
++                    );
++    */
++    /** if <Location> directive without DAVSATAreaPath, then no function */
++#if VERSION2_3
++
++    dirnameex = apr_pstrcat( request->pool , dirname , "*" , NULL );
++    if ( ap_strcmp_match( request->filename , dirnameex )!=0 ) {
++
++#else
++
++    if ( strstr( request->filename , dirname )!=request->filename ) {
++
++#endif
++		dirnametestrc = apr_pstrcat(request->pool, request->filename , "/", NULL);
++		/*
++		ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_size: take 2 request filename [%s] - dirname [%s] don't match\n" , request->filename , dirname, strstr( request->filename , dirname ) )
++                    );
++        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_size: take 2.1 redirect carefully =  [%s]\n" , apr_table_get(request->subprocess_env, "redirect-carefully") )
++                    );
++        */
++        /* we might have gotten here with a redirect-carefully - let's see */
++        if ((dirname[strlen(dirname) - 1] == '/') && (apr_table_get(request->subprocess_env, "redirect-carefully")) && (strstr( dirnametestrc , dirname )==dirnametestrc)) {
++        	/* hit me! it's just a collection problem */
++        	/*
++        	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_size: take 2.2 request->filename + / = [%s]\n", apr_pstrcat(request->pool, request->filename ,
++                                "/", NULL))
++                    );
++            ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_size: take 2.3 dirnametestrc [%s] matches dirname [%s]?!\n", dirnametestrc, dirname )
++                    );
++            */
++            dirname = dirnametestrc;
++        	}
++        else {
++			/** try uri->filename convert */
++			res = dav_lookup_uri( dirname , request , 0 );
++			if ( ( res.err.status )||( res.rnew==NULL ) ) {
++	
++				if ( res.err.desc!=NULL )
++					ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++						apr_psprintf( request->pool , "WebDAV-Quota: [%d]: %s\n" , res.err.status, res.err.desc )
++						);
++				return  retnum;
++	
++			}
++	
++			dirname = res.rnew->filename;
++			/*
++			ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++						apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_size: take 3 dirname is now %s\n" , dirname )
++						);
++			*/
++#if VERSION2_3
++		errflag1 = ( dirname==NULL );
++		if ( !errflag1 ) {
++
++			dirnameex = apr_pstrcat( request->pool , dirname , "*" , NULL );
++			errflag1 = ( ap_strcmp_match( request->filename , dirnameex )!=0 );
++
++		}
++		if ( errflag1 ) {
++#else
++		if ( ( dirname==NULL )||( strstr( request->filename , dirname )!=request->filename ) ) {
++#endif
++				 ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++						apr_psprintf( request->pool , "WebDAV-Quota:dav_qchk_size: request %s doesn't match path %s\n" , request->filename, dirname )
++						);
++				return  retnum;
++	
++			}
++	
++		}
++	
++#if VERSION2_3
++	dirname = dav_getreal_path( request->pool , dirname , request->filename );
++#endif
++		}
++
++
++	/* walinsky
++	ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, NULL,
++                    apr_psprintf( request->pool , "WebDAV-Quota: dav_qchk_size checking disk usage on %s\n" , dirname )
++                    );
++    */
++    /** get now user used size */
++    retnum = dav_qchk_du( dirname , request->pool );
++
++    return  retnum;
++
++}
++
+diff -Naur httpd-2.2.2/modules/dav/main/quotachk.h httpd-2.2.2-quota-working/modules/dav/main/quotachk.h
+--- httpd-2.2.2/modules/dav/main/quotachk.h	1970-01-01 01:00:00.000000000 +0100
++++ httpd-2.2.2-quota-working/modules/dav/main/quotachk.h	2007-08-30 16:24:12.000000000 +0200
+@@ -0,0 +1,16 @@
++/**
++    disk quota check modules for WebDAV service
++                        author: satake@goodcrew.ne.jp
++*/
++#define     DAV_QCHK_OK     0
++#define     DAV_QCHK_NG     -1
++
++/** set your storage cluster size */
++#ifndef     DAV_CLUSTER_SIZE
++    #define     DAV_CLUSTER_SIZE    4096
++#endif
++
++int                dav_qchk_checksize( request_rec * );
++apr_size_t         dav_qchk_size( request_rec * );
++const apr_size_t   dav_get_area_size( request_rec * );
++const char         *dav_get_dir( request_rec * );
+diff -Naur httpd-2.2.2/modules/dav/main/std_liveprop.c httpd-2.2.2-quota-working/modules/dav/main/std_liveprop.c
+--- httpd-2.2.2/modules/dav/main/std_liveprop.c	2006-04-22 03:53:06.000000000 +0200
++++ httpd-2.2.2-quota-working/modules/dav/main/std_liveprop.c	2007-08-30 16:24:12.000000000 +0200
+@@ -128,11 +128,14 @@
+                          info->name, dav_core_namespace_uris[info->ns]);
+     }
+     else if (what == DAV_PROP_INSERT_VALUE && *value != '\0') {
+-        s = apr_psprintf(p, "<lp%ld:%s>%s</lp%ld:%s>" DEBUG_CR,
+-                         global_ns, info->name, value, global_ns, info->name);
++        /* s = apr_psprintf(p, "<lp%ld:%s>%s</lp%ld:%s>" DEBUG_CR,
++                         global_ns, info->name, value, global_ns, info->name); */
++        s = apr_psprintf(p, "<D:%s>%s</D:%s>" DEBUG_CR,
++                         info->name, value, info->name);
+     }
+     else {
+-        s = apr_psprintf(p, "<lp%ld:%s/>" DEBUG_CR, global_ns, info->name);
++        /* s = apr_psprintf(p, "<lp%ld:%s/>" DEBUG_CR, global_ns, info->name); */
++        s = apr_psprintf(p, "<D:%s/>" DEBUG_CR, info->name);
+     }
+     apr_text_append(p, phdr, s);
+ 
+diff -Naur httpd-2.2.2/modules/dav/main/util.c httpd-2.2.2-quota-working/modules/dav/main/util.c
+--- httpd-2.2.2/modules/dav/main/util.c	2006-04-22 03:53:06.000000000 +0200
++++ httpd-2.2.2-quota-working/modules/dav/main/util.c	2007-08-30 16:24:12.000000000 +0200
+@@ -1740,6 +1740,26 @@
+     }
+ }
+ 
++/* dav_add_content_location_header
++ *
++ * If we got here by a careful redirect we might not have a trailing slash in
++ * our request URI; we should set a content-location header if the URI is a
++ * collection
++ */
++DAV_DECLARE(void) dav_add_content_location_header(request_rec *in_req,
++                                      request_rec *out_req,
++                                      const dav_resource *resource)
++{
++	if (resource->exists && resource->collection) {
++		const char *testuri = in_req->uri;
++		apr_size_t urilen = strlen(testuri);
++		if (testuri[urilen - 1] != '/') {
++			testuri = apr_pstrcat(out_req->pool, testuri, "/", NULL);
++			apr_table_setn(out_req->headers_out, "Content-Location", testuri);
++		}
++	}
++}
++
+ /* dav_can_auto_checkout
+  *
+  * Determine whether auto-checkout is enabled for a resource.
