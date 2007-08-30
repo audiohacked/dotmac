@@ -1,0 +1,7 @@
+{
+    configurationURL = "http://configuration.apple.com/configurations/internetservices/dotmacpreferencespane/1/clientConfiguration.plist";
+
+    services = {
+        dotMacPreferencesPaneMessage = "https://www.mac.com/WebObjects/Info.woa/wa/DynamicUI/dotMacPreferencesPaneMessage";
+    };
+}
