@@ -3,13 +3,24 @@
 
 = Introduction =
 
-Add your content here.
+This document details the server operating system and software requirements for dotmac.
 
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+==Operating Systems==
+
+A unix or linux based operating system is highly recommened. All development and guides are written assuming deployment on linux or unix.
+
+===Recommened Operating Systems===
+ * Redhat
+ * Ubuntu
+ * CentOS
+ * Debian
+
+==Software==
+
+
+
+
 
