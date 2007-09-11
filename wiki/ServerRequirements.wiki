@@ -20,7 +20,9 @@ A unix or linux based operating system is highly recommened. All development and
 
 ==Software==
 
-
+ * Apache HTTPd Webserver
+ * mod_perl
+ * mod_auth
 
 
 
