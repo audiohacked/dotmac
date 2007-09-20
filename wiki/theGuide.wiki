@@ -1,0 +1,33 @@
+#a step by step guide for successfully building your .mac replacement.
+
+= Introduction =
+
+This document details all steps to take for successfully building your .mac replacement.
+
+
+= The staircase =
+
+==Step 1==
+Set up your server
+
+==Step 2==
+Configure your webserver
+
+==Step 3==
+Set up you scripts
+
+==Step 4==
+Patch mod_dav
+
+==Step 5==
+Create your certificate
+
+
+
+
+
+
+
+
+ 
+ 
