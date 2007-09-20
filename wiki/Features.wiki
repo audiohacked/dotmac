@@ -1,5 +1,5 @@
+#summary The features of dotmac
 #labels Phase-Implementation
-#The features of dotmac
 
 = Introduction =
 
@@ -13,6 +13,7 @@ Working:
   * Headings, paragraphs, and lists
   * Automatic links to other wiki pages
 
+ 
  
  
  
