@@ -1,4 +1,4 @@
-#a step by step guide for successfully building your .mac replacement.
+  #a step by step guide for successfully building your .mac replacement.
 
 = Introduction =
 
@@ -29,6 +29,7 @@ Create your certificate
 
 
 
+ 
  
  
  
