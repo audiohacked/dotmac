@@ -13,8 +13,8 @@ Working:
   * Headings, paragraphs, and lists
   * Automatic links to other wiki pages
 
-Test image http://dotmac.googlecode.com/svn/wiki/images/dotwalinsky.png
 
+ 
  
  
  
