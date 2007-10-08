@@ -1,0 +1,9 @@
+{
+    configurationURL = "http://configuration.apple.com/configurations/internetservices/idiskconfiguration/1/clientConfiguration.plist"; 
+    defaultFunctionURL = "https://www.mac.com/WebObjects/Info.woa/wa/Query/query"; 
+    individualFunctionURLs = {
+        retrieveDiskConfiguration = "https://www.mac.com/WebObjects/Info.woa/wa/Query/retrieveDiskConfiguration"; 
+    };
+
+    otherParameters = {}; 
+}
