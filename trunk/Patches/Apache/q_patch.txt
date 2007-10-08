@@ -1,6 +1,6 @@
-diff -Naur httpd-2.2.2/configure httpd-2.2.2-quota-working/configure
+diff -Naur httpd-2.2.2/configure httpd-2.2.2-quota-working-dev/configure
 --- httpd-2.2.2/configure	2006-04-22 05:54:22.000000000 +0200
-+++ httpd-2.2.2-quota-working/configure	2007-08-30 16:24:27.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/configure	2007-09-24 12:18:45.000000000 +0200
 @@ -17234,7 +17234,7 @@
    > $modpath_current/modules.mk
  
@@ -10,9 +10,9 @@ diff -Naur httpd-2.2.2/configure httpd-2.2.2-quota-working/configure
  
  if test "$enable_http" = "no"; then
    dav_enable=no
-diff -Naur httpd-2.2.2/modules/dav/fs/repos.c httpd-2.2.2-quota-working/modules/dav/fs/repos.c
+diff -Naur httpd-2.2.2/modules/dav/fs/repos.c httpd-2.2.2-quota-working-dev/modules/dav/fs/repos.c
 --- httpd-2.2.2/modules/dav/fs/repos.c	2006-04-22 03:53:06.000000000 +0200
-+++ httpd-2.2.2-quota-working/modules/dav/fs/repos.c	2007-08-30 16:24:13.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/fs/repos.c	2007-09-24 12:18:37.000000000 +0200
 @@ -46,6 +46,9 @@
      apr_pool_t *pool;        /* memory storage pool associated with request */
      const char *pathname;   /* full pathname to resource */
@@ -190,9 +190,9 @@ diff -Naur httpd-2.2.2/modules/dav/fs/repos.c httpd-2.2.2-quota-working/modules/
  #ifdef DAV_FS_HAS_EXECUTABLE
      /* Only insert this property if it is defined for this platform. */
      (void) dav_fs_insert_prop(resource, DAV_PROPID_FS_executable,
-diff -Naur httpd-2.2.2/modules/dav/main/config5.m4 httpd-2.2.2-quota-working/modules/dav/main/config5.m4
+diff -Naur httpd-2.2.2/modules/dav/main/config5.m4 httpd-2.2.2-quota-working-dev/modules/dav/main/config5.m4
 --- httpd-2.2.2/modules/dav/main/config5.m4	2004-11-21 19:50:36.000000000 +0100
-+++ httpd-2.2.2-quota-working/modules/dav/main/config5.m4	2007-08-30 16:24:12.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/config5.m4	2007-09-24 12:18:37.000000000 +0200
 @@ -2,7 +2,7 @@
  
  APACHE_MODPATH_INIT(dav/main)
@@ -202,9 +202,9 @@ diff -Naur httpd-2.2.2/modules/dav/main/config5.m4 httpd-2.2.2-quota-working/mod
  
  if test "$enable_http" = "no"; then
    dav_enable=no
-diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modules/dav/main/mod_dav.c
+diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working-dev/modules/dav/main/mod_dav.c
 --- httpd-2.2.2/modules/dav/main/mod_dav.c	2006-04-22 03:53:06.000000000 +0200
-+++ httpd-2.2.2-quota-working/modules/dav/main/mod_dav.c	2007-08-30 16:24:13.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/mod_dav.c	2007-10-08 18:47:44.000000000 +0200
 @@ -58,6 +58,7 @@
  #include "util_script.h"
  
@@ -329,7 +329,33 @@ diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modu
      /* make sure the resource can be modified (if versioning repository) */
      if ((err = dav_auto_checkout(r, resource,
                                   0 /* not parent_only */,
-@@ -1669,6 +1726,7 @@
+@@ -1603,7 +1660,9 @@
+     dav_level = "1";
+ 
+     if (locks_hooks != NULL) {
+-        dav_level = "1,2";
++       // dav_level = "1,2";
++       /* walinsky; emulating .mac */
++       dav_level = "1, 2, access-control, <http://apache.org/dav/propset/fs/1>";
+     }
+ 
+     if (binding_hooks != NULL)
+@@ -1642,6 +1701,14 @@
+ 
+     /* this tells MSFT products to skip looking for FrontPage extensions */
+     apr_table_setn(r->headers_out, "MS-Author-Via", "DAV");
++    
++    /*
++    * walinsky
++    * emulating .mac; 
++    */
++    if (r->user != NULL) {
++    	apr_table_setn(r->headers_out, "X-dmUser", r->user);
++    	}
+ 
+     /*
+      * Determine which methods are allowed on the resource.
+@@ -1669,6 +1736,7 @@
          apr_table_addn(methods, "PROPPATCH", "");
          apr_table_addn(methods, "COPY", "");
          apr_table_addn(methods, "MOVE", "");
@@ -337,7 +363,7 @@ diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modu
  
          if (!resource->collection)
              apr_table_addn(methods, "PUT", "");
-@@ -2494,6 +2552,15 @@
+@@ -2494,6 +2562,15 @@
          return dav_handle_err(r, err, NULL);
      }
  
@@ -353,7 +379,7 @@ diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modu
      /* try to create the collection */
      resource->collection = 1;
      err = (*resource->hooks->create_collection)(resource);
-@@ -2779,6 +2846,15 @@
+@@ -2779,6 +2856,15 @@
          return result;
      }
  
@@ -369,7 +395,7 @@ diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modu
      if ((err = dav_open_lockdb(r, 0, &lockdb)) != NULL) {
          /* ### add a higher-level description? */
          return dav_handle_err(r, err, NULL);
-@@ -4803,7 +4879,7 @@
+@@ -4803,7 +4889,7 @@
  static const command_rec dav_cmds[] =
  {
      /* per directory/location */
@@ -378,7 +404,7 @@ diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modu
                    "specify the DAV provider for a directory or location"),
  
      /* per directory/location, or per server */
-@@ -4811,6 +4887,12 @@
+@@ -4811,6 +4897,12 @@
                    ACCESS_CONF|RSRC_CONF,
                    "specify minimum allowed timeout"),
  
@@ -391,9 +417,9 @@ diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.c httpd-2.2.2-quota-working/modu
      /* per directory/location, or per server */
      AP_INIT_FLAG("DAVDepthInfinity", dav_cmd_davdepthinfinity, NULL,
                   ACCESS_CONF|RSRC_CONF,
-diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.h httpd-2.2.2-quota-working/modules/dav/main/mod_dav.h
+diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.h httpd-2.2.2-quota-working-dev/modules/dav/main/mod_dav.h
 --- httpd-2.2.2/modules/dav/main/mod_dav.h	2006-04-22 03:53:06.000000000 +0200
-+++ httpd-2.2.2-quota-working/modules/dav/main/mod_dav.h	2007-08-30 16:24:12.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/mod_dav.h	2007-09-24 12:18:37.000000000 +0200
 @@ -948,9 +948,15 @@
      DAV_PROPID_getetag,
      DAV_PROPID_getlastmodified,
@@ -427,9 +453,9 @@ diff -Naur httpd-2.2.2/modules/dav/main/mod_dav.h httpd-2.2.2-quota-working/modu
  /* --------------------------------------------------------------------
  **
  ** VERSIONING FUNCTIONS
-diff -Naur httpd-2.2.2/modules/dav/main/props.c httpd-2.2.2-quota-working/modules/dav/main/props.c
+diff -Naur httpd-2.2.2/modules/dav/main/props.c httpd-2.2.2-quota-working-dev/modules/dav/main/props.c
 --- httpd-2.2.2/modules/dav/main/props.c	2006-04-22 03:53:06.000000000 +0200
-+++ httpd-2.2.2-quota-working/modules/dav/main/props.c	2007-08-30 16:24:12.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/props.c	2007-09-24 12:18:37.000000000 +0200
 @@ -471,9 +471,11 @@
      if (*name->ns == '\0')
          s = apr_psprintf(pool, "<%s/>" DEBUG_CR, name->name);
@@ -443,9 +469,9 @@ diff -Naur httpd-2.2.2/modules/dav/main/props.c httpd-2.2.2-quota-working/module
      }
  
      apr_text_append(pool, phdr, s);
-diff -Naur httpd-2.2.2/modules/dav/main/quotachk.c httpd-2.2.2-quota-working/modules/dav/main/quotachk.c
+diff -Naur httpd-2.2.2/modules/dav/main/quotachk.c httpd-2.2.2-quota-working-dev/modules/dav/main/quotachk.c
 --- httpd-2.2.2/modules/dav/main/quotachk.c	1970-01-01 01:00:00.000000000 +0100
-+++ httpd-2.2.2-quota-working/modules/dav/main/quotachk.c	2007-08-30 16:24:12.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/quotachk.c	2007-09-24 12:18:37.000000000 +0200
 @@ -0,0 +1,402 @@
 +/**
 +    disk quota check modules for WebDAV service
@@ -849,9 +875,9 @@ diff -Naur httpd-2.2.2/modules/dav/main/quotachk.c httpd-2.2.2-quota-working/mod
 +
 +}
 +
-diff -Naur httpd-2.2.2/modules/dav/main/quotachk.h httpd-2.2.2-quota-working/modules/dav/main/quotachk.h
+diff -Naur httpd-2.2.2/modules/dav/main/quotachk.h httpd-2.2.2-quota-working-dev/modules/dav/main/quotachk.h
 --- httpd-2.2.2/modules/dav/main/quotachk.h	1970-01-01 01:00:00.000000000 +0100
-+++ httpd-2.2.2-quota-working/modules/dav/main/quotachk.h	2007-08-30 16:24:12.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/quotachk.h	2007-09-24 12:18:37.000000000 +0200
 @@ -0,0 +1,16 @@
 +/**
 +    disk quota check modules for WebDAV service
@@ -869,9 +895,9 @@ diff -Naur httpd-2.2.2/modules/dav/main/quotachk.h httpd-2.2.2-quota-working/mod
 +apr_size_t         dav_qchk_size( request_rec * );
 +const apr_size_t   dav_get_area_size( request_rec * );
 +const char         *dav_get_dir( request_rec * );
-diff -Naur httpd-2.2.2/modules/dav/main/std_liveprop.c httpd-2.2.2-quota-working/modules/dav/main/std_liveprop.c
+diff -Naur httpd-2.2.2/modules/dav/main/std_liveprop.c httpd-2.2.2-quota-working-dev/modules/dav/main/std_liveprop.c
 --- httpd-2.2.2/modules/dav/main/std_liveprop.c	2006-04-22 03:53:06.000000000 +0200
-+++ httpd-2.2.2-quota-working/modules/dav/main/std_liveprop.c	2007-08-30 16:24:12.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/std_liveprop.c	2007-09-24 12:18:37.000000000 +0200
 @@ -128,11 +128,14 @@
                           info->name, dav_core_namespace_uris[info->ns]);
      }
@@ -890,9 +916,9 @@ diff -Naur httpd-2.2.2/modules/dav/main/std_liveprop.c httpd-2.2.2-quota-working
      }
      apr_text_append(p, phdr, s);
  
-diff -Naur httpd-2.2.2/modules/dav/main/util.c httpd-2.2.2-quota-working/modules/dav/main/util.c
+diff -Naur httpd-2.2.2/modules/dav/main/util.c httpd-2.2.2-quota-working-dev/modules/dav/main/util.c
 --- httpd-2.2.2/modules/dav/main/util.c	2006-04-22 03:53:06.000000000 +0200
-+++ httpd-2.2.2-quota-working/modules/dav/main/util.c	2007-08-30 16:24:12.000000000 +0200
++++ httpd-2.2.2-quota-working-dev/modules/dav/main/util.c	2007-09-24 12:18:37.000000000 +0200
 @@ -1740,6 +1740,26 @@
      }
  }
