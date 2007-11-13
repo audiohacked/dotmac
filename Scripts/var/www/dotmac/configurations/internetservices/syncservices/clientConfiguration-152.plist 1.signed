@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>lock_acquire_sleep_seconds</key>
+	<integer>30</integer>
+	<key>max_lock_acquire_attempts</key>
+	<integer>5</integer>
+	<key>host_name</key>
+	<string>idisk.mac.com</string>
+	<key>host_port</key>
+	<string>443</string>
+	<key>host_scheme</key>
+	<string>https</string>
+	<key>min_client_version.dotmacsyncclient</key>
+	<integer>151</integer>
+	<key>min_client_version.translator</key>
+	<integer>8</integer>
+	<key>enable_dmnotify_support</key>
+	<integer>1</integer>
+	<key>dataclasses</key>
+	<dict>
+		<key>com.apple.Bookmarks</key>
+		<dict>
+			<key>min_client_version</key>
+			<string>translator-8</string>
+		</dict>
+		<key>com.apple.Calendars</key>
+		<dict>
+			<key>min_client_version</key>
+			<string>translator-8</string>
+		</dict>
+		<key>com.apple.Contacts</key>
+		<dict>
+			<key>min_client_version</key>
+			<string>translator-8</string>
+		</dict>
+	</dict>
+	<key>baseroller</key>
+	<dict>
+		<key>auto_baseroll_enable</key>
+		<integer>0</integer>
+		<key>auto_baseroll_optimize_on</key>
+		<integer>1</integer>
+		<key>auto_baseroll_interval_hours</key>
+		<integer>120</integer>
+		<key>auto_baseroll_backup_enable</key>
+		<integer>1</integer>
+		<key>baseroll_version_range</key>
+		<integer>20</integer>
+		<key>baseroll_client_reset_timespan_days</key>
+		<integer>60</integer>
+		<key>baseroll_validate_missing_adds</key>
+		<integer>1</integer>
+	</dict>
+</dict>
+</plist>
+
+----BEGIN RSA SIGNATURE----
+_sK5ÿÑU’Ÿd2Æ]Y\­:ÒĞÀz–ï·½® ~ºÚËŒñO×<ñ»øWfêXOê™%^7ët\‡õİá¼£
