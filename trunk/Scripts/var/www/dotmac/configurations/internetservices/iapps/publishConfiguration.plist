@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "www.apple.com-PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!-- Publish Location Information -->
+    <key>pub.host</key>
+    <string>idisk.mac.com</string>
+    <key>pub.path</key>
+    <string>/Web/Sites</string>
+    <key>pub.port</key>
+    <string>80</string>
+    <key>pub.rss.path</key>
+    <string>/Web/RSS</string>
+    <key>pub.rss.maxitems</key>
+    <integer>20</integer>
+    <key>pub.scheme</key>
+    <string>http</string>
+    <key>rss.host</key>
+    <string>rss.mac.com</string>
+    <key>rss.port</key>
+    <string>80</string>
+    <key>rss.scheme</key>
+    <string>http</string>
+    <key>web.host</key>
+    <string>web.mac.com</string>
+    <key>web.port</key>
+    <string>80</string>
+    <key>web.scheme</key>
+    <string>http</string>
+	<!-- Retry -->
+	<key>retryTransactionsPut</key>
+	<string>2</string>
+	<key>retryTransactionsTotal</key>
+	<string>25</string>
+    <!-- Search Information -->
+    <key>locationSearchJavascript</key>
+    <string>http://192.168.2.10/1/up/comments/scripts/search.js</string>
+    <!-- Comments Settings Information -->
+    <key>locationCommentSummaryJavascript</key>
+    <string>http://192.168.2.10/1/up/comments/scripts/comment_summary.js</string>
+    <key>locationCommentsJavascript</key>
+    <string>http://192.168.2.10/1/up/comments/scripts/comments.js</string>
+    <!-- Slideshow Settings Information -->
+    <key>locationOpenerJavascript</key>
+    <string>http://192.168.2.10/1/slideshow/scripts/slideOptions.js</string>
+    <key>locationLauncherJavascript</key>
+    <string>http://192.168.2.10/1/slideshow/scripts/launcher.js</string>
+    <key>locationSlideshowJavascript</key>
+    <string>http://192.168.2.10/1/slideshow/scripts/slideshow.js</string>
+    <key>locationTransitionsCSS</key>
+    <string>http://192.168.2.10/1/slideshow/scripts/transitions.css</string>
+    <key>slideshowImageThumbnails</key>
+    <array>
+      <dict>
+        <key>imageCompressionFactor</key>
+        <real>0.6</real>
+        <key>imagePPI</key>
+        <integer>72</integer>
+        <key>landscapeLongestDimension</key>
+        <integer>69</integer>
+        <key>portraitLongestDimension</key>
+        <integer>69</integer>
+        <key>transformName</key>
+        <string>mini</string>
+      </dict>
+    </array>
+    <key>slideshowPrimaryImage</key>
+    <dict>
+      <key>constrainImageProperties</key>
+      <true/>
+      <key>imageCompressionFactor</key>
+      <real>0.6</real>
+      <key>imagePPI</key>
+      <integer>72</integer>
+      <key>landscapeLongestDimension</key>
+      <integer>800</integer>
+      <key>portraitLongestDimension</key>
+      <integer>800</integer>
+    </dict>
+    <!-- Photocast Information -->
+    <key>photocast.host</key>
+    <string>192.168.2.10</string>
+    <key>photocast.port</key>
+    <string>80</string>
+    <key>photocast.scheme</key>
+    <string>http</string>
+  </dict>
+</plist>
