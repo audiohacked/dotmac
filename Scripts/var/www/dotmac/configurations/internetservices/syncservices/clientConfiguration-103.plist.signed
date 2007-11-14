@@ -1,38 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>host_name</key>
-	<string>idisk.mac.com</string>
-	<key>host_port</key>
-	<string>443</string>
-	<key>host_scheme</key>
-	<string>https</string>
-	<key>min_client_version.dotmacsyncclient</key>
-	<integer>32</integer>
-	<key>enable_dmnotify_support</key>
-	<integer>1</integer>
-	<key>min_client_version.translator</key>
-	<integer>8</integer>
-	<key>dataclasses</key>
-	<dict>
-		<key>com.apple.Bookmarks</key>
-		<dict>
-			<key>min_client_version</key>
-			<string>translator-8</string>
-		</dict>
-		<key>com.apple.Calendars</key>
-		<dict>
-			<key>min_client_version</key>
-			<string>translator-8</string>
-		</dict>
-		<key>com.apple.Contacts</key>
-		<dict>
-			<key>min_client_version</key>
-			<string>translator-8</string>
-		</dict>
-	</dict>
-</dict>
-</plist>
-----BEGIN RSA SIGNATURE----
-=Æj`¥uáU˛0ﬂ’ÂÇ€ìµQœ“Ω˘óV‘aZev’/±B&–∆—‘T9ÖHâu¶—,»où
