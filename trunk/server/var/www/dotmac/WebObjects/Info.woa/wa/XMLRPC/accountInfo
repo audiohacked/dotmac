@@ -1,0 +1,67 @@
+#!/usr/bin/perl
+
+## Copyright (C) 2005 Walinsky
+## This program is free software; you can redistribute it and/or modify it
+## under the terms of the GNU General Public License as published by the 
+## Free Software Foundation; either version 2 of the License, or (at your option)
+## any later version.
+
+use XML::DOM;
+$logFile="logfile";
+# we should check if it's a post message
+if ($ENV{'REQUEST_METHOD'} eq 'POST') {
+	read(STDIN, $my_data, $ENV{'CONTENT_LENGTH'});
+	}
+# instantiate parser
+$xp = new XML::DOM::Parser();
+# parse and create tree
+$doc = $xp->parse($my_data);
+# set up HTML page
+print "Content-Type: Content-Type: text/html\n\n";
+
+# get root node
+$root = $doc->getDocumentElement();
+my $strings = $root->getElementsByTagName("string");
+my $n = $strings->getLength;
+for (my $i = 0; $i < $n; $i++)
+ {
+	my $string = $strings->item ($i)->getFirstChild()->getData;
+	if ($string eq "servicesAvailable") {
+		$answer = "<?xml version='1.0'?>
+<methodResponse>
+	<params>
+		<param>
+			<value>
+				<struct>
+					<member>
+						<name>servicesAvailable</name>
+						<value>
+							<array>
+								<value><string>iDisk</string></value>
+								<value><string>iSync</string></value>
+								<value><string>Email</string></value>
+								<value><string>WebHosting</string></value>
+								<value><string>Backup</string></value>
+								<value><string>BTMM</string></value>
+							</array>
+						</value>
+					</member>
+				</struct>
+			</value>
+		</param>
+	</params>
+</methodResponse>";
+		}
+	elsif ($string eq "daysLeftUntilExpiration") {
+		$answer = "<?xml version='1.0'?>
+<methodResponse><params><param><value><struct>
+<member><name>daysLeftUntilExpiration</name><value><int>160</int></value></member>
+</struct></value></param></params></methodResponse>";
+		}
+ }
+ print $answer;
+
+# uncheck following 3 lines if you want to record to your log File
+ open(LOGGER,">>$logFile") || `cat /dev/null > $logFile;chmod 666 $logFile`;
+ print LOGGER "indata was:\n".$my_data."\nI gave 'em \n".$answer."\n\n";
+ close(LOGGER);
