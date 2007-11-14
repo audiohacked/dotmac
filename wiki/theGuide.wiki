@@ -8,24 +8,86 @@ This document details all steps to take for successfully building your .mac repl
 = The staircase =
 
 ==Step 1==
-Set up your server
+Set up your server.
+
+Setup a basic Linux server; configure hostname and ip-address. Install Perl.
+Either install a build environment, or fetch precompiled packages for Apache httpd here (available shortly).
+In case you decided to compile your own Apache httpd server, fetch the source code and the (Patches) quota patch (from this site), patch, configure, compile.
+Install Apache httpd.
 
 ==Step 2==
 Configure your webserver
 
+Fetch the code/folders (here) from svn.
+All code (/server) assumes, it'll end up in /var/www/dotmac/
+This'll guarantee a minimal configuration effort.
+
+A special .conf file was provided (here) in addition to your standard httpd.conf.
+This file ((Configuration) dotmac.conf) _must_ be edited.
+Especially the ip-address for your ssl host needs to be specified.
+In most linux distros it should end up in /etc/httpd/conf.d or /etc/apache2/conf.d
+
 ==Step 3==
 Set up you scripts
 
+mod_perl needs to be installed with your webserver. mod_perl is available as package for most
+popular linux distributions.
+All folders _except_ ./dotmac/private should be owned by the user/group apache runs as.
+(nobody, apache, www-data)
+./dotmac/private contains both server certificates and the .htdigest (user/password) database.
+
+As we're moving al perl scripts to perl modules (mod_perl), the only scripts left that need to be
+executable (chmod +x) reside in ./dotmac/WebObjects
+They _do_ need to be executable!
+In the near future, everything is moved to perl modules - so there will be no need for setting
+executable permissions on scripts anymore.
+
 ==Step 4==
-Patch mod_dav
+Setting up hosts on your client machine(s)
+
+www.mac.com
+syncmgmt.mac.com
+idisk.mac.com
+lcs.mac.com
+certinfo.mac.com
+configuration.apple.com
+
+should all point to your server. You can either do this by editing /etc/hosts on your client machine(s),
+or by setting up your own DNS server.
 
 ==Step 5==
-Create your certificate
+Create your first user(s)
 
+at your prompt, for your first iDisk user; issue:
+htdigest -c /var/www/dotmac/private/iDiskUsers idisk.mac.com username
+(you'll be prompted for password twice)
+for additional users, issue:
+htdigest /var/www/dotmac/private/iDiskUsers idisk.mac.com username
 
+A skeleton is provided for new users; create /var/www/dotmac/username, and copy everything in /var/www/dotmac/skel/ to /var/www/idisk/username/
+In every userfolder (/var/www/idisk/username) create a .htaccess file with 2 lines:
+`Dav On
+DAVSATMaxAreaSize 1024000`
+(edit DAVSATMaxAreaSize according to your needs - it calculates in KB)
 
+_(*note - in the near future we hope to provide with a web interface, for creating users (user-folders, quota, and passwords)_
 
+==Step 5==
+Check(s)
 
+By now you should be able to k (from the finder on a client machine) to http://idisk.mac.com/username
+(if not, try looking at your apache error logs, and adapt your configuration)
+
+_this is to be repeated for all (new) clients:_
+Point your (safari) browser to https://idisk.mac.com/username
+You will be challenged with an untrusted certificate - actually this is the certificate you _do_ want to trust.
+Examine the certificate, and drag the icon of the certificate to your Desktop (or any folder of your choice).
+Open /Applications/Utilities/Keychain Access, and (if necessary, tick the button 'Show Keychains' at bottom-left)
+By now you should see a menu 'Keychains' in the top-left. Tick the 'login' entry. Drag the certificate (from whereever you put it when dragging it from your browser) in the pane where all other certificates reside. Locate it (in the pane) and double-click it. Change the trust settings to 'always trust'.
+After Logout/Login - check (pointing your browser https://idisk.mac.com/username) if the certificate is trusted.
+If so... you're done!
+
+Enjoy the magic, when choosing your .mac preferences pane from your system preferences !
 
 
 
