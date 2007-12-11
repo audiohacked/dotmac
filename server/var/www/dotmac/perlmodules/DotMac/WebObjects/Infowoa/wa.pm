@@ -157,7 +157,7 @@ sub dotMacPreferencesPaneMessage {
 		if ($dotmacversion eq '1')
 			{
 			$answer = 	"{
-messageHTML = \"<html><head></head><body><b>Thanks $username for being a member</b><br>Your account will expire when our server dies, but you'll be probably dead by then.<br>Need additional email or iDisk space? Feel free to buy me some harddisks.<br><br>\n<div style='position:absolute; left:0px; bottom:0px;'><IMG src='http://www.walinsky.com/dotwalinskysmall.png' alt='dotwalinsky' width='50' height='61' /></div><div style='position:absolute; right:0px; bottom:0px;'><input type=submit style='font-size:18px' value='Info&nbsp;' onclick='document.location.href=\\\"http://www.walinsky.com/dotmac/\\\"'></div></body></html>\"; 
+messageHTML = \"<html><head></head><body><b>Thanks $username for being a member</b><br>Your account will expire when our server dies, but you'll be probably dead by then.<br>Need additional email or iDisk space? Feel free to buy me some harddisks.<br><br>\n<div style='position:absolute; left:0px; bottom:0px;'><IMG src='http://www.walinsky.com/dotwalinskysmall.png' alt='dotwalinsky' width='50' height='61' /></div><div style='position:absolute; right:0px; bottom:0px;'><input type=submit style='font-size:18px' value='Donate&nbsp;' onclick='document.location.href=\\\"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=walinskydotcom%40hotmail%2ecom&item_name=walinskydotcom&item_number=dotmac&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8\\\"'></div></body></html>\"; 
 service = dotMacPreferencesPaneMessage; 
 servicesAvailable = (iDisk, iSync, Backup, iChatEncryption, Email, WebHosting); 
 statusCode = success; 
