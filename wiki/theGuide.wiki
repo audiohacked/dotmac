@@ -114,6 +114,7 @@ Enjoy the magic, when choosing your .mac preferences pane from your system prefe
   * iSync support
   * iDisk
   * iDisk sync support
+  * Backup
 
 10.5 "Leopard"
   * .Mac prefpane
