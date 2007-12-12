@@ -110,12 +110,12 @@ Enjoy the magic, when choosing your .mac preferences pane from your system prefe
 === Current status ====
 
 10.4
-* .Mac prefpane
-* iSync support
-* iDisk sync support
+  * .Mac prefpane
+  * iSync support
+  * iDisk sync support
 
 10.5
-* .Mac prefpane
-* iSync support
+  * .Mac prefpane
+  * iSync support
 
 _(*note - currently there's no interoperability between 10.4 and 10.5 sync clients)_
