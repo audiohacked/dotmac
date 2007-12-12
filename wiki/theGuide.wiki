@@ -109,13 +109,13 @@ Enjoy the magic, when choosing your .mac preferences pane from your system prefe
 ==Looking over the edge==
 ==== Current status ====
 
-10.4
+10.4 "Tiger"
   * .Mac prefpane
   * iSync support
   * iDisk
   * iDisk sync support
 
-10.5
+10.5 "Leopard"
   * .Mac prefpane
   * iSync support
   * iDisk
