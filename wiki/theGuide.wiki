@@ -45,6 +45,14 @@ executable permissions on scripts anymore.
 You'll find the file 'startup.pl' in .dotmac/perlmodules/
 This file also needs editing for reflecting the correct path to perlmodules
 
+The perlmodules have a few dependencies; they're easily installed from CPAN:
+{{{
+perl -MCPAN -e 'install HTTPD::UserAdmin'
+perl -MCPAN -e 'install MD5'
+perl -MCPAN -e 'install XML::DOM'
+perl -MCPAN -e 'install HTTP::DAV'
+}}}
+
 ==Step 4==
 Setting up hosts on your client machine(s)
 {{{
