@@ -86,7 +86,7 @@ DAVSATMaxAreaSize 1024000`
 
 for testing purposes, a test user has been provided: l/p testuser/dotmac
 
-_(*note - in the near future we hope to provide with a web interface, for creating users (user-folders, quota, and passwords)_
+_(*note - in the near future we hope to provide with a web interface, for creating users (user-folders, quota, and passwords) - a preliminary web-page is available at /idiskAdmin)_
 
 ==Step 6==
 ====Check(s)====
