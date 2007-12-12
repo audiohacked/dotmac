@@ -63,7 +63,10 @@ lcs.mac.com
 certinfo.mac.com
 configuration.apple.com
 }}}
-should all point to your server. You can either do this by editing /etc/hosts on your client machine(s),
+should all point to your server. You can either do this by editing /etc/hosts on your client machine(s);
+{{{
+###.###.###.### www.mac.com syncmgmt.mac.com idisk.mac.com configuration.apple.com lcs.mac.com certinfo.mac.com delta.mac.com notify.mac.com
+}}}
 or by setting up your own DNS server.
 
 ==Step 5==
