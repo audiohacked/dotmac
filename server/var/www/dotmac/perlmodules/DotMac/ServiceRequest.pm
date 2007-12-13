@@ -57,8 +57,8 @@ sub handler {
 	my $r = shift;
 	
 	$rootpath = $r->dir_config('dotMacUserDataPath'); #"/var/www/dotmac/userxml";
-	$userTokenDB = $rootpath.$r->dir_config('dotMacUserTokenDBname'); #"/usertoken.dat";
-	$lockTokenDB = $rootpath.$r->dir_config('dotMacLockTokenDBname'); #"/locktoken.dat";
+	$userTokenDB = $rootpath.'/'.$r->dir_config('dotMacUserTokenDBname'); #"/usertoken.dat";
+	$lockTokenDB = $rootpath.'/'.$r->dir_config('dotMacLockTokenDBname'); #"/locktoken.dat";
 	$infoDBname = $r->dir_config('dotMacInfoDBname'); #'info.dat';# note that the .dat extension is hardcoded right now
 	$attributesDBname = $r->dir_config('dotMacAttrDBname'); #'attributes.dat';
 	# Check that method is POST
