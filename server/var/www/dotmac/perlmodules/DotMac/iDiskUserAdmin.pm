@@ -28,8 +28,9 @@ use Apache2::RequestRec ();
 sub handler
 	{
 	my $r = shift;
-	#use dotMacUserDB (perlsetvar from httpd.conf) for $dbFile
-	#my $dotMacUserDB = $r->dir_config('dotMacUserDB');
+	#If you really want to use this, uncomment the following line - and comment-out the next one
+	#Note: adapt your dotmac.conf in a way that this page _need_ a (secure) login!!!
+	#my $dbFile = $r->dir_config('dotMacUserDB');
 	my $dbFile = '/var/www/idiskAdmin/foobar.passwd';
 	
 	my @htfile = (	DBType => 'Text',
