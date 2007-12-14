@@ -1,0 +1,11 @@
+#! /bin/bash
+# This script downloads and installs the from the Dotmac Google code project
+
+# change the home directory
+cd /var/www/dotmac/perlmodules/
+
+# checkout the latest source via svn
+svn checkout http://dotmac.googlecode.com/svn/trunk/server/var/www/dotmac/perlmodules/DotMac/ Dotmac
+
+# change the ownership of the files to www-data
+chown -R www-data:www-data *
