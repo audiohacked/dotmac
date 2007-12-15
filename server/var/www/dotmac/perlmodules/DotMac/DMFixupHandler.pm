@@ -23,17 +23,18 @@ use DotMac::CommonCode;
 sub handler
 	{
 	my $r = shift;
-	carp join ':', $r->get_server_name, $r->get_server_port;
+#	carp join ':', $r->get_server_name, $r->get_server_port;
 	my $rmethod = $r->method;
 	my $user = $r->user;
+	my $userAgent = $r->headers_in->{'User-Agent'} || '';
+	chomp($userAgent);
+	my $ifHeader = $r->headers_in->{'If'} || '';
+#	carp "user agent:$userAgent";
 	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK")){
 		if ($rmethod eq "MOVE") {
 			carp $r->as_string();
 			}
-		my $ifHeader = $r->headers_in->{'If'} || '';
-		my $userAgent = $r->headers_in->{'User-Agent'} || '';
-		chomp($userAgent);
-		carp "user agent:$userAgent";
+		
 		if ($userAgent =~ m/^DotMacKit(.*)SyncServices$/) {
 			#carp "I DID MATCH $userAgent !!!";
 			#carp $r->finfo->fname;
@@ -134,12 +135,98 @@ sub handler
 				$r->headers_in->{'If'} = "<$destFile> $ifHeader";
 				}
 			}
+		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iWeb/) # iWeb Publishing
+			{
+			if ($rmethod eq "POST") {
+				# *sigh*
+				# X-Webdav-Method: DMMKPATH
+				# X-Webdav-Method: DMPUTFROM
+				carp $r->as_string();
+				my $XWebdavMethod = $r->header_in('X-Webdav-Method');
+				if ($XWebdavMethod)
+					{
+					if ($XWebdavMethod eq 'ACL')
+						{
+						#my $buf;
+						#my $content;
+						#my $content_length = $r->header_in('Content-Length');
+						#if ($content_length > 0)
+						#	{
+						#	while ($r->read($buf, $content_length)) {
+						#		$content .= $buf;
+						#		}
+						#	carp $content;
+						#	}
+						carp "setting perlresponsehandler to ACL_handler";
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&acl_handler);
+						}
+					elsif ($XWebdavMethod eq 'DMMKPATHS')
+						{
+						my $buf;
+						my $content;
+						my $content_length = $r->header_in('Content-Length');
+						if ($content_length > 0)
+							{
+							while ($r->read($buf, $content_length)) {
+								$content .= $buf;
+								}
+							carp $content;
+							}
+						carp "setting perlresponsehandler to DMMKPATHS_handler";
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&dmmkpaths_handler);
+						}
+					elsif ($XWebdavMethod eq 'SETREDIRECT')
+						{
+						my $buf;
+						my $content;
+						my $content_length = $r->header_in('Content-Length');
+						if ($content_length > 0)
+							{
+							while ($r->read($buf, $content_length)) {
+								$content .= $buf;
+								}
+							carp $content;
+							}
+						carp "setting perlresponsehandler to SETREDIRECT_handler";
+						#$r->handler('perl-script');
+						#$r->set_handlers(PerlResponseHandler => \&acl_handler);
+						}
+					}
+				}
+			}
 		}
-	#elsif ($rmethod eq "GET") {
-	#		carp $r->uri;
-	#		carp $r->filename();
-	#		carp $r->path_info;
-	#	}
+	elsif (($rmethod eq "PROPFIND") && ($userAgent =~m/^DotMacKit/))
+		{
+			my $buf;
+			my $content;
+			my $content_length = $r->header_in('Content-Length');
+			while ($r->read($buf, $content_length)) {
+				$content .= $buf;
+				}
+			carp $content;
+		}
+	elsif ($rmethod eq "GET") {
+			if (($r->get_server_name eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/))
+				{
+				if($r->args())
+					{
+					my @args = split '&', $r->args();
+					my %params;
+					foreach my $a (@args) {
+						(my $att,my $val) = split '=', $a;
+						$params{$att} = $val ;
+						}
+					if ($params{'webdav-method'} eq 'TRUTHGET')
+						{
+						carp $r->as_string();
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&truthget_handler);
+						}
+					}
+				}
+		}
 	
 	#carp $rmethod;
 	#carp $r->as_string();
@@ -160,15 +247,48 @@ sub handler
 	return Apache2::Const::OK;
 	}
 
-  sub dmmkpath_handler { content_handler($_[0], 'DMMKPATH') }
+ sub dmmkpath_handler { content_handler($_[0], 'DMMKPATH') }
+ 
+ sub dmmkpaths_handler { content_handler($_[0], 'DMMKPATHS') }
+ 
+ sub truthget_handler { content_handler($_[0], 'TRUTHGET') }
+ 
+ sub acl_handler { content_handler($_[0], 'ACL') }
  
   sub content_handler {
-      my ($r, $type) = @_;
-  		carp "DMMKPATH_handler $type!";
+		my ($r, $type) = @_;
+  		carp "content_handler $type!";
 		my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
-		DotMac::CommonCode::recursiveMKdir($dotMaciDiskPath, $r->uri);
-		$r->content_type('text/plain');
-		$r->print("");
+		if ($type eq 'DMMKPATH')
+			{
+			DotMac::CommonCode::recursiveMKdir($dotMaciDiskPath, $r->uri);
+			$r->content_type('text/plain');
+			$r->print("");
+			}
+		if ($type eq 'DMMKPATHS')
+			{
+			#DotMac::CommonCode::dmMKpaths($dotMaciDiskPath, $r->uri);
+			$r->content_type('text/plain');
+			$r->print("");
+			}
+		elsif ($type eq 'TRUTHGET')
+			{
+			$r->content_type('text/xml');
+			$r->print('<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:iweb="urn:iweb:" xmlns:iphoto="urn:iphoto:property"
+      xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+      xmlns:search="http://idisk.mac.com/_namespace/search/"
+      xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dotmac="urn:dotmac:property">
+</feed>');
+			}
+		elsif ($type eq 'ACL')
+			{
+			# we might want to check if the uri starts with username ;)
+			DotMac::CommonCode::recursiveMKdir($dotMaciDiskPath, $r->uri);
+			$r->content_type('text/plain');
+			$r->print("");
+			}
 		
 		return Apache2::Const::OK;
   }

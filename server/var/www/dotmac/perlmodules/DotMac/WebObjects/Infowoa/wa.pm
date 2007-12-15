@@ -168,7 +168,7 @@ version = 1;
 			{
 			my $iDiskStorageInMB = DotMac::CommonCode::get_user_quota($r, $username);
 			$iDiskStorageInMB /= 1024;#we set quota in 1k blocks and  report them in MB
-			my $messageHTML = "<html><head><title></title></head><body><table cellspacing='0' cellpadding='0' border='0'><tr><td><table cellspacing='0' cellpadding='0' border='0'><tr><td>Account Type:</td><td width='8'></td><td><b>Regular</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Member Since:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Mail Storage:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>iDisk Storage:</td><td width='8'></td><td><b>%@</b></td></tr></table></td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td>Your account will expire when our server dies, but you'll be probably dead by then.</td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Account Details&nbsp;' onclick='document.location.href='https://www.mac.com/WebObjects/Account.woa''></td><td width='20'></td></tr><tr><td height='10' colspan='2'></td></tr><tr><td>To change your password and manage your billing information, view your account details.</td><td width='20'></td></tr></table><div style='position:absolute; right:0px; bottom:0px;'><IMG src='http://www.walinsky.com/dotwalinskysmall.png' alt='dotwalinsky' width='50' height='61' /></div></body></html>";
+			my $messageHTML = "<html><head><title></title></head><body><table cellspacing='0' cellpadding='0' border='0'><tr><td><table cellspacing='0' cellpadding='0' border='0'><tr><td>Account Type:</td><td width='8'></td><td><b>Regular</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Member Since:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Mail Storage:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>iDisk Storage:</td><td width='8'></td><td><b>%@</b></td></tr></table></td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td>Your account will expire when our server dies, but you'll be probably dead by then.</td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Account Details&nbsp;' onclick='document.location.href=\\\"https://www.mac.com/WebObjects/Account.woa\\\"'></td><td width='20'></td></tr><tr><td height='10' colspan='2'></td></tr><tr><td>To change your password and manage your billing information, view your account details.</td><td width='20'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Donate&nbsp;' onclick='document.location.href=\\\"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=walinskydotcom\@hotmail.com&item_name=walinskydotcom&item_number=dotmac&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8\\\"'></td><td width='20'></td></tr></table><div style='position:absolute; right:0px; bottom:0px;'><IMG src='http://www.walinsky.com/dotwalinskysmall.png' alt='dotwalinsky' width='50' height='61' /></div></body></html>";
 			$answer = 	qq±{
 canBuyMore = N; 
 createDateString = "2007-10-05"; 
@@ -207,7 +207,7 @@ sub XMLRPCaccountinfo {
 			$content .= $buf;
 			}
 		}
-	#carp $content;
+	carp $content;
 	
 	# instantiate parser
 	my $xp = new XML::DOM::Parser();
@@ -225,35 +225,14 @@ sub XMLRPCaccountinfo {
 		{
 		my $string = $strings->item ($i)->getFirstChild()->getData;
 		if ($string eq "servicesAvailable") {
-			$answer = "<?xml version='1.0'?>
-<methodResponse>
-	<params>
-		<param>
-			<value>
-				<struct>
-					<member>
-						<name>servicesAvailable</name>
-						<value>
-							<array>
-								<value><string>iDisk</string></value>
-								<value><string>iSync</string></value>
-								<value><string>Email</string></value>
-								<value><string>WebHosting</string></value>
-								<value><string>Backup</string></value>
-								<value><string>BTMM</string></value>
-							</array>
-						</value>
-					</member>
-				</struct>
-			</value>
-		</param>
-	</params>
-</methodResponse>";
+			$answer = "<?xml version='1.0'?><methodResponse><params><param><value><struct><member><name>servicesAvailable</name>
+<value><array><value><string>iDisk</string></value><value><string>iSync</string></value><value><string>Email</string></value>
+<value><string>WebHosting</string></value><value><string>Backup</string></value><value><string>BTMM</string></value></array></value></member></struct></value></param></params></methodResponse>";
 			}
 		elsif ($string eq "daysLeftUntilExpiration") {
 			$answer = "<?xml version='1.0'?>
 <methodResponse><params><param><value><struct>
-<member><name>daysLeftUntilExpiration</name><value><int>-1</int></value></member>
+<member><name>daysLeftUntilExpiration</name><value><int>365</int></value></member>
 </struct></value></param></params></methodResponse>";
 			}
 		}
@@ -262,21 +241,3 @@ sub XMLRPCaccountinfo {
 
 
 1;
-
-#			my $location = $r->location();
-#			my $directory = join '/', ('', $r->document_root, $user);
-#			carp "location $location; directory $directory";
-#			$r->add_config(["<Directory $directory>",
-#							'AuthType Digest',
-#							'AuthName idisk.mac.com',
-#							'AuthDigestProvider file',
-#							'AuthUserFile /etc/httpd/auth/webdav/iDiskUsers',
-#							'Dav on',
-#							'DavDepthInfinity on',
-#							'DAVSATMaxAreaSize 1024000',
-#							'Options All +Indexes',
-#							'<Limit GET HEAD OPTIONS PUT POST COPY PROPFIND DELETE LOCK MKCOL MOVE PROPPATCH UNLOCK ACL>',
-#								"Require user $user",
-#							'</Limit>',
-#							'</Directory>'
-#							], -1);
