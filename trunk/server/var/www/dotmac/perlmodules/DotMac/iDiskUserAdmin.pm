@@ -30,8 +30,8 @@ sub handler
 	my $r = shift;
 	#If you really want to use this, uncomment the following line - and comment-out the next one
 	#Note: adapt your dotmac.conf in a way that this page _need_ a (secure) login!!!
-	#my $dbFile = $r->dir_config('dotMacUserDB');
-	my $dbFile = '/var/www/idiskAdmin/foobar.passwd';
+	my $dbFile = $r->dir_config('dotMacUserDB');
+	#my $dbFile = '/var/www/idiskAdmin/foobar.passwd';
 	
 	my @htfile = (	DBType => 'Text',
 					DB     => $dbFile,
