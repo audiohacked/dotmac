@@ -43,7 +43,7 @@ sub handler {
 		carp 'executing retrieveDiskConfiguration';
 		$answer = retrieveDiskConfiguration($r);
 		}
-	elsif ($r->uri eq "/WebObjects/Info.woa/wa/Query/accountinfo")
+	elsif (($r->uri eq "/WebObjects/Info.woa/wa/Query/accountinfo") || ($r->uri eq "/WebObjects/Info.woa/wa/Query/accountInfo"))
 		{
 		$r->send_http_header('text/html');
 		$answer = '{payload = {}; statusCode = success; }';
@@ -53,6 +53,10 @@ sub handler {
 		{
 		carp 'executing XMLRPCaccountinfo';
 		$answer = XMLRPCaccountinfo($r);
+		}
+	else
+		{
+		carp "Hi; I'm wa.pm, and I got called with a uri I don't know: ". $r->uri;
 		}
 	
 	my $contentLength = length($answer);
