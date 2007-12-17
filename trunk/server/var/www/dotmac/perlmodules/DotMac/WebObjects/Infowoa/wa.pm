@@ -257,8 +257,8 @@ sub QUERYaccountInfo {
 	carp $content;
 	
 	$answer = "{
-	payload = {iToolsBackupActivated = N; trialAccountDaysLeft = 23; };
-	statusCode = success;
+    payload = {servicesAvailable = (iDisk, iSync, SharingCertificate, Email, WebHosting); }; 
+    statusCode = success; 
 }";
 	return $answer;
 	}
