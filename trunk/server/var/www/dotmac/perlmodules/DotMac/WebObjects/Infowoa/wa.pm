@@ -47,7 +47,6 @@ sub handler {
 		{
 		carp 'executing QUERYaccountInfo';
 		$answer = QUERYaccountInfo($r);
-		
 		}
 	elsif ($r->uri eq '/WebObjects/Info.woa/wa/XMLRPC/accountInfo')
 		{
@@ -243,7 +242,7 @@ sub XMLRPCaccountinfo {
 	return $answer;
 	}
 
-sub QUERYaccountinfo {
+sub QUERYaccountInfo {
 	my $r = shift;
 	my ($content, $answer);
 	#my $foo = $r->dir_config('foo'); ( PerlSetVar	dotMacUserDB)
