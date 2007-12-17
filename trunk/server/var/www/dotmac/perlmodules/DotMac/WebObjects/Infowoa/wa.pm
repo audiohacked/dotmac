@@ -43,10 +43,10 @@ sub handler {
 		carp 'executing retrieveDiskConfiguration';
 		$answer = retrieveDiskConfiguration($r);
 		}
-	elsif (($r->uri eq "/WebObjects/Info.woa/wa/Query/accountinfo") || ($r->uri eq "/WebObjects/Info.woa/wa/Query/accountInfo"))
+	elsif ($r->uri eq "/WebObjects/Info.woa/wa/Query/accountInfo")
 		{
-		$r->send_http_header('text/html');
-		$answer = '{payload = {}; statusCode = success; }';
+		carp 'executing QUERYaccountInfo';
+		$answer = QUERYaccountInfo($r);
 		
 		}
 	elsif ($r->uri eq '/WebObjects/Info.woa/wa/XMLRPC/accountInfo')
@@ -243,5 +243,25 @@ sub XMLRPCaccountinfo {
 	return $answer;
 	}
 
+sub QUERYaccountinfo {
+	my $r = shift;
+	my ($content, $answer);
+	#my $foo = $r->dir_config('foo'); ( PerlSetVar	dotMacUserDB)
+
+	if ($r->method eq 'POST')
+		{
+		my $buf;
+		while ($r->read($buf, $r->header_in('Content-Length'))) {
+			$content .= $buf;
+			}
+		}
+	carp $content;
+	
+	$answer = "{
+	payload = {iToolsBackupActivated = N; trialAccountDaysLeft = 23; };
+	statusCode = success;
+}";
+	return $answer;
+	}
 
 1;
