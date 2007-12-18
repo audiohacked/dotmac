@@ -53,6 +53,11 @@ sub handler {
 		carp 'executing XMLRPCaccountinfo';
 		$answer = XMLRPCaccountinfo($r);
 		}
+	elsif ($r->uri eq '/WebObjects/Info.woa/wa/Query/configureDisk')
+		{
+		carp 'executing configureDisk';
+		$answer = configureDisk($r);
+		}
 	else
 		{
 		carp "Hi; I'm wa.pm, and I got called with a uri I don't know: ". $r->uri;
@@ -263,4 +268,41 @@ sub QUERYaccountInfo {
 	return $answer;
 	}
 
+sub configureDisk {
+	my $r = shift;
+	my ($content, $answer);
+	#my $foo = $r->dir_config('foo'); ( PerlSetVar	dotMacUserDB)
+
+	if ($r->method eq 'POST')
+		{
+		my $buf;
+		while ($r->read($buf, $r->header_in('Content-Length'))) {
+			$content .= $buf;
+			}
+		}
+	carp $content;
+	
+	$answer = "{
+    payload = {
+        guestReadEnabled = Y; 
+        guestWriteEnabled = Y; 
+        hasGeneralPassword = N; 
+        relativePath = Public; 
+    }; 
+    statusCode = success; 
+}";
+# this for when public password gets set
+my $pwAnser = '{
+    payload = {
+        authenticatedReadEnabled = Y; 
+        authenticatedWriteEnabled = Y; 
+        guestReadEnabled = N; 
+        guestWriteEnabled = N; 
+        hasGeneralPassword = Y; 
+        relativePath = Public; 
+    }; 
+    statusCode = success; 
+}';
+	return $answer;
+	}
 1;
