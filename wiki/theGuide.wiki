@@ -11,11 +11,11 @@ This document details all steps to take for successfully building your .mac repl
 ==Step 1==
 ====Set up your server====
 
-Setup a basic Linux server; configure hostname and ip-address. Install Perl.
+Setup a basic Linux/Unix server; configure hostname and ip-address. Install Perl.
 Either install a build environment, or fetch precompiled packages for Apache httpd here (available shortly).
 In case you decided to compile your own Apache httpd server, fetch the source code and the (Patches) quota patch (from this site), patch, configure, compile.
 Install Apache httpd.
-
+_(*note - basically this could also be done on a Mac (OS 10.4) (not verified yet); Apache http compiles on Leopard, but mod_ssl is broken (http://trac.macports.org/projects/macports/ticket/13182).)_
 ==Step 2==
 ====Configure your webserver====
 
@@ -60,16 +60,23 @@ perl -MCPAN -e 'install HTTP::DAV'
 www.mac.com
 syncmgmt.mac.com
 idisk.mac.com
+configuration.apple.com
 lcs.mac.com
 certinfo.mac.com
-configuration.apple.com
+delta.mac.com
+notify.mac.com
+publish.mac.com
+homepage.mac.com
 }}}
 should all point to your server. You can either do this by editing /etc/hosts on your client machine(s);
 {{{
-###.###.###.### www.mac.com syncmgmt.mac.com idisk.mac.com configuration.apple.com lcs.mac.com certinfo.mac.com delta.mac.com notify.mac.com
+###.###.###.### www.mac.com syncmgmt.mac.com idisk.mac.com configuration.apple.com lcs.mac.com certinfo.mac.com delta.mac.com notify.mac.com publish.mac.com homepage.mac.com
 }}}
 or by setting up your own DNS server.
-
+_(*note - several users have reported that Leopard doesn't honour /etc/hosts like this all the time, a (non verified) solution seems to be adding the hosts again with a trailing dot)_
+{{{
+###.###.###.### www.mac.com. syncmgmt.mac.com. idisk.mac.com. configuration.apple.com. lcs.mac.com. certinfo.mac.com. delta.mac.com. notify.mac.com. publish.mac.com. homepage.mac.com.
+}}}
 ==Step 5==
 ====Create your first user(s)====
 
@@ -117,12 +124,25 @@ Enjoy the magic, when choosing your .mac preferences pane from your system prefe
   * .Mac prefpane
   * iSync support
   * iDisk
-  * iDisk sync support
+  * iDisk sync
   * Backup
 
 10.5 "Leopard"
   * .Mac prefpane
-  * iSync support
+  * iSync
   * iDisk
+  * Backup
 
 _(*note - currently there's no interoperability between 10.4 and 10.5 sync clients)_
+
+==== Operating Systems Verified ====
+
+Users reported the following Operating Systems Working:
+  * CentOS 5
+  * Fedora Core 5, 6
+  * Debian 'etch'
+  * Ubuntu 'Edgy Eft' (6.x), 'Feisty Fawn' (7.x)
+  * Solaris 10
+
+please continue reporting!
+  
