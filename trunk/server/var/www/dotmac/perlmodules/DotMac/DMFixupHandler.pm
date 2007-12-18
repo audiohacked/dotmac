@@ -31,10 +31,10 @@ sub handler
 	my $ifHeader = $r->headers_in->{'If'} || '';
 #	carp "user agent:$userAgent";
 	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK")){
-		if ($rmethod eq "MOVE") {
-			carp $r->as_string();
-			}
-		
+#		if ($rmethod eq "MOVE") {
+#			carp $r->as_string();
+#			}
+
 		if ($userAgent =~ m/^DotMacKit(.*)SyncServices$/) {
 			#carp "I DID MATCH $userAgent !!!";
 			#carp $r->finfo->fname;
@@ -58,7 +58,7 @@ sub handler
 				}
 			# (<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)(<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)
 			elsif (($rmethod eq "MOVE") && ($r->uri =~ m/^$schemasfolder\/(.*)\//)) {
-				carp $r->as_string();
+#				carp $r->as_string();
 				my $childfolder = $1;
 				my $rUri = $r->uri;
 				my $rDest = $r->headers_in->{'Destination'};
@@ -79,15 +79,29 @@ sub handler
 			
 			#carp $r->headers_in->{'If'};
 			}
+		elsif ($userAgent =~m/^DotMacKit(.*).syncinfo/)
+			{
+			if (($rmethod eq "PUT") && ($r->uri =~ m/^\/$user\/Library\/Keychains\/.syncinfo\/(.*).plist$/))
+				{
+				$r->headers_in->{'If'} = "</$user/Library/Keychains/.syncinfo> $ifHeader";
+				}
+			}
+		elsif ($userAgent =~m/^PubSub-DotMacKit-Client/)
+			{
+			if (($rmethod eq "PUT") && ($r->uri =~ m/^\/$user\/Library\/Application Support\/PubSub\/(.*).chunx$/))
+				{
+				$r->headers_in->{'If-None-Match'} = "";
+				}
+			}
 		elsif ($userAgent =~m/^DotMacKit-like, File-Sync-Direct/)
 			{
-			carp $r->as_string();
+#			carp $r->as_string();
 			# LOCK /walinsky/.FileSync
 			my $dotFilesyncFolder = "/$user/.FileSync";
 			if (($rmethod eq "MOVE") && ($r->headers_in->{'Destination'} =~ m/^http:\/\/idisk.mac.com$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
-				carp "match!";
-				carp $r->headers_in->{'If'};
+#				carp "match!";
+#				carp $r->headers_in->{'If'};
 				}
 			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If-Match'})) { # ugly! - should also test for locking $dotFilesyncFolder itself - we get requests for lock (refresh) on exact match
 				$r->headers_in->{'If-Match'} = "";
@@ -101,7 +115,7 @@ sub handler
 				my $rUri = $r->uri;
 				$rUri =~ s|/\Z(?!\n)|| unless $rUri eq "/"; # strip possible trailing slash
 				$r->headers_in->{'If'} = "<$rUri> $ifHeader";
-				carp $r->headers_in->{'If'};
+#				carp $r->headers_in->{'If'};
 			}
 			elsif ($rmethod eq "POST") {
 				# *sigh*
@@ -116,11 +130,11 @@ sub handler
 					while ($r->read($buf, $content_length)) {
 						$content .= $buf;
 						}
-					carp $content;
+#					carp $content;
 					}
 				if (($XWebdavMethod) && ($XWebdavMethod eq 'DMMKPATH'))
 					{
-					carp "setting perlresponsehandler to DMMKPATH_handler";
+#					carp "setting perlresponsehandler to DMMKPATH_handler";
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&dmmkpath_handler);
 					}
@@ -197,16 +211,16 @@ sub handler
 				}
 			}
 		}
-	elsif (($rmethod eq "PROPFIND") && ($userAgent =~m/^DotMacKit/))
-		{
-			my $buf;
-			my $content;
-			my $content_length = $r->header_in('Content-Length');
-			while ($r->read($buf, $content_length)) {
-				$content .= $buf;
-				}
-			carp $content;
-		}
+#	elsif (($rmethod eq "PROPFIND") && ($userAgent =~m/^DotMacKit/))
+#		{
+#			my $buf;
+#			my $content;
+#			my $content_length = $r->header_in('Content-Length');
+#			while ($r->read($buf, $content_length)) {
+#				$content .= $buf;
+#				}
+#			carp $content;
+#		}
 	elsif ($rmethod eq "GET") {
 			if (($r->get_server_name eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/))
 				{
@@ -220,7 +234,7 @@ sub handler
 						}
 					if ($params{'webdav-method'} eq 'TRUTHGET')
 						{
-						carp $r->as_string();
+#						carp $r->as_string();
 						$r->handler('perl-script');
 						$r->set_handlers(PerlResponseHandler => \&truthget_handler);
 						}
