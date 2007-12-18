@@ -37,11 +37,6 @@ All folders _except_ ./dotmac/private should be owned by the user/group apache r
 (nobody, apache, www-data)
 ./dotmac/private contains both server certificates and the .htdigest (user/password) database.
 
-As we're moving al perl scripts to perl modules (mod_perl), the only scripts left that need to be
-executable (chmod +x) reside in ./dotmac/WebObjects
-They _do_ need to be executable!
-In the near future, everything is moved to perl modules - so there will be no need for setting
-executable permissions on scripts anymore.
 
 You'll find the file 'startup.pl' in .dotmac/perlmodules/
 This file also needs editing for reflecting the correct path to perlmodules
@@ -97,7 +92,7 @@ DAVSATMaxAreaSize 1024000`
 
 for testing purposes, a test user has been provided: l/p testuser/dotmac
 
-_(*note - in the near future we hope to provide with a web interface, for creating users (user-folders, quota, and passwords) - a preliminary web-page is available at /idiskAdmin)_
+_(*note - in the near future we hope to provide with a web interface, for creating users (user-folders, quota, and passwords) - a preliminary web-page is available at /idiskAdmin; for adding users your htdigest database must be writable by your httpd user)_
 
 ==Step 6==
 ====Check(s)====
