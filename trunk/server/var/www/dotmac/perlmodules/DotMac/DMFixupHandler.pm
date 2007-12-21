@@ -9,7 +9,7 @@ use Apache2::RequestIO ();
 use Apache2::RequestRec ();
 use Apache2::RequestUtil ();
 
-use Apache2::Const -compile => 'OK';
+use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST);
 use CGI::Carp;
 use DotMac::CommonCode;
 
@@ -104,9 +104,15 @@ sub handler
 #				carp $r->headers_in->{'If'};
 				}
 			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If-Match'})) { # ugly! - should also test for locking $dotFilesyncFolder itself - we get requests for lock (refresh) on exact match
-				$r->headers_in->{'If-Match'} = "";
+				$r->headers_in->{'If-Match'} = "*";
 				#carp $r->headers_in->{'If'};
 				}
+			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If'}) && ($r->uri =~ m/$dotFilesyncFolder/)) { 
+				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
+				carp "Match Lock + .filesync + if header";
+				carp $ifHeader;
+				
+				}				
 			elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
 				#carp $r->headers_in->{'If'};
@@ -137,7 +143,11 @@ sub handler
 #					carp "setting perlresponsehandler to DMMKPATH_handler";
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&dmmkpath_handler);
-					}
+				} elsif (($XWebdavMethod) && ($XWebdavMethod eq 'DMPUTFROM')) {
+					carp "setting perlresponsehandler to DMPUTFROM_handler";
+					$r->handler('perl-script');
+					$r->set_handlers(PerlResponseHandler => \&dmputfrom_handler);
+				}
 				}
 			}
 		elsif ($userAgent =~m/^DotMacKit-like, Mirror-Agent-Direct/)
@@ -263,6 +273,8 @@ sub handler
 
  sub dmmkpath_handler { content_handler($_[0], 'DMMKPATH') }
  
+ sub dmputfrom_handler { content_handler($_[0], 'DMPUTFROM') }
+  
  sub dmmkpaths_handler { content_handler($_[0], 'DMMKPATHS') }
  
  sub truthget_handler { content_handler($_[0], 'TRUTHGET') }
@@ -279,7 +291,32 @@ sub handler
 			$r->content_type('text/plain');
 			$r->print("");
 			}
-		if ($type eq 'DMMKPATHS')
+		if ($type eq 'DMPUTFROM' )
+			{
+			my $XSourceHref = DotMac::CommonCode::URLDecode($r->header_in('X-Source-Href'));
+			my $ruri= DotMac::CommonCode::URLDecode($r->uri);
+			my $ruser=$r->user;
+			carp "I'm here";
+			if ((DotMac::CommonCode::check_for_dir_backref($ruri)) || (DotMac::CommonCode::check_for_dir_backref($XSourceHref))) {
+				carp "Path contained a back reference";
+				return Apache2::Const::HTTP_BAD_REQUEST;
+			}	
+			if (($ruri =~ m/^\/$ruser\//) && ($XSourceHref =~ m/^\/$ruser\//)) {
+					carp "Calling movefile $dotMaciDiskPath $XSourceHref $ruri"; 
+					DotMac::CommonCode::movefile($dotMaciDiskPath, $XSourceHref, $ruri);
+					#$r->content_type('text/plain');
+					$r->print("");
+
+					
+					return Apache2::Const::HTTP_NO_CONTENT;
+
+			} else {
+					$r->print(" ");			
+					carp "Directory path didn't match the user User:$ruser URI:$ruri Sourcehref:$XSourceHref";
+					return Apache2::Const::HTTP_BAD_REQUEST;
+			}
+		}
+		elsif ($type eq 'DMMKPATHS')
 			{
 			#DotMac::CommonCode::dmMKpaths($dotMaciDiskPath, $r->uri);
 			$r->content_type('text/plain');

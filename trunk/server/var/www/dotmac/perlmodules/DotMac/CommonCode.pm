@@ -15,6 +15,8 @@ use warnings;
 use CGI::Carp;
 use DB_File;
 use Encode;
+use File::Copy;
+use File::Spec;
 
 sub readUserDB
 	{ my ($dbpath, %attributes) = @_;
@@ -77,7 +79,22 @@ sub recursiveMKdir
 		$rootpath = $rootpath.$slash.$adddir;
 		}
 	}
-
+sub movefile 
+	{ 
+	my ($rootpath, $source, $dest) = @_;
+	my $sourcepath="$rootpath/$source";
+	my $destpath="$rootpath/$dest";
+	move($sourcepath, $destpath) || die "Sorry system is unable to move flie $sourcepath to $destpath";
+	}
+	
+sub check_for_dir_backref {
+	my ($line) = @_;
+	if ($line =~ m/\/\.\./) {
+		return 1;
+	} else { 
+		return 0;
+	}
+}
 sub authen_user{
 	my ($r, $user, $sent_pw) = @_;
 	if ($r->dir_config('dotMacDBType') eq 'file')
@@ -89,7 +106,13 @@ sub authen_user{
 		
 		}
     }
-
+sub URLDecode {
+    my $theURL = $_[0];
+    $theURL =~ tr/+/ /;
+    $theURL =~ s/%([a-fA-F0-9]{2,2})/chr(hex($1))/eg;
+    $theURL =~ s/<!--(.|\n)*-->//g;
+    return File::Spec->canonpath($theURL);
+}
 sub authen_user_file{
 	my ($r, $username, $password) = @_;
 	carp $r->dir_config('dotMacUserDB');
