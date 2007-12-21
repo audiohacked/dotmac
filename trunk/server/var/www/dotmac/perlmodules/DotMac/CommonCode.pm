@@ -51,6 +51,8 @@ sub writeUserDB
 
 sub recursiveMKdir
 	{ my ($rootpath, $addpath) = @_;
+	# TODO: move to File::Path;
+	# mkpath(['/foo/bar/baz', 'blurfl/quux'], 1, 0711);
 	my $slash = '/';
 	my $adddir;
 	# taking off trailing slash
