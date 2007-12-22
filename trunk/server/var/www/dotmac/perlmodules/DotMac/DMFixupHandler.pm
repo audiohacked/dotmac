@@ -8,8 +8,10 @@ use warnings;
 use Apache2::RequestIO ();
 use Apache2::RequestRec ();
 use Apache2::RequestUtil ();
+use Apache2::Log;
 
-use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST);
+use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST :log);
+use APR::Const    -compile => qw(:error SUCCESS);
 use CGI::Carp;
 use DotMac::CommonCode;
 
@@ -23,46 +25,44 @@ use DotMac::CommonCode;
 sub handler
 	{
 	my $r = shift;
-#	carp join ':', $r->get_server_name, $r->get_server_port;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $rlog = $r->log;
+
+	
 	my $rmethod = $r->method;
 	my $user = $r->user;
 	my $userAgent = $r->headers_in->{'User-Agent'} || '';
 	chomp($userAgent);
+	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->server->server_hostname(), $r->server->port(),$userAgent,$rmethod,$r->headers_in->{'If'},$r->uri,$r->user));
 	my $ifHeader = $r->headers_in->{'If'} || '';
-#	carp "user agent:$userAgent";
+	$logging =~ m/Headers/&&$rlog->info($r->as_string());
 	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK")){
-#		if ($rmethod eq "MOVE") {
-#			carp $r->as_string();
-#			}
+		
 
 		if ($userAgent =~ m/^DotMacKit(.*)SyncServices$/) {
-			#carp "I DID MATCH $userAgent !!!";
-			#carp $r->finfo->fname;
-			#carp $r->finfo->name;
-			#carp $r->filename();
-			#carp $r->path_info; #will be ""
-			#carp $r->uri;
-			#carp $ifHeader;
+			$logging =~ m/Sections/&&$rlog->info("In the DotMacKit SyncServices Section");
 			my $ifheaderUri;
 			my $clientsfolder = "/$user/Library/Application Support/SyncServices/Clients";# PUT
 			my $schemasfolder = "/$user/Library/Application Support/SyncServices/Schemas";# MKCOL
 			if (($rmethod eq "PUT") && ($r->uri =~ m/^$clientsfolder(.*).client$/)) {
+				$logging =~ m/Sections/&&$rlog->info("Put and SyncServices/Clients Section");
 				$r->headers_in->{'If'} = "<$clientsfolder> $ifHeader";
 				}
 			# LOCK /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Bookmarks/
 			# PUT /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Bookmarks/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp
 			# UNLOCK /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Bookmarks/
 			elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$schemasfolder\/(.*)\//)) {
+				$logging =~ m/Sections/&&$rlog->info("In the PUT and SyncServices/Schemas Section");
 				my $childfolder = $1;
 				$r->headers_in->{'If'} = "<$schemasfolder/$childfolder> $ifHeader";
 				}
 			# (<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)(<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)
 			elsif (($rmethod eq "MOVE") && ($r->uri =~ m/^$schemasfolder\/(.*)\//)) {
-#				carp $r->as_string();
+				$logging =~ m/Sections/&&$rlog->info("In the MOVE and SyncServices/Schemas Section");
 				my $childfolder = $1;
 				my $rUri = $r->uri;
 				my $rDest = $r->headers_in->{'Destination'};
-				
+				$logging =~ m/Sections/&&$rlog->info("Destination header: $rDest");
 				# when moving, 2 exactly the same locktokens are specified
 				# LOCK /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Contacts/
 				# PUT /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Contacts/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp
@@ -74,7 +74,10 @@ sub handler
 				
 				}
 			elsif (($rmethod eq "MKCOL") && ($r->uri =~ m/^$schemasfolder/)) {
-				$r->headers_in->{'If'} = "<$schemasfolder> $ifHeader";
+				if ($ifHeader) {
+					$r->headers_in->{'If'} = "<$schemasfolder> $ifHeader";
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+					}
 				}
 			
 			#carp $r->headers_in->{'If'};
@@ -83,7 +86,9 @@ sub handler
 			{
 			if (($rmethod eq "PUT") && ($r->uri =~ m/^\/$user\/Library\/Keychains\/.syncinfo\/(.*).plist$/))
 				{
+				$logging =~ m/Sections/&&$rlog->info("UserAgent: DotMacKit .syncinfo and method PUT");
 				$r->headers_in->{'If'} = "</$user/Library/Keychains/.syncinfo> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ",$r->headers_in->{'If'});
 				}
 			}
 		elsif ($userAgent =~m/^PubSub-DotMacKit-Client/)
@@ -100,28 +105,28 @@ sub handler
 			my $dotFilesyncFolder = "/$user/.FileSync";
 			if (($rmethod eq "MOVE") && ($r->headers_in->{'Destination'} =~ m/^http:\/\/idisk.mac.com$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
-#				carp "match!";
-#				carp $r->headers_in->{'If'};
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
 			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If-Match'})) { # ugly! - should also test for locking $dotFilesyncFolder itself - we get requests for lock (refresh) on exact match
 				$r->headers_in->{'If-Match'} = "*";
-				#carp $r->headers_in->{'If'};
 				}
 			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If'}) && ($r->uri =~ m/$dotFilesyncFolder/)) { 
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
 				carp "Match Lock + .filesync + if header";
-				carp $ifHeader;
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				
 				}				
 			elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
-				#carp $r->headers_in->{'If'};
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
 			elsif ($rmethod eq "MKCOL") {
 				my $rUri = $r->uri;
 				$rUri =~ s|/\Z(?!\n)|| unless $rUri eq "/"; # strip possible trailing slash
-				$r->headers_in->{'If'} = "<$rUri> $ifHeader";
-#				carp $r->headers_in->{'If'};
+				if ($ifHeader) {
+					$r->headers_in->{'If'} = "<$rUri> $ifHeader";
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+					}
 			}
 			elsif ($rmethod eq "POST") {
 				# *sigh*
@@ -136,7 +141,7 @@ sub handler
 					while ($r->read($buf, $content_length)) {
 						$content .= $buf;
 						}
-#					carp $content;
+					$logging =~ m/Body/&&$rlog->info("Content from POST: $content");
 					}
 				if (($XWebdavMethod) && ($XWebdavMethod eq 'DMMKPATH'))
 					{
@@ -157,6 +162,7 @@ sub handler
 				{
 				my $destFile = $r->headers_in->{'Destination'};
 				$r->headers_in->{'If'} = "<$destFile> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
 			}
 		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iWeb/) # iWeb Publishing
@@ -283,7 +289,9 @@ sub handler
  
   sub content_handler {
 		my ($r, $type) = @_;
-  		carp "content_handler $type!";
+		my $logging = $r->dir_config('LoggingTypes');
+		my $rlog = $r->log;
+		$logging =~ /Sections/&&$rlog->info("Content Handler: $type");
 		my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
 		if ($type eq 'DMMKPATH')
 			{
@@ -296,13 +304,12 @@ sub handler
 			my $XSourceHref = DotMac::CommonCode::URLDecode($r->header_in('X-Source-Href'));
 			my $ruri= DotMac::CommonCode::URLDecode($r->uri);
 			my $ruser=$r->user;
-			carp "I'm here";
 			if ((DotMac::CommonCode::check_for_dir_backref($ruri)) || (DotMac::CommonCode::check_for_dir_backref($XSourceHref))) {
-				carp "Path contained a back reference";
+				$rlog->error("path contained a back reference: ".DotMac::CommonCode::check_for_dir_backref($ruri)." ".DotMac::CommonCode::check_for_dir_backref($XSourceHref));
 				return Apache2::Const::HTTP_BAD_REQUEST;
 			}	
 			if (($ruri =~ m/^\/$ruser\//) && ($XSourceHref =~ m/^\/$ruser\//)) {
-					carp "Calling movefile $dotMaciDiskPath $XSourceHref $ruri"; 
+					$logging =~ m/Sections/&&$rlog->info("Calling movefile $dotMaciDiskPath $XSourceHref $ruri"); 
 					DotMac::CommonCode::movefile($dotMaciDiskPath, $XSourceHref, $ruri);
 					#$r->content_type('text/plain');
 					$r->print("");
@@ -312,7 +319,7 @@ sub handler
 
 			} else {
 					$r->print(" ");			
-					carp "Directory path didn't match the user User:$ruser URI:$ruri Sourcehref:$XSourceHref";
+					$rlog->error("Directory path didn't match the user User:$ruser URI:$ruri Sourcehref:$XSourceHref");
 					return Apache2::Const::HTTP_BAD_REQUEST;
 			}
 		}
