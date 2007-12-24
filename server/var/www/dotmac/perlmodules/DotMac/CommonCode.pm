@@ -92,11 +92,12 @@ sub recursiveMKdir
 
 sub recursiveMKCOL
 	{
-	my ($r) = @_;
+	my ($r,$uri) = @_;
+	$uri=$r->uri if $uri eq "";
 	my $logging = $r->dir_config('LoggingTypes');
 	my $lcv1; ### The outer loop which will be the path element we are currently working with
 	my $lcv2; ### The inner loop which will be all of the elements up until the current one
-	my @arr=split("/",$r->uri); 
+	my @arr=split("/",$uri); 
 	shift @arr if $arr[0] eq ""; ### Drop the initial element off, which should normally be ""
 	my $resulturi; ### The temp URI we are working with 
 	my @outarr; ### the array of arrays we return back (contains result code and path
@@ -115,12 +116,100 @@ sub recursiveMKCOL
 			$logging=~m/SubreqDebug/&&$r->log->info("Subreq call with $resulturi returned $rc");
 			$rc = 200 if ($rc == 405); ### Convert the return code to HTTP OK if the create fails for a directory
 			$rc = 201 if ($rc == 0); ### Convert the return code to HTTP CREATED if the create suceeds.
-			push(@outarr,($rc,$resulturi));
+			push(@outarr,([$rc,$resulturi]));
 		}
 		$logging=~m/SubreqDebug/&&$r->log->info(Dumper(\@outarr));
+		
 	return @outarr;
 	}
 	
+
+sub dmmkpath_request
+	{ my ( $r, $inXML) = @_;
+	my $xp = new XML::DOM::Parser(ErrorContext => 2);
+	my $requestxml = $xp->parse($inXML);
+	my $requestrootnode = $requestxml->getElementsByTagName('x0:request-instructions-set')->[0];
+	my $requestxml_root = $requestxml->getDocumentElement;
+	my $requestInstructions = $requestrootnode->getElementsByTagName('x0:request-instructions'); # gather all 'transaction' child nodes
+	my $requestInstructionsCount = $requestInstructions->getLength();
+	#carp ("I have $requestInstructionsCount instructions \n");
+	my @outarr;
+
+	# our node looks like:
+	# <x0:request-instructions>
+	# <x0:action>DMMKPATH</x0:action>
+	# <x0:href>/sjorsdeberekorst1/Web/.Temporary%20Web%20Resources/5657C625-B34F-4173-8717-9B11DEE57A81/Site/sjorsdeberekorst1_dot_com/sjorsdeberekorst1_dot_com_files</x0:href>
+	# <x0:success-codes>207</x0:success-codes>
+	# </x0:request-instructions>
+	for (my $j = 0; $j < $requestInstructionsCount; $j++)
+			{
+				my $action = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:action')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+				my $href = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:href')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+				my $successcodes = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:success-codes')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+				#print ("action: $action, href: $href, success-codes: $successcodes\n");
+				
+	
+				if ($action eq 'DMMKPATH')
+					{
+						push(@outarr,recursiveMKCOL($r,$href));
+
+					}
+		
+			}
+		return (@outarr);
+	}
+
+sub returnHTTPCodesText {
+	my ($val) = @_;
+	if ($val == 201) {
+		return "HTTP/1.1 201 Created";
+	} elsif ($val == 200) {
+		return "HTTP/1.1 200 Ok";
+	} elsif ($val == 405) {
+		return "HTTP/1.1 405 Method Not Allowed";
+	} else {
+		return "HTTP/1.1 $val UNKNOWN";
+	}
+}
+
+sub dmmkpath_response
+	{
+	my (@arr)  = @_;
+	my $innerarr;
+	my $responsexml = XML::DOM::Document->new();
+	my $decl=new XML::DOM::XMLDecl;
+	$decl->setVersion("1.0");
+	$decl->setEncoding("UTF-8");
+	$responsexml->setXMLDecl($decl);
+	my $responserootnode = $responsexml->createElement('INS:response-status-set'); # this is the root node
+	$responserootnode->setAttribute('xmlns:INS', 'http://idisk.mac.com/_namespace/set/');
+
+	foreach $innerarr (@arr) {
+		my $responsemultistatus = $responsexml->createElement('multistatus');
+		$responsemultistatus->setAttribute('xmlns', 'DAV:');
+		my $responsemultistatusresponse = $responsexml->createElement('response');
+		$responsemultistatusresponse->setAttribute('xmlns', 'DAV:');
+		my $hrefelement = $responsexml->createElement('href');
+		my $hreftextnode = $responsexml->createTextNode($innerarr->[1]);
+		$hrefelement->appendChild($hreftextnode);
+		$responsemultistatusresponse->appendChild($hrefelement);
+
+		my $statuselement = $responsexml->createElement('status');
+
+		my $statustextnode;
+		my $msg=returnHTTPCodesText($innerarr->[0]);
+		$statustextnode = $responsexml->createTextNode($msg);
+		$statuselement->appendChild($statustextnode);
+		$responsemultistatusresponse->appendChild($statuselement);
+		$responserootnode->appendChild($responsemultistatus); # append the 'multistatus' childnode;
+		$responsemultistatus->appendChild($responsemultistatusresponse); # append the 'multistatus' childnode;
+		$responserootnode->appendChild($responsemultistatus);
+		}
+		$responsexml->appendChild($responserootnode);
+	return ($responsexml->toString());
+	}
+
+
 sub movefile 
 	{ 
 	my ($rootpath, $source, $dest) = @_;
