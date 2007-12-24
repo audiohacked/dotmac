@@ -18,6 +18,13 @@ use Encode;
 use File::Copy;
 use File::Spec;
 use XML::DOM;
+use Apache2::RequestRec ();
+use Apache2::RequestIO ();
+use Apache2::RequestUtil ();
+use Apache2::Log;
+use Apache2::SubRequest ();
+use DotMac::NullOutputFilter;
+use Data::Dumper;
 
 sub readUserDB
 	{ my ($dbpath, %attributes) = @_;
@@ -82,6 +89,38 @@ sub recursiveMKdir
 		$rootpath = $rootpath.$slash.$adddir;
 		}
 	}
+
+sub recursiveMKCOL
+	{
+	my ($r) = @_;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $lcv1; ### The outer loop which will be the path element we are currently working with
+	my $lcv2; ### The inner loop which will be all of the elements up until the current one
+	my @arr=split("/",$r->uri); 
+	shift @arr if $arr[0] eq ""; ### Drop the initial element off, which should normally be ""
+	my $resulturi; ### The temp URI we are working with 
+	my @outarr; ### the array of arrays we return back (contains result code and path
+	my ($subreq,$rc);
+	for($lcv1=0; $lcv1 < scalar @arr; $lcv1++){
+		my @tmparr=();
+		for ($lcv2=0; $lcv2 <= $lcv1; $lcv2++) {
+			push(@tmparr,$arr[$lcv2]);
+			}
+			$resulturi="/".join("/",@tmparr);
+			$subreq = $r->lookup_method_uri("MKCOL", $resulturi);
+			$subreq->headers_out->{'X-Webdav-Method'}="";
+			$subreq->add_output_filter(\&DotMac::NullOutputFilter::handler);
+			$logging=~m/SubreqDebug/&&$r->log->info("recursiveMKCOL request: ". Dumper($subreq));
+			$rc=$subreq->run;
+			$logging=~m/SubreqDebug/&&$r->log->info("Subreq call with $resulturi returned $rc");
+			$rc = 200 if ($rc == 405); ### Convert the return code to HTTP OK if the create fails for a directory
+			$rc = 201 if ($rc == 0); ### Convert the return code to HTTP CREATED if the create suceeds.
+			push(@outarr,($rc,$resulturi));
+		}
+		$logging=~m/SubreqDebug/&&$r->log->info(Dumper(\@outarr));
+	return @outarr;
+	}
+	
 sub movefile 
 	{ 
 	my ($rootpath, $source, $dest) = @_;
