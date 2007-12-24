@@ -165,7 +165,7 @@ sub handler
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
 			}
-		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iWeb/) # iWeb Publishing
+		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iWeb/) # iWeb Publishing #DotMacKit-E-3Lite46 (10.4.9; iweb) iWeb-local-build-20071223
 			{
 			if ($rmethod eq "POST") {
 				# *sigh*
@@ -193,19 +193,15 @@ sub handler
 						}
 					elsif ($XWebdavMethod eq 'DMMKPATHS')
 						{
-						my $buf;
-						my $content;
-						my $content_length = $r->header_in('Content-Length');
-						if ($content_length > 0)
-							{
-							while ($r->read($buf, $content_length)) {
-								$content .= $buf;
-								}
-							carp $content;
-							}
 						carp "setting perlresponsehandler to DMMKPATHS_handler";
 						$r->handler('perl-script');
 						$r->set_handlers(PerlResponseHandler => \&dmmkpaths_handler);
+						}
+					elsif ($XWebdavMethod eq 'DMOVERLAY')
+						{
+						carp "setting perlresponsehandler to DMOVERLAY_handler";
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&dmoverlay_handler);
 						}
 					elsif ($XWebdavMethod eq 'SETREDIRECT')
 						{
@@ -224,6 +220,12 @@ sub handler
 						#$r->set_handlers(PerlResponseHandler => \&acl_handler);
 						}
 					}
+				}
+			elsif ($rmethod eq "PUT") {
+				carp $r->as_string();
+				my $sitesfolder = "/$user/Web/Sites";
+				# LOCK /walinsky/Web/Sites
+				$r->headers_in->{'If'} = "<$sitesfolder> $ifHeader";
 				}
 			}
 		}
@@ -283,6 +285,8 @@ sub handler
   
  sub dmmkpaths_handler { content_handler($_[0], 'DMMKPATHS') }
  
+ sub dmoverlay_handler { content_handler($_[0], 'DMOVERLAY') }
+ 
  sub truthget_handler { content_handler($_[0], 'TRUTHGET') }
  
  sub acl_handler { content_handler($_[0], 'ACL') }
@@ -326,6 +330,29 @@ sub handler
 		elsif ($type eq 'DMMKPATHS')
 			{
 			#DotMac::CommonCode::dmMKpaths($dotMaciDiskPath, $r->uri);
+			# send multistatus header:
+			# HTTP/1.1 207 Multi-Status
+			my $buf;
+			my $content;
+			my $content_length = $r->header_in('Content-Length');
+			if ($content_length > 0)
+				{
+				while ($r->read($buf, $content_length)) {
+					$content .= $buf;
+					}
+				carp $content;
+				}
+			my $responseXML = DotMac::CommonCode::dmmkpaths ( $r, $content);
+			$r->content_type('text/xml;charset=utf-8');
+			$r->print($responseXML);
+			return 'HTTP/1.1 207 Multi-Status';
+			}
+		elsif ($type eq 'DMOVERLAY')
+			{
+			#is this the same as DMPUTFROM ?
+			# after this we also get a DMPATCHPATHS
+			#$r->uri="/walinsky/Web/.Temporary%20Web%20Resources/2A169922-8D0A-4755-8D9F-524B7A428C91"
+			#X-Target-Href: /walinsky/Web/Sites
 			$r->content_type('text/plain');
 			$r->print("");
 			}

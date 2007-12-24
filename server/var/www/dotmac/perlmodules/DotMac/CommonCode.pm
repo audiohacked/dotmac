@@ -17,6 +17,7 @@ use DB_File;
 use Encode;
 use File::Copy;
 use File::Spec;
+use XML::DOM;
 
 sub readUserDB
 	{ my ($dbpath, %attributes) = @_;
@@ -206,4 +207,81 @@ sub get_user_quota_used{
     return $hexnum;
     } # end sub
 
+sub dmmkpaths
+	{ my ( $r, $inXML) = @_;
+	my $xp = new XML::DOM::Parser(ErrorContext => 2);
+	my $requestxml = $xp->parse($inXML);
+	my $requestrootnode = $requestxml->getElementsByTagName('x0:request-instructions-set')->[0];
+	my $requestxml_root = $requestxml->getDocumentElement;
+	my $requestInstructions = $requestrootnode->getElementsByTagName('x0:request-instructions'); # gather all 'transaction' child nodes
+	my $requestInstructionsCount = $requestInstructions->getLength();
+	carp ("I have $requestInstructionsCount instructions \n");
+	
+	my $ruser=$r->user;
+ 	my $idiskpath = $r->dir_config('dotMaciDiskPath'); #"/var/www/dotmac/iDisk";
+	my $responsexml = XML::DOM::Document->new();
+	my $decl=new XML::DOM::XMLDecl;
+	$decl->setVersion("1.0");
+	$decl->setEncoding("UTF-8");
+	$responsexml->setXMLDecl($decl);
+	my $responserootnode = $responsexml->createElement('INS:response-status-set'); # this is the root node
+	$responserootnode->setAttribute('xmlns:INS', 'http://idisk.mac.com/_namespace/set/');
+	# our node looks like:
+	# <x0:request-instructions>
+	# <x0:action>DMMKPATH</x0:action>
+	# <x0:href>/sjorsdeberekorst1/Web/.Temporary%20Web%20Resources/5657C625-B34F-4173-8717-9B11DEE57A81/Site/sjorsdeberekorst1_dot_com/sjorsdeberekorst1_dot_com_files</x0:href>
+	# <x0:success-codes>207</x0:success-codes>
+	# </x0:request-instructions>
+	for (my $j = 0; $j < $requestInstructionsCount; $j++)
+			{
+				
+	#			<multistatus xmlns="DAV:">
+	#			<response xmlns="DAV:">
+	#			 <href>/sjorsdeberekorst1/</href>
+	#			 <status>HTTP/1.1 200 OK</status>
+	#			</response>
+	#			</multistatus>
+				my $action = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:action')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+				my $href = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:href')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+				
+				my $fspath = URLDecode($href);
+				
+				my $successcodes = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:success-codes')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+				#print ("action: $action, href: $href, success-codes: $successcodes\n");
+				
+				#setup a new xml node
+				my $responsemultistatus = $responsexml->createElement('multistatus');
+				$responsemultistatus->setAttribute('xmlns', 'DAV:');
+				my $responsemultistatusresponse = $responsexml->createElement('response');
+				$responsemultistatusresponse->setAttribute('xmlns', 'DAV:');
+				if ($action eq 'DMMKPATH')
+					{
+					my $hrefelement = $responsexml->createElement('href');
+					my $hreftextnode = $responsexml->createTextNode($href);
+					$hrefelement->appendChild($hreftextnode);
+					$responsemultistatusresponse->appendChild($hrefelement);
+					my $statuselement = $responsexml->createElement('status');
+					my $statustextnode;
+					if ((check_for_dir_backref($fspath)) || ($fspath !~ m/^\/$ruser\//)) { #either there's backref(s) in our uri, or our uri doesn't start with $ruser
+						$statustextnode = $responsexml->createTextNode('HTTP/1.1 403 Forbidden');
+						}
+					else {
+						#we really should have/check a response status from recursiveMKdir
+						recursiveMKdir($idiskpath, $fspath);
+						$statustextnode = $responsexml->createTextNode('HTTP/1.1 201 Created');
+						}
+					$statuselement->appendChild($statustextnode);
+					$responsemultistatusresponse->appendChild($statuselement);
+					}
+				$responsemultistatus->appendChild($responsemultistatusresponse); # append the 'multistatus' childnode;
+				$responserootnode->appendChild($responsemultistatus); # append the 'multistatus' childnode;
+			}
+	$responsexml->appendChild($responserootnode);
+	return ($responsexml->toString());
+	}
+
+sub XMLDOMgetFirstChildByName
+  { my( $node, $tag)= @_;
+    return $node->getElementsByTagName($tag)->[0];
+  }
 1;
