@@ -10,7 +10,7 @@ use Apache2::RequestRec ();
 use Apache2::RequestUtil ();
 use Apache2::Log;
 
-use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST :log);
+use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST DONE :log);
 use APR::Const    -compile => qw(:error SUCCESS);
 use CGI::Carp;
 use DotMac::CommonCode;
@@ -305,9 +305,11 @@ sub handler
 		my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
 		if ($type eq 'DMMKPATH')
 			{
-			DotMac::CommonCode::recursiveMKCOL( $r);
-			$r->content_type('text/plain');
-			$r->print("");
+			$r->print(DotMac::CommonCode::dmmkpath_response(DotMac::CommonCode::recursiveMKCOL( $r)));
+			$r->content_type('text/xml');
+			$r->status(207);
+			return Apache2::Const::DONE;
+				
 			}
 		if ($type eq 'DMPUTFROM' )
 			{
