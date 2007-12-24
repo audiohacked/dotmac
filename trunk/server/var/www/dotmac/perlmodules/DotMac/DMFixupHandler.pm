@@ -33,10 +33,11 @@ sub handler
 	my $user = $r->user;
 	my $userAgent = $r->headers_in->{'User-Agent'} || '';
 	chomp($userAgent);
-	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->server->server_hostname(), $r->server->port(),$userAgent,$rmethod,$r->headers_in->{'If'},$r->uri,$r->user));
 	my $ifHeader = $r->headers_in->{'If'} || '';
+	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->get_server_name(), $r->get_server_port(),$userAgent,$rmethod,$ifHeader,$r->uri,$r->user));
+
 	$logging =~ m/Headers/&&$rlog->info($r->as_string());
-	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK")){
+	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK") | ($rmethod eq "DELETE") | ($rmethod eq "UNLOCK")){
 		
 
 		if ($userAgent =~ m/^DotMacKit(.*)SyncServices$/) {
@@ -112,12 +113,17 @@ sub handler
 				}
 			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If'}) && ($r->uri =~ m/$dotFilesyncFolder/)) { 
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
-				carp "Match Lock + .filesync + if header";
+				$logging=~ m/Sections/&&$rlog->info("Match Lock + .filesync + if header");
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				
 				}				
 			elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+				}
+			elsif (($rmethod eq "DELETE") && ($r->headers_in->{'If'})) {
+				my $rUri = $r->uri;
+				$r->headers_in->{'If'} = "<$rUri> $ifHeader";
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
 			elsif ($rmethod eq "MKCOL") {
@@ -299,7 +305,7 @@ sub handler
 		my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
 		if ($type eq 'DMMKPATH')
 			{
-			DotMac::CommonCode::recursiveMKdir($dotMaciDiskPath, $r->uri);
+			DotMac::CommonCode::recursiveMKCOL( $r);
 			$r->content_type('text/plain');
 			$r->print("");
 			}
