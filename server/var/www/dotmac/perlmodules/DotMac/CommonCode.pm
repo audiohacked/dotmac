@@ -201,7 +201,6 @@ sub dmmkpath_response
 		$statustextnode = $responsexml->createTextNode($msg);
 		$statuselement->appendChild($statustextnode);
 		$responsemultistatusresponse->appendChild($statuselement);
-		$responserootnode->appendChild($responsemultistatus); # append the 'multistatus' childnode;
 		$responsemultistatus->appendChild($responsemultistatusresponse); # append the 'multistatus' childnode;
 		$responserootnode->appendChild($responsemultistatus);
 		}
