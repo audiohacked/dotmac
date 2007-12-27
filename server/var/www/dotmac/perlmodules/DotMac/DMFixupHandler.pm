@@ -14,6 +14,7 @@ use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUE
 use APR::Const    -compile => qw(:error SUCCESS);
 use CGI::Carp;
 use DotMac::CommonCode;
+use Data::Dumper;
 
 #my %exts = (
 #  cgi => ['perl-script',     \&cgi_handler],
@@ -227,6 +228,110 @@ sub handler
 						}
 					}
 				}
+				
+				
+			elsif ($rmethod eq "PUT") {
+				carp $r->as_string();
+				my $sitesfolder = "/$user/Web/Sites";
+				# LOCK /walinsky/Web/Sites
+				$r->headers_in->{'If'} = "<$sitesfolder> $ifHeader";
+				}
+			}
+		
+		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iPho/) # iWeb Publishing #DotMacKit-E-3Lite46 (10.4.9; iweb) iWeb-local-build-20071223
+			{
+			$logging =~ m/Sections/&&$rlog->info("Matched DotMacKit iPho");
+			if ($rmethod eq "POST") {
+				# *sigh*
+				# X-Webdav-Method: DMMKPATH
+				# X-Webdav-Method: DMPUTFROM
+				carp $r->as_string();
+				my $XWebdavMethod = $r->header_in('X-Webdav-Method');
+				if ($XWebdavMethod)
+					{
+					if ($XWebdavMethod eq 'ACL')
+						{
+						#my $buf;
+						#my $content;
+						#my $content_length = $r->header_in('Content-Length');
+						#if ($content_length > 0)
+						#	{
+						#	while ($r->read($buf, $content_length)) {
+						#		$content .= $buf;
+						#		}
+						#	carp $content;
+						#	}
+						carp "setting perlresponsehandler to ACL_handler";
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&acl_handler);
+						}
+					elsif ($XWebdavMethod eq 'DMMKPATHS')
+						{
+						carp "setting perlresponsehandler to DMMKPATHS_handler";
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&dmmkpaths_handler);
+						}
+					elsif (($XWebdavMethod) && ($XWebdavMethod eq 'DMMKPATH')) {
+	#					carp "setting perlresponsehandler to DMMKPATH_handler";
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&dmmkpath_handler);
+					}
+					elsif ($XWebdavMethod eq 'DMOVERLAY')
+						{
+						carp $r->as_string();
+						my $buf;
+						my $content;
+						my $content_length = $r->header_in('Content-Length');
+						if ($content_length > 0)
+							{
+							while ($r->read($buf, $content_length)) {
+								$content .= $buf;
+								}
+							carp $content;
+							}
+						
+						#carp "setting perlresponsehandler to DMOVERLAY_handler";
+						#$r->handler('perl-script');
+						#$r->set_handlers(PerlResponseHandler => \&dmoverlay_handler);
+						}
+					elsif ($XWebdavMethod eq 'SETREDIRECT')
+						{
+						my $buf;
+						my $content;
+						my $content_length = $r->header_in('Content-Length');
+						if ($content_length > 0)
+							{
+							while ($r->read($buf, $content_length)) {
+								$content .= $buf;
+								}
+							carp $content;
+							}
+						carp "setting perlresponsehandler to SETREDIRECT_handler";
+						#$r->handler('perl-script');
+						#$r->set_handlers(PerlResponseHandler => \&acl_handler);
+						}
+					elsif ($XWebdavMethod eq 'DMPATCHPATHS') {
+						$rlog->info("Matched DMPATCHPATHS");
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&dmpatchpaths_handler);
+					}
+					else {
+						my $buf;
+						my $content;
+						my $content_length = $r->header_in('Content-Length');
+						$rlog->info("Unmatched X-Webdav-Method: $XWebdavMethod");
+						if ($content_length > 0)
+							{
+							while ($r->read($buf, $content_length)) {
+								$content .= $buf;
+								}
+							carp $content;
+							}
+						}
+					}
+				}
+				
+				
 			elsif ($rmethod eq "PUT") {
 				carp $r->as_string();
 				my $sitesfolder = "/$user/Web/Sites";
@@ -291,6 +396,8 @@ sub handler
   
  sub dmmkpaths_handler { content_handler($_[0], 'DMMKPATHS') }
  
+ sub dmpatchpaths_handler { content_handler($_[0], 'DMPATCHPATHS') }
+ 
  sub dmoverlay_handler { content_handler($_[0], 'DMOVERLAY') }
  
  sub truthget_handler { content_handler($_[0], 'TRUTHGET') }
@@ -306,6 +413,23 @@ sub handler
 		if ($type eq 'DMMKPATH')
 			{
 			$r->print(DotMac::CommonCode::dmmkpath_response(DotMac::CommonCode::recursiveMKCOL( $r)));
+			$r->content_type('text/xml');
+			$r->status(207);
+			return Apache2::Const::DONE;
+				
+			}
+		elsif ($type eq 'DMPATCHPATHS')
+			{
+			my $content;
+			my $buf;
+			my $content_length = $r->header_in('Content-Length');
+			if ($content_length > 0)
+				{
+				while ($r->read($buf, $content_length)) {
+					$content .= $buf;
+					}
+				}
+			DotMac::CommonCode::dmpatchpaths_response($r,DotMac::CommonCode::dmpatchpaths_request( $r, $content));
 			$r->content_type('text/xml');
 			$r->status(207);
 			return Apache2::Const::DONE;
@@ -350,10 +474,11 @@ sub handler
 					}
 				carp $content;
 				}
-			my $responseXML = DotMac::CommonCode::dmmkpaths ( $r, $content);
+			$r->print(DotMac::CommonCode::dmmkpaths_response(DotMac::CommonCode::dmmkpaths_request( $r, $content)));
 			$r->content_type('text/xml;charset=utf-8');
-			$r->print($responseXML);
-			return 'HTTP/1.1 207 Multi-Status';
+			$r->content_type('text/xml');
+			$r->status(207);
+			return Apache2::Const::DONE;
 			}
 		elsif ($type eq 'DMOVERLAY')
 			{
