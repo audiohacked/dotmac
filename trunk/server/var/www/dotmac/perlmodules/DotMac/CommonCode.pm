@@ -24,6 +24,7 @@ use Apache2::RequestUtil ();
 use Apache2::Log;
 use Apache2::SubRequest ();
 use DotMac::NullOutputFilter;
+use DotMac::PostingInputFilter;
 use Data::Dumper;
 
 sub readUserDB
@@ -122,7 +123,81 @@ sub recursiveMKCOL
 		
 	return @outarr;
 	}
+
+sub dmpatchpaths_response {
+	my ($r, @resparr) = @_;
+	my $innerarr;
+	$r->print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>
+<INS:response-status-set xmlns:INS=\"http://idisk.mac.com/_namespace/set/\">\n");
+	foreach $innerarr (@resparr) {
+		my $xmlout=$innerarr->[1];
+		$xmlout=~s/\<\?xml version="1.0" encoding="utf-8"\?\>//g;
+		$r->print($xmlout);
+		}
+	$r->print("</INS:response-status-set>\n");
+
+	}
+sub dmpatchpaths_request {
+	my ($r, $inXML) = @_;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $xp = new XML::DOM::Parser(ErrorContext => 2);
+	my $requestxml = $xp->parse($inXML);
+	my $requestrootnode = $requestxml->getElementsByTagName('x0:request-instructions-set')->[0];
+	my $rootattributes = $requestrootnode->getAttributes;
+	my $rootattributescount = $requestrootnode->getAttributes->getLength;
+	my %nshash;
+	my @retarr;
+	for (my $i = 0; $i < $rootattributescount; $i++) {
+		$nshash{$rootattributes->item($i)->getName()}=$rootattributes->item($i)->getValue();
+	}
+
+	my $requestxml_root = $requestxml->getDocumentElement;
+	my $requestInstructions = $requestrootnode->getElementsByTagName('x0:request-instructions'); # gather all 'transaction' child nodes
+	my $requestInstructionsCount = $requestInstructions->getLength();
+	my $resulturi;
+	$r->log->info("In dmpatchpaths");
 	
+	
+	for (my $j = 0; $j < $requestInstructionsCount; $j++){
+		my $action = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:action')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+		my $href = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:href')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+		my $successcodes = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:success-codes')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
+    	my $subreq;
+    	#print ("action: $action, href: $href, success-codes: $successcodes\n");
+		if ($action eq 'PROPPATCH')
+        {
+        	my $propblock = XMLDOMgetFirstChildByName($requestInstructions->[$j],'x1:propertyupdate')->cloneNode(1);
+			my $newXML = XML::DOM::Document->new();
+			my $decl=new XML::DOM::XMLDecl;
+			$decl->setVersion("1.0");
+			$newXML->setXMLDecl($decl);
+			$propblock->setOwnerDocument($newXML);
+			foreach my $key (keys %nshash) {
+				$propblock->setAttribute($key,$nshash{$key});
+			}
+			$newXML->appendChild($propblock);
+			$logging =~ m/Sections/&&$r->log->info("Found a PROPPATCH buried in DMPATCHPATHS, uri: ".$href);	
+			push(@retarr,subrequest($r, "PROPPATCH", $href, $newXML->toString()));
+			}
+     }
+	return @retarr;
+
+}
+
+sub subrequest {
+	my ($r, $method, $href, $xml) = @_;
+	my $subreq;
+	my $rc;
+	my $logging = $r->dir_config('LoggingTypes');
+	$subreq = $r->lookup_method_uri($method, $href);
+	$subreq->add_output_filter(\&DotMac::NullOutputFilter::CaptureOutputFilter);			
+	$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
+	$subreq->headers_in->{'X-Webdav-Method'}="";
+	$subreq->pnotes('postdata',$xml);
+	$rc=$subreq->run();
+	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$subreq->pnotes('returndata'));
+	return ([$rc,$subreq->pnotes('returndata')]);
+}
 
 sub dmmkpath_request
 	{ my ( $r, $inXML) = @_;
@@ -148,7 +223,6 @@ sub dmmkpath_request
 				my $successcodes = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:success-codes')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
 				#print ("action: $action, href: $href, success-codes: $successcodes\n");
 				
-	
 				if ($action eq 'DMMKPATH')
 					{
 						push(@outarr,recursiveMKCOL($r,$href));

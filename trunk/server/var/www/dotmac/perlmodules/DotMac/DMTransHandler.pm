@@ -31,6 +31,16 @@ sub handler
 			$r->method("MOVE");
 		#	$logging =~ m/Sections/&&$rlog->info($r->as_string());
 			}
+	#	elsif (($r->method() eq "POST") && ($r->headers_in->{'X-Webdav-Method'}) && ($r->headers_in->{'X-Webdav-Method'} eq "DMOVERLAY")){
+#			$logging =~ m/Sections/&&$rlog->info("In the DMOVERLAY to MOVE TransHandler");
+#			my $httpType="http://";
+#			$httpType="https://" if $r->get_server_port() == 443;
+#			$logging =~ m/Sections/&&$rlog->info($httpType.$r->headers_in->{'Host'}.$r->uri." ".$r->headers_in->{'X-Target-Href'});
+#			$r->headers_in->{'Destination'}=$r->headers_in->{'X-Target-Href'};
+#			$r->method("MOVE");
+		#	$logging =~ m/Sections/&&$rlog->info($r->as_string());
+#			}
+
 			
 			return Apache2::Const::DECLINED;
 		}
