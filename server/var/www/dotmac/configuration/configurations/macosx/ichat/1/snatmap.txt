@@ -1,0 +1,1 @@
+snatmap://snatmap.mac.com:5678
