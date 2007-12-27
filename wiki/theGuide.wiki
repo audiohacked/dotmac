@@ -126,9 +126,11 @@ Enjoy the magic, when choosing your .mac preferences pane from your system prefe
   * .Mac prefpane
   * iSync
   * iDisk
+  * iDisk sync
   * Backup
 
 _(*note - currently there's no interoperability between 10.4 and 10.5 sync clients)_
+_(*note - iDisk sync on Leopard will report 'failed' when using a .htaccess file. If quota is not much of an issue, just remove all .htaccess files; and set a high value for DAVSATMaxAreaSize in dotmac.conf. (this is cumulative for all users(!). You can also choose for setting a <location/> per user (with Dav on, and DAVSATMaxAreaSize # directives). We're working on setting these automatically.)_
 
 ==== Operating Systems Verified ====
 
@@ -137,6 +139,7 @@ Users reported the following Operating Systems Working:
   * Fedora Core 5, 6
   * Debian 'etch'
   * Ubuntu 'Edgy Eft' (6.x), 'Feisty Fawn' (7.x)
+  * freeBSD
   * Solaris 10
 
 please continue reporting!
