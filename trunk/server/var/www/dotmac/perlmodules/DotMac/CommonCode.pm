@@ -348,7 +348,14 @@ sub get_user_quota{
 	my ($r, $user) = @_;
 	my $dotMacUserDataPath = $r->dir_config('dotMacUserDataPath');
 	my $dotMacUdataDBname = $r->dir_config('dotMacUdataDBname');
-	my %userData = DotMac::CommonCode::readUserDB("$dotMacUserDataPath/$user/$dotMacUdataDBname", my %attributes);
+#	my %userData = DotMac::CommonCode::readUserDB("$dotMacUserDataPath/$user/$dotMacUdataDBname", my %attributes);
+#	return $userData{'quota'};
+	return do_get_user_quota("$dotMacUserDataPath/$user/$dotMacUdataDBname");
+	}
+
+sub do_get_user_quota{
+	my ($db) = @_;
+	my %userData = readUserDB($db, my %attributes);
 	return $userData{'quota'};
 	}
 
@@ -360,6 +367,34 @@ sub get_user_quota_used{
 	return $quotaUsedBytes;
 	}
 
+sub list_users{
+	my ($r) = @_;
+	if ($r->dir_config('dotMacDBType') eq 'file')
+		{
+		return list_users_file($r);
+		}
+	elsif ($r->dir_config('dotMacDBType') eq 'SQL')
+		{
+		
+		}
+    }
+
+ sub list_users_file{
+	my ($r) = @_;
+	my $dbFile = $r->dir_config('dotMacUserDB');
+	return do_list_users_file($dbFile);
+	}
+
+ sub do_list_users_file{
+	my ($dbFile) = @_;
+	my @htfile = (	DBType => 'Text',
+				DB     => $dbFile,
+				Server => 'apache',
+				Encrypt => 'MD5');
+	my $userAdmin = new HTTPD::UserAdmin @htfile;
+	my @users = $userAdmin->list;
+	return sort @users;
+	}
 
  sub dec2hex {
     # parameter passed to
