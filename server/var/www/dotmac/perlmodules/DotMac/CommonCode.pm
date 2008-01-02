@@ -17,7 +17,9 @@ use DB_File;
 use Encode;
 use File::Copy;
 use File::Spec;
+use File::Basename;
 use XML::DOM;
+use XML::LibXML;
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
 use Apache2::RequestUtil ();
@@ -90,7 +92,111 @@ sub recursiveMKdir
 		$rootpath = $rootpath.$slash.$adddir;
 		}
 	}
+sub checkparent {
+	my ($r, $directory) = @_;
+	my @arr = File::Spec->splitdir($directory);
+	pop(@arr);
+	my $parentdir=File::Spec->catdir(@arr);
+	return -d $parentdir;
+	}
 
+sub dmoverlay {
+	my ($r,$statusarr, $source, $target, $sourceuri, $targeturi ) = @_;
+	my @holding;
+	my $logging = $r->dir_config('LoggingTypes');
+	$r->log->info("Checking Source: $sourceuri Target: $targeturi"); #.File::Spec->catdir($target,"test123"));
+	$r->log->info("First check if the source is a file or a directory");
+	my ($dirhandle,$ret);
+	
+	if ((-d $source) && (-d $target)) {
+		@holding=([$sourceuri, $targeturi,0,"WALK"]);
+		push(@$statusarr,@holding);		
+	}
+	if (!(-e $source)) {
+		$r->log->info("hit source doesn't exist");
+		return 0;
+	} elsif (-d $source) {
+		$r->log->info("Directory: Source: $source ");
+		if (!(-e $target) && checkparent($r,$target)) { 
+			$r->log->info("Target does not exist, and the target's parent is a dir");
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"MOVE"]);
+			push(@$statusarr,@holding);
+			$r->log->info("#### Call a MOVE subrequest");
+		} elsif ((-e $target) && !(-d $target)) {
+			$r->log->info("	#### Delete the target and MOVE the source to the destination");
+			subrequest($r,"DELETE",$targeturi);
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"OVERLAY"]);
+			push(@$statusarr,@holding);
+
+		} elsif ((-e $target) && (-d $target)) {
+			opendir($dirhandle, $source);
+			my $entry;
+			while ($entry=readdir($dirhandle)) {
+				$r->log->info("Entry: $entry");
+				next if (($entry =~ m/^\.$/) || ($entry =~ m/^\.\.$/) || ($entry =~ m/^\.DAV$/));
+		#		if (-e File::Spec->catdir($target,$entry)) {
+					dmoverlay($r,$statusarr,File::Spec->catdir($source,$entry),File::Spec->catdir($target,$entry),$sourceuri."/".$entry,$targeturi."/".$entry);
+		#		} else  {
+		#			dmoverlay($r,$statusarr,File::Spec->catdir($source,$entry),$target,$sourceuri."/".$entry,$targeturi);
+		#		}
+			}
+			closedir($dirhandle);
+			#$r->print(Dumper(@arr));
+		}
+	} elsif (!(-d $source)) {
+		if (!(-e $target) && checkparent($r,$target)) {
+			$r->log->info("	#### MOVE the file from source to the new target and rename");
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"MOVE"]);
+			push(@$statusarr,@holding);			
+		} elsif ((-d $target) && (-e File::Spec->catdir($target,basename($source)))) {
+			$r->log->info("	#### Delete the file and Move the file into the new directory");
+			subrequest($r,"DELETE",$targeturi);
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"OVERLAY"]);
+			push(@$statusarr,@holding);
+		} elsif ((-d $target) && !(-e File::Spec->catdir($target,basename($source)))) {
+			$r->log->info("	#### Move the File into the directory");
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});	
+			@holding=([$sourceuri, $targeturi,$$ret[0],"MOVE"]);
+			push(@$statusarr,@holding);
+		} elsif ((-e $target) && !(-d $target)) {
+			$r->log->info("#### Delete the target file and move the file there ");
+			subrequest($r,"DELETE",$targeturi);
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});		
+			@holding=([$sourceuri, $targeturi,$$ret[0],"OVERLAY"]);
+			push(@$statusarr,@holding);
+		}
+	
+	}
+	return Apache2::Const::OK;
+}
+
+sub dmoverlay_response{
+	my ($r,$responsearray) = @_;
+	my $content="<?xml version=\"1.0\" encoding=\"utf-8\" ?><multistatus xmlns=\"DAV:\">";
+	my $holding;
+	while ($holding = pop(@$responsearray)) {
+		$content=$content."
+<response xmlns=\"DAV:\">
+ <href href-type=\"source\">".$$holding[0]."</href>
+ <href href-type=\"target\">".$$holding[1]."</href>
+ <status>HTTP/1.1 200 OK</status>
+ <responsedescription>Action ".$$holding[3]."</responsedescription>
+</response>\n";
+	}
+	$content=$content."</multistatus>\n";
+	return $content;
+}
+
+sub formCurrentServer{
+	my ($r) = @_;
+	my $httpType="http://";
+	$httpType="https://" if $r->get_server_port() == 443;
+	return $httpType.$r->headers_in->{'Host'};
+}
 sub recursiveMKCOL
 	{
 	my ($r,$uri) = @_;
@@ -185,22 +291,30 @@ sub dmpatchpaths_request {
 }
 
 sub subrequest {
-	my ($r, $method, $href, $xml) = @_;
+	my ($r, $method, $href, $xml, $headers) = @_;
 	my $subreq;
 	my $rc;
 	my $logging = $r->dir_config('LoggingTypes');
 	$subreq = $r->lookup_method_uri($method, $href);
+	my ($key,$value);
+
+	$r->log->info("source: ".$href." Destination: ".$$headers{'Destination'});
 	$subreq->add_output_filter(\&DotMac::NullOutputFilter::CaptureOutputFilter);			
 	$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
 	$subreq->headers_in->{'X-Webdav-Method'}="";
+	if ($headers) {
+		foreach $key (keys %$headers) {
+			$subreq->headers_in->add($key,$$headers{$key});
+		}
+	}
 	$subreq->pnotes('postdata',$xml);
 	$rc=$subreq->run();
 	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$subreq->pnotes('returndata'));
 	return ([$rc,$subreq->pnotes('returndata')]);
 }
 
-sub dmmkpath_request
-	{ my ( $r, $inXML) = @_;
+sub dmmkpath_request { 
+	my ($r, $inXML) = @_;
 	my $xp = new XML::DOM::Parser(ErrorContext => 2);
 	my $requestxml = $xp->parse($inXML);
 	my $requestrootnode = $requestxml->getElementsByTagName('x0:request-instructions-set')->[0];
@@ -244,6 +358,111 @@ sub returnHTTPCodesText {
 	} else {
 		return "HTTP/1.1 $val UNKNOWN";
 	}
+}
+sub truthget_generate {
+	my ($r,$content,$user) = @_;
+	my @datearray=gmtime(time());
+	my $lastupdate=sprintf('%s-%#.2d-%#.2dT%#.2d:%#.2d:%#.2dZ',$datearray[5]+1900,$datearray[4]+1,$datearray[3],$datearray[2],$datearray[1],$datearray[0]);
+
+
+my ($parser,$doc,$dom);
+if ($content =~ m/getcontenttype/) {
+	return $content;
+	}
+$content =~ s/D:prop/prop/g;
+$content =~ s/\n//g;
+$r->log->info("truthget:".$content);
+$parser = XML::LibXML->new();
+my $truthget = XML::LibXML::Document->createDocument("1.0","UTF-8");
+my $feed=$truthget->createElement("feed");
+$truthget->setDocumentElement($feed);
+### Set Namespace Stuff Here
+$feed->setNamespace("urn:iweb:","iweb",0);
+$feed->setNamespace("urn:iphoto:property","iphoto",0);
+$feed->setNamespace("http://www.itunes.com/dtds/podcast-1.0.dtd","itunes",0);
+$feed->setNamespace("http://www.w3.org/2005/Atom","",0);
+$feed->setNamespace("urn:dotmac:property","dotmac",0);
+$feed->setNamespace("DAV:","D",0);
+my $newworkingnode = $truthget->createElement("Generator");
+$newworkingnode->appendText("dotMac Truth Maker");
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("title");
+$newworkingnode->appendText("Apple .Mac user iDisk");
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("updated");
+$newworkingnode->appendText($lastupdate);
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("author");
+$newworkingnode->appendChild($truthget->createElement("name"));
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("id");
+$newworkingnode->appendText("http://web.mac.com/".$user);
+$feed->appendChild($newworkingnode);
+
+$dom = $parser->parse_string($content);
+my $rootnode = $dom->documentElement;
+my $rootsubnodescount = scalar @{$rootnode->childNodes};
+#$r->log->info("Here ABC".Dumper(@{$rootnode->childNodes}[$lcv]->toString()));
+#	$r->log->info("Here ABC".Dumper($rootnode->childNodes));
+
+#print Dumper(@{$rootnode->childNodes}->[0]->getNamespaces);
+my $currentnode;
+for (my $lcv=0; $lcv < $rootsubnodescount; $lcv++) {
+	$currentnode=@{$rootnode->childNodes}[$lcv];
+	
+	my $ns;
+	foreach $ns ($currentnode->getNamespaces){
+#		print $ns->getLocalName.":".$ns->getData."\n";
+		if ($ns->getData eq "urn:dotmac:property") {
+			$currentnode->setNamespaceDeclPrefix($ns->getLocalName,"dotmac");
+		} elsif ($ns->getData eq "urn:iphoto:property") {
+			$currentnode->setNamespaceDeclPrefix($ns->getLocalName,"iphoto");
+		}
+
+
+	}
+
+	my $href=@{$currentnode->getElementsByLocalName("href")}[0]->textContent;
+		
+	my $propstatnode=@{$currentnode->getElementsByLocalName("propstat")}[0];
+	$currentnode=@{$propstatnode->getElementsByLocalName("prop")}[0];
+	$currentnode->setNodeName("entry");
+	$currentnode->setOwnerDocument($truthget);
+	$feed->addChild($currentnode);
+	my $hrefnode=$truthget->createElement("link");
+	$hrefnode->setAttribute("rel","alternate");
+	$hrefnode->setAttribute("href","http://publish.mac.com".$href);
+	$currentnode->addChild($hrefnode);
+	for (my $lcv1=0; $lcv1 < scalar @{$currentnode->childNodes}; $lcv1++ ) {
+		my $currentnode1=@{$currentnode->childNodes}[$lcv1];
+					
+#		print $currentnode1->lookupNamespaceURI($currentnode1->prefix)."\n";
+#		print $currentnode1->prefix."\n";
+		if ($currentnode1->prefix eq "D"){
+#			print $currentnode1->getName."\n";
+			$currentnode1->parentNode->removeChild($currentnode1);
+			$lcv1--;
+		}
+		
+		
+	}
+	 
+
+}
+$newworkingnode = $truthget->createElement("recCount");
+$newworkingnode->appendText(scalar @{$truthget->getElementsByTagName("entry")});
+$newworkingnode->setNamespace("urn:dotmac:property","dotmac",1);
+$feed->insertBefore($newworkingnode,@{$feed->childNodes}[4]);
+
+
+
+my $str= $truthget->toString(1);
+#$str=~ s/>/>\n/g;
+return $str;
 }
 
 sub dmmkpath_response
