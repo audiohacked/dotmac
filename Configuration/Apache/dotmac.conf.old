@@ -1,0 +1,146 @@
+# You'll want to uncomment this on debian/ubuntu
+# on other systems this might already be set in httpd.conf
+# DAVLockDB /var/www/dotmac/locks/DAVLockDB
+
+NameVirtualHost *:80
+LogFormat "%v %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" dotmac
+
+BrowserMatch "^WebDAVFS/" redirect-carefully
+BrowserMatch "^DotMacKit" redirect-carefully
+#BrowserMatch "^DotMacKit-like" redirect-carefully
+BrowserMatch "^DAVKit/" redirect-carefully
+
+#startup.pl needs modifications for 1st setup
+PerlRequire /var/www/dotmac/perlmodules/startup.pl			
+#
+#Enable the following line... so far the following types are available (Sections Headers Locks Body)
+#PerlSetVar LoggingTypes "Sections Locks"
+
+PerlSetVar dotMacRootPath /var/www/dotmac
+#root folder for idisk
+PerlSetVar dotMaciDiskPath /var/www/dotmac/idisk
+#this is where (10.4)syncdata and userdatadb are stored
+PerlSetVar dotMacUserDataPath /var/www/dotmac/userxml
+#authtype
+PerlSetVar dotMacDBType file
+#htdigest database
+PerlSetVar dotMacUserDB /var/www/dotmac/private/iDiskUsers
+#realm for digest auth
+PerlSetVar dotMacRealm idisk.mac.com
+#10.4 sync
+PerlSetVar dotMacInfoDBname info.dat
+#10.4 sync
+PerlSetVar dotMacLockTokenDBname locktoken.dat
+#10.4 sync
+PerlSetVar dotMacUserTokenDBname usertoken.dat
+#10.4 sync
+PerlSetVar dotMacAttrDBname attributes.dat
+#this is where we store quota, email address, ...
+PerlSetVar dotMacUdataDBname user.dat
+
+# testing testing 1...2
+Alias /idiskAdmin/ "/var/www/dotmac/idiskAdmin/"
+<Location /idiskAdmin>
+	SetHandler perl-script
+	PerlResponseHandler DotMac::iDiskUserAdmin
+</Location>
+
+<Location /osxSharedSecret> #Host: lcs.mac.com:443
+	SetHandler perl-script
+	PerlResponseHandler  DotMac::osxSharedSecret
+	Order allow,deny    
+	Allow from all
+	satisfy any
+</Location>
+<VirtualHost 212.83.243.122:443> # change this to a unique ip-address
+	ServerName dot.mac.com
+	# one certificate for all ;)
+	ServerAlias www.mac.com syncmgmt.mac.com idisk.mac.com configuration.apple.com lcs.mac.com certinfo.mac.com
+	DocumentRoot "/var/www/dotmac/idisk"
+	SSLEngine on
+	SSLCertificateFile /var/www/dotmac/private/server.crt
+	SSLCertificateKeyFile /var/www/dotmac/private/server.key
+	CustomLog logs/idiskAccesslog dotmac
+	ErrorLog logs/idiskErrorlog
+	Alias /servlet/ "/var/www/dotmac/stub/"
+	Alias /configurations/ "/var/www/dotmac/configuration/configurations/"
+	PerlTransHandler  DotMac::DMTransHandler 
+	<LocationMatch "/servlet/">
+		SetHandler perl-script
+		PerlResponseHandler  DotMac::ServiceRequest
+	</LocationMatch>
+	<LocationMatch "/WebObjects/Info.woa/wa/">
+		SetHandler perl-script
+		PerlResponseHandler  DotMac::WebObjects::Infowoa::wa
+		satisfy any
+	</LocationMatch>
+	<LocationMatch "/WebObjects/RequestRouter.woa/wa/">
+		SetHandler perl-script
+		PerlResponseHandler  DotMac::WebObjects::RequestRouterwoa::wa
+		satisfy any
+	</LocationMatch>
+</VirtualHost>
+<VirtualHost *:80>
+	ServerName idisk.mac.com
+	Documentroot "/var/www/dotmac/idisk"
+	CustomLog logs/idiskAccesslog dotmac
+	ErrorLog logs/idiskErrorlog
+	PerlTransHandler  DotMac::DMTransHandler 
+	<LocationMatch /locate>
+		SetHandler perl-script
+		PerlResponseHandler  DotMac::locate
+		Order allow,deny    
+		Allow from all
+		satisfy any
+		PerlAuthzHandler Off
+	</LocationMatch>
+</VirtualHost>
+<Directory "/var/www/dotmac/idisk">
+	AllowOverride All
+	DAV on
+	DavDepthInfinity on
+	DAVSATMaxAreaSize 1
+	AuthType Digest
+	AuthName idisk.mac.com
+	AuthDigestProvider file
+	AuthUserFile /var/www/dotmac/private/iDiskUsers
+	Options All +Indexes
+	<Limit GET HEAD OPTIONS PUT POST COPY PROPFIND DELETE LOCK MKCOL MOVE PROPPATCH UNLOCK ACL>
+			Require valid-user
+	</Limit>
+	Require valid-user 
+	PerlAuthzHandler  DotMac::UserFolderAuthz # perl maps user->homedir
+	PerlFixupHandler DotMac::DMFixupHandler
+</Directory>
+
+# notify.mac.com
+<VirtualHost *:80>
+	ServerName notify.mac.com
+	Documentroot "/var/www/dotmac/stub"
+	<LocationMatch />
+		SetHandler perl-script
+		PerlResponseHandler  DotMac::Notify
+	</LocationMatch>
+	CustomLog logs/idiskAccesslog dotmac
+	ErrorLog logs/idiskErrorlog
+ </VirtualHost>
+
+ # delta.mac.com
+ <VirtualHost *:80>
+	ServerName delta.mac.com
+	Documentroot "/var/www/dotmac/stub"
+	<LocationMatch /status>
+		SetHandler perl-script
+		PerlResponseHandler  DotMac::Status
+	</LocationMatch>
+	CustomLog logs/idiskAccesslog dotmac
+	ErrorLog logs/idiskErrorlog
+ </VirtualHost>
+
+ # configuration.apple.com
+ <VirtualHost *:80>
+	ServerName configuration.apple.com
+	Documentroot "/var/www/dotmac/configuration"
+	CustomLog logs/idiskAccesslog dotmac
+	ErrorLog logs/idiskErrorlog
+ </VirtualHost>
