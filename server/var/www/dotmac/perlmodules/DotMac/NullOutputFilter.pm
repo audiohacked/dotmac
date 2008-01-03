@@ -32,6 +32,9 @@ sub CaptureOutputFilter {
 		$f->r->headers_out->unset('Content-Length');
 		$f->ctx(1);
 		}
+	if ($f->r->pnotes('returndata')) {
+		$content=$f->r->pnotes('returndata');
+	}
 	while ($f->read(my $buffer, BUFF_LEN)) {
 		$logging =~ m/OutputFilterDebug/&&$f->r->log->info($buffer);
 		$content=$content.$buffer;
