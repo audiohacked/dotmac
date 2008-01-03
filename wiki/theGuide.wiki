@@ -37,9 +37,11 @@ All folders _except_ ./dotmac/private should be owned by the user/group apache r
 (nobody, apache, www-data)
 ./dotmac/private contains both server certificates and the .htdigest (user/password) database.
 
-
 You'll find the file 'startup.pl' in .dotmac/perlmodules/
 This file also needs editing for reflecting the correct path to perlmodules
+
+_(*New* from SVN > v112 )_
+/var/www/dotmac/private/iDiskUsers should be writable by the user/group apache runs as.
 
 The perlmodules have a few dependencies; they're easily installed from CPAN:
 {{{
@@ -98,7 +100,11 @@ dotmac.conf has been completely re-written in perl. It automatically creates loc
 
 This requires the use of idiskAdmin; http://configuration.apple.com/idiskAdmin
 
-idiskAdmin is in no way (password) protected; users should provide for their own protection scheme there. For now, idiskAdmin just sets/edits quota and username/password; the skeleton still needs to be copied by hand.
+idiskAdmin is password protected (l/p admin/dotmac); users should change these credentials asap.
+{{{
+htdigest /var/www/dotmac/private/iDiskAdmins idisk.mac.com admin
+}}}
+For now, idiskAdmin just sets/edits quota and username/password; the skeleton still needs to be copied by hand.
 
 
 ==Step 6==
@@ -138,7 +144,7 @@ Enjoy the magic, when choosing your .mac preferences pane from your system prefe
 
 _(*note - currently there's no interoperability between 10.4 and 10.5 sync clients)_
 
-_(*note - iDisk sync on Leopard will report 'failed' when using a .htaccess file. If quota is not much of an issue, just remove all .htaccess files; and set a high value for DAVSATMaxAreaSize in dotmac.conf. (this is cumulative for all users(!). You can also choose for setting a <location/> per user (with Dav on, and DAVSATMaxAreaSize # directives). We're working on setting these automatically.)_
+_(*note - iDisk sync on Leopard will report 'failed' when using a .htaccess file. If quota is not much of an issue, just remove all .htaccess files; and set a high value for DAVSATMaxAreaSize in dotmac.conf. (this is cumulative for all users(!). You can also choose for setting a <location/> per user (with Dav on, and DAVSATMaxAreaSize # directives). We're working on setting these automatically. *partially fixed in SVN >113* )_
 
 ==== Operating Systems Verified ====
 
@@ -156,4 +162,4 @@ please continue reporting!
 
 Perl modules are only compiled (once) at server startup. When updating perlmodules over svn, make sure issuing a (apachectl) graceful/restart.
 
-_Do_ use the 'Issues' tab; both users and developers are helping each-other out there.
+*_Do_* use the 'Issues' tab; both users and developers are helping each-other out there.
