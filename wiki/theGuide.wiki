@@ -104,7 +104,7 @@ idiskAdmin is password protected (l/p admin/dotmac); users should change these c
 {{{
 htdigest /var/www/dotmac/private/iDiskAdmins idisk.mac.com admin
 }}}
-For now, idiskAdmin just sets/edits quota and username/password; the skeleton still needs to be copied by hand.
+For now, idiskAdmin just sets/edits quota and username/password; the skeleton still needs to be copied by hand. New users/changes will be reflected upon server restart (graceful).
 
 
 ==Step 6==
