@@ -68,7 +68,7 @@ should all point to your server. You can either do this by editing /etc/hosts on
 ###.###.###.### www.mac.com syncmgmt.mac.com idisk.mac.com configuration.apple.com lcs.mac.com certinfo.mac.com delta.mac.com notify.mac.com publish.mac.com homepage.mac.com
 }}}
 or by setting up your own DNS server.
-_(*note - several users have reported that Leopard doesn't honour /etc/hosts like this all the time, a (non verified) solution seems to be adding the hosts again with a trailing dot)_
+_(*note - several users have reported that Leopard doesn't honour /etc/hosts like this all the time, a solution seems to be adding the hosts again with a trailing dot)_
 {{{
 ###.###.###.### www.mac.com. syncmgmt.mac.com. idisk.mac.com. configuration.apple.com. lcs.mac.com. certinfo.mac.com. delta.mac.com. notify.mac.com. publish.mac.com. homepage.mac.com.
 }}}
@@ -92,7 +92,14 @@ DAVSATMaxAreaSize 1024000`
 
 for testing purposes, a test user has been provided: l/p testuser/dotmac
 
-_(*note - in the near future we hope to provide with a web interface, for creating users (user-folders, quota, and passwords) - a preliminary web-page is available at /idiskAdmin; for adding users your htdigest database must be writable by your httpd user)_
+_(*New* from SVN > v112 )_
+
+dotmac.conf has been completely re-written in perl. It automatically creates locations for users, with quota specified (no need for .htaccess files (quota) anymore - this fixes the iDisk sync issues on Leopard).
+
+This requires the use of idiskAdmin; http://configuration.apple.com/idiskAdmin
+
+idiskAdmin is in no way (password) protected; users should provide for their own protection scheme there. For now, idiskAdmin just sets/edits quota and username/password; the skeleton still needs to be copied by hand.
+
 
 ==Step 6==
 ====Check(s)====
