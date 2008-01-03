@@ -170,7 +170,7 @@ sub truthget {
 	my $depth = $params{'depth'}?$params{'depth'}:0;
 	my $xml = DotMac::CommonCode::subrequest($r,"PROPFIND",$r->uri,"",{'Depth'=>$depth});
 	#$r->print($xml->[1]);
-	$r->print(DotMac::CommonCodeLibXML::truthget_generate($r,$xml->[1],$r->user));
+	$r->print(DotMac::CommonCode::truthget_generate($r,$xml->[1],$r->user));
 	
 	return Apache2::Const::OK;
 }
