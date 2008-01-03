@@ -366,9 +366,7 @@ sub truthget_generate {
 
 
 my ($parser,$doc,$dom);
-if ($content =~ m/getcontenttype/) {
-	return $content;
-	}
+
 $content =~ s/D:prop/prop/g;
 $content =~ s/\n//g;
 $r->log->info("truthget:".$content);
