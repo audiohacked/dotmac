@@ -16,6 +16,8 @@ Either install a build environment, or fetch precompiled packages for Apache htt
 In case you decided to compile your own Apache httpd server, fetch the source code and the (Patches) quota patch (from this site), patch, configure, compile.
 Install Apache httpd.
 _(*note - basically this could also be done on a Mac (OS 10.4) (not verified yet); Apache http compiles on Leopard, but mod_ssl is broken ( http://trac.macports.org/projects/macports/ticket/13182 ).)_
+
+Any OS specific notes can be found [here]http://code.google.com/p/dotmac/wiki/OS_specific_notes
 ==Step 2==
 ====Configure your webserver====
 
