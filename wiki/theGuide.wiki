@@ -41,6 +41,7 @@ All folders _except_ ./dotmac/private should be owned by the user/group apache r
 
 You'll find the file 'startup.pl' in .dotmac/perlmodules/
 This file also needs editing for reflecting the correct path to perlmodules
+_(*New* from SVN > v112 )_ 'startup.pl' isn't used anymore
 
 _(*New* from SVN > v112 )_
 /var/www/dotmac/private/iDiskUsers should be writable by the user/group apache runs as.
