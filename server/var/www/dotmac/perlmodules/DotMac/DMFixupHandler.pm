@@ -106,7 +106,7 @@ sub handler
 #			carp $r->as_string();
 			# LOCK /walinsky/.FileSync
 			my $dotFilesyncFolder = "/$user/.FileSync";
-			if (($rmethod eq "MOVE") && ($r->headers_in->{'Destination'} =~ m/^http:\/\/idisk.mac.com$dotFilesyncFolder/)) {
+			if (($rmethod eq "MOVE") && ($r->headers_in->{'If'}) && ($r->headers_in->{'If'} !~ m/<.*> \(<.*>\)/)) { # =~ m/^http:\/\/idisk.mac.com$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
