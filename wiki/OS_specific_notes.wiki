@@ -1,0 +1,58 @@
+#User contributed OS specific notes.
+
+= Introduction =
+
+Any OS specific notes we get are put here.
+
+We don't verify these - we just list them.
+
+
+= Ubuntu/Debian =
+
+A transcript of .bash_history on a clean debian net install (this is not entirely complete):
+{{{
+apt-get update
+
+apt-get install dpkg-dev file gcc g++ libc6-dev make patch perl autoconf dh-make devscripts fakeroot gnupg g77 gpc xutils lintian linda pbuilder debian-policy developers-reference sudo wget
+
+cd /home/dotmac
+apt-get source apache2
+apt-get build-dep apache2
+ls -al
+cd apache2-2.2.3/
+wget http://dotmac.googlecode.com/svn/trunk/Patches/Apache/quota.patch.txt
+patch -p1 < quota.patch 
+
+nano debian/changelog
+
+debuild -us -uc
+
+cd ..
+ls -al
+
+dpkg -i apache2.2-common_2.2.3-4+moddavquota_i386.deb apache2-doc_2.2.3-4+moddavquota_all.deb apache2-prefork-dev_2.2.3-4+moddavquota_i386.deb apache2-utils_2.2.3-4+moddavquota_i386.deb 
+
+apt-get install libapache2-mod-perl2
+perl -MCPAN -e 'install HTTPD::UserAdmin'
+perl -MCPAN -e 'install MD5'
+perl -MCPAN -e 'install XML::DOM'
+perl -MCPAN -e 'install HTTP::DAV'
+
+a2enmod dav
+a2enmod ssl
+a2enmod auth_digest
+a2enmod vhost_alias
+
+nano /etc/apache2/conf.d/dotmac.conf
+nano ports.conf
+/etc/init.d/apache2 restart
+}}}
+
+= Gentoo =
+
+install the perl prerequisites with:
+{{{
+emerge HTTPD-User-Manage MD5 XML-DOM HTTP-DAV
+}}}
+
+Also the .conf went to /etc/apache2/vhosts.d/
