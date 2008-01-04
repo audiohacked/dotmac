@@ -56,3 +56,7 @@ emerge HTTPD-User-Manage MD5 XML-DOM HTTP-DAV
 }}}
 
 Also the .conf went to /etc/apache2/vhosts.d/
+
+= Additions =
+
+If you find anything incomplete/incorrect - use the comments here; we'll try and edit the page accordingly.
