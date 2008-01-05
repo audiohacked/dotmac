@@ -1,0 +1,57 @@
+diff -ru pristine/httpd-2.2.6/modules/dav//main/mod_dav.c httpd-2.2.6/modules/dav//main/mod_dav.c
+--- pristine/httpd-2.2.6/modules/dav//main/mod_dav.c	Sat Jan  5 15:22:08 2008
++++ httpd-2.2.6/modules/dav//main/mod_dav.c	Sat Jan  5 14:07:59 2008
+@@ -439,6 +439,44 @@
+  * in a URI (to form a query section). We must explicitly handle it so that
+  * we can embed the URI into an XML document.
+  */
++
++static const char *dmp_xml_quote_string_amp(apr_pool_t *p, const char *s,
++                                               int quotes)
++{
++    const char *scan;
++    apr_size_t len = 0;
++    apr_size_t extra = 0;
++    char *qstr;
++    char *qscan;
++    char c;
++
++    for (scan = s; (c = *scan) != '\0'; ++scan, ++len) {
++	if (c == '&')
++	    extra += 2;		/* &amp; */
++    }
++
++    /* nothing to do? */
++    if (extra == 0)
++	return s;
++
++    qstr = apr_palloc(p, len + extra + 1);
++    for (scan = s, qscan = qstr; (c = *scan) != '\0'; ++scan) {
++	if (c == '&') {
++	    *qscan++ = '%';
++	    *qscan++ = '2';
++	    *qscan++ = '6';
++	}
++       else {
++            *qscan++ = c;
++        }
++
++    }
++
++    *qscan = '\0';
++    return qstr;
++}
++
++
+ static const char *dav_xml_escape_uri(apr_pool_t *p, const char *uri)
+ {
+     const char *e_uri = ap_escape_uri(p, uri);
+@@ -453,7 +491,7 @@
+      * Note: this is a teeny bit of overkill since we know there are no
+      * '<' or '>' characters, but who cares.
+      */
+-    return apr_xml_quote_string(p, e_uri, 0);
++    return dmp_xml_quote_string_amp(p, e_uri, 0);
+ }
+ 
+ 
