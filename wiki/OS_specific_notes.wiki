@@ -57,6 +57,35 @@ emerge HTTPD-User-Manage MD5 XML-DOM HTTP-DAV
 
 Also the .conf went to /etc/apache2/vhosts.d/
 
+= FreeBSD =
+
+{{{
+cd /usr/ports/www/apache22
+make fetch
+make extract
+cd work/httpd-2.2.6
+patch -p1 < /path/to/Patches/Apache/quota.patch.txt
+patch -p1 < /path/to/Patches/Apache/ampquotefix.patch
+cd ../..
+make
+make deinstall
+make reinstall
+}}}
+Edit /usr/local/etc/apache22/httpd.conf and /usr/local/etc/apache22/extra/.conf to fit your needs.
+
+
+= Notes =
+== Apache 2.0.x ==
+With Apache 2.0.x, a change to dotmac.conf is necessary. Replace the following lines:
+{{{
+ AuthDigestProvider file
+ AuthUserFile /var/www/dotmac/private/iDiskUsers
+}}}
+With
+{{{
+AuthDigestFile /var/www/dotmac/private/iDiskUsers
+}}}
+
 = Additions =
 
 If you find anything incomplete/incorrect - use the comments here; we'll try and edit the page accordingly.
