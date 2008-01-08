@@ -163,8 +163,10 @@ please continue reporting!
 
 ==== Global Hints ====
 
-A common pitfall seems to be the SSL host. [http://httpd.apache.org/docs/2.2/ssl/ssl_faq.html#vhosts2 Due] to the nature of Apache HTTPd SSL hosts, it's not possible to use Name-Based Virtual Hosting to identify different SSL hosts. Some linux distros configure a SSL host upon installing Apache; this host needs to be deleted for enabling ours. If you need more SSL hosts; you either need to use separate IP addresses for different SSL hosts, or (DNS) alias the new hosts within ours. (In the latter case, edit ./dotmac/private/extensions to your needs, and use signKey.sh to create a new certificate). 
+  * A common pitfall seems to be the SSL host. [http://httpd.apache.org/docs/2.2/ssl/ssl_faq.html#vhosts2 Due] to the nature of Apache HTTPd SSL hosts, it's not possible to use Name-Based Virtual Hosting to identify different SSL hosts. Some linux distros configure a SSL host upon installing Apache; this host needs to be deleted for enabling ours. If you need more SSL hosts; you either need to use separate IP addresses for different SSL hosts, or (DNS) alias the new hosts within ours. (In the latter case, edit ./dotmac/private/extensions to your needs, and use signKey.sh to create a new certificate). 
 
-Perl modules are only compiled (once) at server startup. When updating perlmodules over svn, make sure issuing a (apachectl) graceful/restart.
+  * Our virtual hosts on port :80 are Name Based Virtual Hosts. If you need to specify more, you might want to have a glance at the [http://httpd.apache.org/docs/2.2/vhosts/name-based.html#using Apache Manual].  
 
-*_Do_* use the 'Issues' tab; both users and developers are helping each-other out there.
+  * Perl modules are only compiled (once) at server startup. When updating perlmodules over svn, make sure issuing a (apachectl) graceful/restart.
+
+  * *_Do_* use the 'Issues' tab; both users and developers are helping each-other out there.
