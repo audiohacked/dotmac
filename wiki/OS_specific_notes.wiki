@@ -21,7 +21,7 @@ apt-get build-dep apache2
 ls -al
 cd apache2-2.2.3/
 wget http://dotmac.googlecode.com/svn/trunk/Patches/Apache/quota.patch.txt
-patch -p1 < quota.patch 
+patch -p1 < quota.patch.txt
 
 nano debian/changelog
 
