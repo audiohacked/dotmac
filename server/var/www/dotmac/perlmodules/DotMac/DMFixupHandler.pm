@@ -37,9 +37,9 @@ sub handler
 	chomp($userAgent);
 	
 	
-	if (($r->method() eq "DELETE") || ($r->method() eq "PUT") || ($r->method() eq "MOVE") || ($r->method() eq "MKCOL")) {
-		DotMac::CommonCode::writeDeltaRecord($r);
-	}
+#	if (($r->method() eq "DELETE") || ($r->method() eq "PUT") || ($r->method() eq "MOVE") || ($r->method() eq "MKCOL")) {
+#		DotMac::CommonCode::writeDeltaRecord($r);
+#	}
 	
 	my $ifHeader = $r->headers_in->{'If'} || '';
 	my $xwebdavmethod = $r->headers_in->{'X-Webdav-Method'} || '';
