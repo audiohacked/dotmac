@@ -120,34 +120,6 @@ sub dmoverlay {
 	my $logging = $r->dir_config('LoggingTypes');
 	my $rlog = $r->log;
 	$logging =~ /Sections/&&$rlog->info("Content Handler: dmoverlay");
-	my $buf;
-	my $content;
-	my $content_length = $r->headers_in->{'Content-Length'};
-	if ($content_length > 0)
-	{
-		while ($r->read($buf, $content_length)) {
-			$content .= $buf;
-		}
-		$logging =~ m/Sections/&&$rlog->info("Content from POST: $content");
-	}
-	#$logging =~ m/Sections/&&$rlog->info($r->as_string());
-	my $subreq;
-	my $statusarr=[""];
-	my $source = $r->filename;
-	my $targeturi = $r->headers_in->{'X-Target-Href'};
-	$subreq = $r->lookup_method_uri("GET", $targeturi);
-	$subreq->add_output_filter(\&DotMac::NullOutputFilter::handler);
-	$subreq->run();
-	my $target = $subreq->filename;
-	DotMac::CommonCode::dmoverlay($r, $statusarr, $source, $target, $r->uri, $targeturi);
-	$r->print(DotMac::CommonCode::dmoverlay_response($r,$statusarr));
-	$r->method(207);
-	#is this the same as DMPUTFROM ?
-	# after this we also get a DMPATCHPATHS
-	#$r->uri="/walinsky/Web/.Temporary%20Web%20Resources/2A169922-8D0A-4755-8D9F-524B7A428C91"
-	#X-Target-Href: /walinsky/Web/Sites
-	#$r->content_type('text/plain');
-	#$r->print("aaa");
 	return Apache2::Const::OK;
 }
 
@@ -156,22 +128,6 @@ sub truthget {
 	my $logging = $r->dir_config('LoggingTypes');
 	my $rlog = $r->log;
 	$logging =~ /Sections/&&$rlog->info("Content Handler: truthget");
-	$r->content_type('text/xml');
-	my @args = split '&', $r->args();
-	my %params;
-
-	#<updated>2007-12-29T20:05:20-08:00</updated>
-	my @datearray=gmtime(time());
-	my $lastupdate=sprintf('%s-%#.2d-%#.2dT%#.2d:%#.2d:%#.2d-00:00',$datearray[5]+1900,$datearray[4]+1,$datearray[3],$datearray[2],$datearray[1],$datearray[0]);
-	foreach my $a (@args) {
-		(my $att,my $val) = split '=', $a;
-		$params{$att} = $val ;
-	}
-	my $depth = $params{'depth'}?$params{'depth'}:0;
-	my $xml = DotMac::CommonCode::subrequest($r,"PROPFIND",$r->uri,"",{'Depth'=>$depth});
-	#$r->print($xml->[1]);
-	$r->print(DotMac::CommonCode::truthget_generate($r,$xml->[1],$r->user));
-	
 	return Apache2::Const::OK;
 }
 sub acl {
