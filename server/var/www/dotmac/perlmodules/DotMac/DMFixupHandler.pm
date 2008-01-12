@@ -14,6 +14,7 @@ use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUE
 use APR::Const    -compile => qw(:error SUCCESS);
 use CGI::Carp;
 use DotMac::CommonCode;
+use DotMac::DMXWebdavMethods;
 use Data::Dumper;
 
 #my %exts = (
@@ -34,8 +35,15 @@ sub handler
 	my $user = $r->user;
 	my $userAgent = $r->headers_in->{'User-Agent'} || '';
 	chomp($userAgent);
+	
+	
+	if (($r->method() eq "DELETE") || ($r->method() eq "PUT") || ($r->method() eq "MOVE") || ($r->method() eq "MKCOL")) {
+		DotMac::CommonCode::writeDeltaRecord($r);
+	}
+	
 	my $ifHeader = $r->headers_in->{'If'} || '';
-	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->get_server_name(), $r->get_server_port(),$userAgent,$rmethod,$ifHeader,$r->uri,$r->user));
+	my $xwebdavmethod = $r->headers_in->{'X-Webdav-Method'} || '';
+	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->get_server_name(), $r->get_server_port(),$userAgent,$rmethod,$r->main&&"Subrequest",$ifHeader,$r->uri,$r->user, $xwebdavmethod));
 
 	$logging =~ m/Headers/&&$rlog->info($r->as_string());
 	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK") | ($rmethod eq "DELETE") | ($rmethod eq "UNLOCK")){
@@ -105,37 +113,48 @@ sub handler
 #			carp $r->as_string();
 			# LOCK /walinsky/.FileSync
 			my $dotFilesyncFolder = "/$user/.FileSync";
-			if (($rmethod eq "MOVE") && ($r->headers_in->{'If'}) && ($r->headers_in->{'If'} !~ m/<.*> \(<.*>\)/)) { # =~ m/^http:\/\/idisk.mac.com$dotFilesyncFolder/)) {
-				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
-				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+			if ($rmethod eq "MOVE") {
+				if (($r->headers_in->{'If'}) && ($r->headers_in->{'If'} =~ m/^(\(<.*>\))(\(<.*>\))$/)) {
+					my $tok1 = $1;
+					my $tok2 = $2;
+					$logging =~ m/Locks/&&$r->log->info("Found 2 opaquelocktokens on a move");
+					my $target = $r->headers_in->{'Destination'};
+					$target =~ m|http[s]{0,1}://([a-zA-Z0-9\.]*)/(.*)|;
+					$target = $2;		
+					$r->headers_in->{'If'} = "<".$r->uri."> $tok1 <$target> $tok2";
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+				} elsif (($r->headers_in->{'If'}) && ($r->headers_in->{'If'} =~ m/^(\(<.*>\))/)) {
+					my $tok1=$1;
+					my $target = $r->headers_in->{'Destination'};
+					$target =~ m|http[s]{0,1}://([a-zA-Z0-9\.]*)/(.*)|;
+					$target = $2;		
+					$r->headers_in->{'If'} = "<".$target."> $tok1";
+					$logging =~ m/Locks/&&$r->log->info("Found 1 opaquelocktoken on a move");
+
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
-			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If-Match'})) { # ugly! - should also test for locking $dotFilesyncFolder itself - we get requests for lock (refresh) on exact match
+			} elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If-Match'})) { # ugly! - should also test for locking $dotFilesyncFolder itself - we get requests for lock (refresh) on exact match
 				$r->headers_in->{'If-Match'} = "*";
-				}
-			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If'}) && ($r->uri =~ m/$dotFilesyncFolder/)) { 
+			} elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If'}) && ($r->uri =~ m/$dotFilesyncFolder/)) { 
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
 				$logging=~ m/Sections/&&$rlog->info("Match Lock + .filesync + if header");
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				
-				}				
-			elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$dotFilesyncFolder/)) {
+			} elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
-				}
-			elsif (($rmethod eq "DELETE") && ($r->headers_in->{'If'})) {
+			} elsif (($rmethod eq "DELETE") && ($r->headers_in->{'If'})) {
 				my $rUri = $r->uri;
 				$r->headers_in->{'If'} = "<$rUri> $ifHeader";
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
-				}
-			elsif ($rmethod eq "MKCOL") {
+			} elsif ($rmethod eq "MKCOL") {
 				my $rUri = $r->uri;
 				$rUri =~ s|/\Z(?!\n)|| unless $rUri eq "/"; # strip possible trailing slash
 				if ($ifHeader) {
 					$r->headers_in->{'If'} = "<$rUri> $ifHeader";
 					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 					}
-			}
-			elsif ($rmethod eq "POST") {
+			} elsif ($rmethod eq "POST") {
 				# *sigh*
 				# X-Webdav-Method: DMMKPATH
 				# X-Webdav-Method: DMPUTFROM
@@ -154,11 +173,11 @@ sub handler
 					{
 #					carp "setting perlresponsehandler to DMMKPATH_handler";
 					$r->handler('perl-script');
-					$r->set_handlers(PerlResponseHandler => \&dmmkpath_handler);
+					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpath);
 				} elsif (($XWebdavMethod) && ($XWebdavMethod eq 'DMPUTFROM')) {
 					carp "setting perlresponsehandler to DMPUTFROM_handler";
 					$r->handler('perl-script');
-					$r->set_handlers(PerlResponseHandler => \&dmputfrom_handler);
+					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmputfrom);
 				}
 				}
 			}
@@ -196,31 +215,37 @@ sub handler
 						#	}
 						carp "setting perlresponsehandler to ACL_handler";
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&acl_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::acl);
 						}
 					elsif ($XWebdavMethod eq 'DMMKPATHS')
 						{
 						carp "setting perlresponsehandler to DMMKPATHS_handler";
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&dmmkpaths_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpaths);
 						}
 					elsif ($XWebdavMethod eq 'DMOVERLAY')
 						{
-						carp "setting perlresponsehandler to DMOVERLAY_handler";
+						carp $r->as_string();
+						#carp "setting perlresponsehandler to DMOVERLAY_handler";
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&dmoverlay_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmoverlay);
 						}
+					elsif ($XWebdavMethod eq 'DMPATCHPATHS') {
+						$rlog->info("Matched DMPATCHPATHS");
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmpatchpaths);
+					}
 					elsif ($XWebdavMethod eq 'SETREDIRECT')
 						{
 						my $buf;
-						my $content;
+						my $content="";
 						my $content_length = $r->header_in('Content-Length');
 						if ($content_length > 0)
 							{
 							while ($r->read($buf, $content_length)) {
 								$content .= $buf;
 								}
-							carp $content;
+							$logging =~ m/Body/&&$rlog->info("Content from POST: $content");			
 							}
 						carp "setting perlresponsehandler to SETREDIRECT_handler";
 						#$r->handler('perl-script');
@@ -228,7 +253,10 @@ sub handler
 						}
 					}
 				}
-				
+			elsif ($rmethod eq "MOVE") {
+				my $sitesfolder = "/$user/Web/Sites";
+				$r->headers_in->{'If'} = "<$sitesfolder> $ifHeader";
+			}
 				
 			elsif ($rmethod eq "PUT") {
 				carp $r->as_string();
@@ -263,36 +291,25 @@ sub handler
 						#	}
 						carp "setting perlresponsehandler to ACL_handler";
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&acl_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::acl);
 						}
 					elsif ($XWebdavMethod eq 'DMMKPATHS')
 						{
 						carp "setting perlresponsehandler to DMMKPATHS_handler";
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&dmmkpaths_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpaths);
 						}
 					elsif (($XWebdavMethod) && ($XWebdavMethod eq 'DMMKPATH')) {
 	#					carp "setting perlresponsehandler to DMMKPATH_handler";
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&dmmkpath_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpath);
 					}
 					elsif ($XWebdavMethod eq 'DMOVERLAY')
 						{
 						carp $r->as_string();
-						my $buf;
-						my $content;
-						my $content_length = $r->header_in('Content-Length');
-						if ($content_length > 0)
-							{
-							while ($r->read($buf, $content_length)) {
-								$content .= $buf;
-								}
-							carp $content;
-							}
-						
 						#carp "setting perlresponsehandler to DMOVERLAY_handler";
-						#$r->handler('perl-script');
-						#$r->set_handlers(PerlResponseHandler => \&dmoverlay_handler);
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmoverlay);
 						}
 					elsif ($XWebdavMethod eq 'SETREDIRECT')
 						{
@@ -304,7 +321,7 @@ sub handler
 							while ($r->read($buf, $content_length)) {
 								$content .= $buf;
 								}
-							carp $content;
+							$logging =~ m/Body/&&$rlog->info("Content from POST: $content");
 							}
 						carp "setting perlresponsehandler to SETREDIRECT_handler";
 						#$r->handler('perl-script');
@@ -313,7 +330,7 @@ sub handler
 					elsif ($XWebdavMethod eq 'DMPATCHPATHS') {
 						$rlog->info("Matched DMPATCHPATHS");
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&dmpatchpaths_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmpatchpaths);
 					}
 					else {
 						my $buf;
@@ -325,7 +342,7 @@ sub handler
 							while ($r->read($buf, $content_length)) {
 								$content .= $buf;
 								}
-							carp $content;
+							$logging =~ m/Body/&&$rlog->info("Content from POST: $content");
 							}
 						}
 					}
@@ -351,7 +368,8 @@ sub handler
 #			carp $content;
 #		}
 	elsif ($rmethod eq "GET") {
-			if (($r->get_server_name eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/))
+
+			if (($r->headers_in->{'Host'} eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/))
 				{
 				if($r->args())
 					{
@@ -365,7 +383,7 @@ sub handler
 						{
 #						carp $r->as_string();
 						$r->handler('perl-script');
-						$r->set_handlers(PerlResponseHandler => \&truthget_handler);
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::truthget);
 						}
 					}
 				}
@@ -389,127 +407,5 @@ sub handler
 	#	}
 	return Apache2::Const::OK;
 	}
-
- sub dmmkpath_handler { content_handler($_[0], 'DMMKPATH') }
- 
- sub dmputfrom_handler { content_handler($_[0], 'DMPUTFROM') }
-  
- sub dmmkpaths_handler { content_handler($_[0], 'DMMKPATHS') }
- 
- sub dmpatchpaths_handler { content_handler($_[0], 'DMPATCHPATHS') }
- 
- sub dmoverlay_handler { content_handler($_[0], 'DMOVERLAY') }
- 
- sub truthget_handler { content_handler($_[0], 'TRUTHGET') }
- 
- sub acl_handler { content_handler($_[0], 'ACL') }
- 
-  sub content_handler {
-		my ($r, $type) = @_;
-		my $logging = $r->dir_config('LoggingTypes');
-		my $rlog = $r->log;
-		$logging =~ /Sections/&&$rlog->info("Content Handler: $type");
-		my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
-		if ($type eq 'DMMKPATH')
-			{
-			$r->print(DotMac::CommonCode::dmmkpath_response(DotMac::CommonCode::recursiveMKCOL( $r)));
-			$r->content_type('text/xml');
-			$r->status(207);
-			return Apache2::Const::DONE;
-				
-			}
-		elsif ($type eq 'DMPATCHPATHS')
-			{
-			my $content;
-			my $buf;
-			my $content_length = $r->header_in('Content-Length');
-			if ($content_length > 0)
-				{
-				while ($r->read($buf, $content_length)) {
-					$content .= $buf;
-					}
-				}
-			DotMac::CommonCode::dmpatchpaths_response($r,DotMac::CommonCode::dmpatchpaths_request( $r, $content));
-			$r->content_type('text/xml');
-			$r->status(207);
-			return Apache2::Const::DONE;
-				
-			}
-		if ($type eq 'DMPUTFROM' )
-			{
-			my $XSourceHref = DotMac::CommonCode::URLDecode($r->header_in('X-Source-Href'));
-			my $ruri= DotMac::CommonCode::URLDecode($r->uri);
-			my $ruser=$r->user;
-			if ((DotMac::CommonCode::check_for_dir_backref($ruri)) || (DotMac::CommonCode::check_for_dir_backref($XSourceHref))) {
-				$rlog->error("path contained a back reference: ".DotMac::CommonCode::check_for_dir_backref($ruri)." ".DotMac::CommonCode::check_for_dir_backref($XSourceHref));
-				return Apache2::Const::HTTP_BAD_REQUEST;
-			}	
-			if (($ruri =~ m/^\/$ruser\//) && ($XSourceHref =~ m/^\/$ruser\//)) {
-					$logging =~ m/Sections/&&$rlog->info("Calling movefile $dotMaciDiskPath $XSourceHref $ruri"); 
-					DotMac::CommonCode::movefile($dotMaciDiskPath, $XSourceHref, $ruri);
-					#$r->content_type('text/plain');
-					$r->print("");
-
-					
-					return Apache2::Const::HTTP_NO_CONTENT;
-
-			} else {
-					$r->print(" ");			
-					$rlog->error("Directory path didn't match the user User:$ruser URI:$ruri Sourcehref:$XSourceHref");
-					return Apache2::Const::HTTP_BAD_REQUEST;
-			}
-		}
-		elsif ($type eq 'DMMKPATHS')
-			{
-			#DotMac::CommonCode::dmMKpaths($dotMaciDiskPath, $r->uri);
-			# send multistatus header:
-			# HTTP/1.1 207 Multi-Status
-			my $buf;
-			my $content;
-			my $content_length = $r->header_in('Content-Length');
-			if ($content_length > 0)
-				{
-				while ($r->read($buf, $content_length)) {
-					$content .= $buf;
-					}
-				carp $content;
-				}
-			$r->print(DotMac::CommonCode::dmmkpaths_response(DotMac::CommonCode::dmmkpaths_request( $r, $content)));
-			$r->content_type('text/xml;charset=utf-8');
-			$r->content_type('text/xml');
-			$r->status(207);
-			return Apache2::Const::DONE;
-			}
-		elsif ($type eq 'DMOVERLAY')
-			{
-			#is this the same as DMPUTFROM ?
-			# after this we also get a DMPATCHPATHS
-			#$r->uri="/walinsky/Web/.Temporary%20Web%20Resources/2A169922-8D0A-4755-8D9F-524B7A428C91"
-			#X-Target-Href: /walinsky/Web/Sites
-			$r->content_type('text/plain');
-			$r->print("");
-			}
-		elsif ($type eq 'TRUTHGET')
-			{
-			$r->content_type('text/xml');
-			$r->print('<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns:iweb="urn:iweb:" xmlns:iphoto="urn:iphoto:property"
-      xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
-      xmlns:search="http://idisk.mac.com/_namespace/search/"
-      xmlns="http://www.w3.org/2005/Atom"
-      xmlns:dotmac="urn:dotmac:property">
-</feed>');
-			}
-		elsif ($type eq 'ACL')
-			{
-			# we might want to check if the uri starts with username ;)
-			DotMac::CommonCode::recursiveMKdir($dotMaciDiskPath, $r->uri);
-			$r->content_type('text/plain');
-			$r->print("");
-			}
-		
-		return Apache2::Const::OK;
-  }
-
 
 1;

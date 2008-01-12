@@ -17,7 +17,9 @@ use DB_File;
 use Encode;
 use File::Copy;
 use File::Spec;
+use File::Basename;
 use XML::DOM;
+use XML::LibXML;
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
 use Apache2::RequestUtil ();
@@ -185,22 +187,30 @@ sub dmpatchpaths_request {
 }
 
 sub subrequest {
-	my ($r, $method, $href, $xml) = @_;
+	my ($r, $method, $href, $xml, $headers) = @_;
 	my $subreq;
 	my $rc;
 	my $logging = $r->dir_config('LoggingTypes');
 	$subreq = $r->lookup_method_uri($method, $href);
+	my ($key,$value);
+
+	$r->log->info("source: ".$href." Destination: ".$$headers{'Destination'});
 	$subreq->add_output_filter(\&DotMac::NullOutputFilter::CaptureOutputFilter);			
 	$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
 	$subreq->headers_in->{'X-Webdav-Method'}="";
+	if ($headers) {
+		foreach $key (keys %$headers) {
+			$subreq->headers_in->add($key,$$headers{$key});
+		}
+	}
 	$subreq->pnotes('postdata',$xml);
 	$rc=$subreq->run();
 	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$subreq->pnotes('returndata'));
 	return ([$rc,$subreq->pnotes('returndata')]);
 }
 
-sub dmmkpath_request
-	{ my ( $r, $inXML) = @_;
+sub dmmkpath_request { 
+	my ($r, $inXML) = @_;
 	my $xp = new XML::DOM::Parser(ErrorContext => 2);
 	my $requestxml = $xp->parse($inXML);
 	my $requestrootnode = $requestxml->getElementsByTagName('x0:request-instructions-set')->[0];
