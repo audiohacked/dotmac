@@ -52,8 +52,9 @@ perl -MCPAN -e 'install HTTPD::UserAdmin'
 perl -MCPAN -e 'install MD5'
 perl -MCPAN -e 'install XML::DOM'
 perl -MCPAN -e 'install HTTP::DAV'
+perl -MCPAN -e 'install XML::LibXML'
 }}}
-
+_Note: For XML::LibXML to compile, you will need to make sure that the development package for libxml2 in installed_ 
 ==Step 4==
 ====Setting up hosts on your client machine(s)====
 {{{
