@@ -356,9 +356,9 @@ sub handler {
 	print $answer;
 
 ##	debug level logging
-	carp $r->as_string(); # the http request
-	carp $my_data; # the post data
-	carp $answer; # the answer we sent to the client
+#	carp $r->as_string(); # the http request
+#	carp $my_data; # the post data
+#	carp $answer; # the answer we sent to the client
 
 	return Apache2::Const::OK;
 }

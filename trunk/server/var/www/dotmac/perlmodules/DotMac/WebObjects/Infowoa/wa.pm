@@ -215,7 +215,7 @@ sub XMLRPCaccountinfo {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+	#carp $content;
 	
 	# instantiate parser
 	my $xp = new XML::DOM::Parser();
@@ -259,7 +259,7 @@ sub QUERYaccountInfo {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+	#carp $content;
 	
 	$answer = "{
     payload = {servicesAvailable = (iDisk, iSync, SharingCertificate, Email, WebHosting); }; 
@@ -280,7 +280,7 @@ sub configureDisk {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+	#carp $content;
 	
 	$answer = "{
     payload = {
