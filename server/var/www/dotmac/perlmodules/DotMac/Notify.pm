@@ -60,7 +60,7 @@ sub notify {
 			$my_data .= $buf;
 			}
 		}
-	carp $my_data;
+	#carp $my_data;
 	
 	$TimeStamp = "0"; # really don't know what we should give - so just set it to 0 now
 	$answer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><methodResponse><params><param><value><struct><member><name>resultCode</name><value>Success</value></member><member><name>timestamp</name><value>".$TimeStamp."</value></member><member><name>resultBody</name><value><array><data></data></array></value></member></struct></value></param></params></methodResponse>";
@@ -79,7 +79,7 @@ sub subscribe {
 			$my_data .= $buf;
 			}
 		}
-	carp $my_data;
+	#carp $my_data;
 	
 	# instantiate parser
 	my $xp = new XML::DOM::Parser();

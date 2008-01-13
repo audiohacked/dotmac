@@ -43,7 +43,15 @@ sub handler
 	
 	my $ifHeader = $r->headers_in->{'If'} || '';
 	my $xwebdavmethod = $r->headers_in->{'X-Webdav-Method'} || '';
-	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->get_server_name(), $r->get_server_port(),$userAgent,$rmethod,$r->main&&"Subrequest",$ifHeader,$r->uri,$r->user, $xwebdavmethod));
+	$logging&&$rlog->info(join(':',"DMFixupHandler", 
+	$r->get_server_name(), 
+	$r->get_server_port(),
+	$userAgent,$rmethod,
+	$r->main&&"Subrequest"||"",
+	$ifHeader,
+	$r->uri,
+	$r->user, 
+	$xwebdavmethod));
 
 	$logging =~ m/Headers/&&$rlog->info($r->as_string());
 	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK") | ($rmethod eq "DELETE") | ($rmethod eq "UNLOCK")){
@@ -57,6 +65,8 @@ sub handler
 			if (($rmethod eq "PUT") && ($r->uri =~ m/^$clientsfolder(.*).client$/)) {
 				$logging =~ m/Sections/&&$rlog->info("Put and SyncServices/Clients Section");
 				$r->headers_in->{'If'} = "<$clientsfolder> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+
 				}
 			# LOCK /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Bookmarks/
 			# PUT /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Bookmarks/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp
@@ -65,6 +75,8 @@ sub handler
 				$logging =~ m/Sections/&&$rlog->info("In the PUT and SyncServices/Schemas Section");
 				my $childfolder = $1;
 				$r->headers_in->{'If'} = "<$schemasfolder/$childfolder> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+
 				}
 			# (<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)(<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)
 			elsif (($rmethod eq "MOVE") && ($r->uri =~ m/^$schemasfolder\/(.*)\//)) {
@@ -79,6 +91,8 @@ sub handler
 				# MOVE /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Contacts/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp HTTP/1.1" 502 (Bad Gateway)
 				if ($ifHeader =~ m/^\(<(.*?)>\)\(<(.*?)>\)/) {
 					$r->headers_in->{'If'} = "<$schemasfolder/$childfolder> (<$2>)";
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+
 					$r->headers_in->{'Destination'} =~ s{^http://idisk.mac.com}{https://idisk.mac.com}s; # we don't want a  HTTP/1.1" 502 (Bad Gateway)
 					}
 				
