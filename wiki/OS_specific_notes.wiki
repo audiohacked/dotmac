@@ -37,6 +37,7 @@ perl -MCPAN -e 'install HTTPD::UserAdmin'
 perl -MCPAN -e 'install MD5'
 perl -MCPAN -e 'install XML::DOM'
 perl -MCPAN -e 'install HTTP::DAV'
+perl -MCPAN -e 'install XML::LibXML'
 
 a2enmod dav
 a2enmod ssl
@@ -95,7 +96,7 @@ Follow these instructions: http://www.howtogeek.com/howto/ubuntu/change-ubuntu-s
 
 Install the required additional packages:
 
-apt-get install dpkg-dev file gcc g++ libc6-dev make patch perl autoconf dh-make devscripts fakeroot gnupg g77 gpc xutils lintian linda pbuilder debian-policy developers-reference sudo wget
+apt-get install dpkg-dev file gcc g++ libc6-dev make patch perl autoconf dh-make devscripts fakeroot gnupg g77 gpc xutils lintian linda pbuilder debian-policy developers-reference libxml-dev
 Create a directory where you would like to build apache and the modules. I used ~/tmp.
 
 mkdir tmp
@@ -129,6 +130,7 @@ perl -MCPAN -e 'install HTTPD::UserAdmin'
 perl -MCPAN -e 'install MD5'
 perl -MCPAN -e 'install XML::DOM'
 perl -MCPAN -e 'install HTTP::DAV'
+perl -MCPAN -e 'install XML::LibXML'
 
 a2enmod dav
 a2enmod ssl
