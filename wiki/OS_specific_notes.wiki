@@ -82,49 +82,58 @@ Install Ubuntu Feisty server. Choose ONLY Open-SSH server on services selections
 
 sudo bash
 Edit your apt sources.list, remove the CDROM entry(s) at the top, then update your installation.
-
+{{{
 vi /etc/apt/sources.list
 
 apt-get update
 apt-get upgrade
+}}}
 (Optional) I prefer vim. If you prefer nano, just replace "vi" with "nano" for the editing commands below.
-
+{{{
 sudo apt-get install vim
+}}}
 Configure the server with a static IP address:
 
 Follow these instructions: http://www.howtogeek.com/howto/ubuntu/change-ubuntu-server-from-dhcp-to-a-static-ip-address/http://www.howtogeek.com/howto/ubuntu/change-ubuntu-server-from-dhcp-to-a-static-ip-address/
 
 Install the required additional packages:
-
+{{{
 apt-get install dpkg-dev file gcc g++ libc6-dev make patch perl autoconf dh-make devscripts fakeroot gnupg g77 gpc xutils lintian linda pbuilder debian-policy developers-reference libxml-dev
+}}}
 Create a directory where you would like to build apache and the modules. I used ~/tmp.
-
+{{{
 mkdir tmp
 cd tmp/
+}}}
 Get the apache2 source and build dependancies:
-
+{{{
 apt-get source apache2
 apt-get build-dep apache2
+}}}
 NOTE: As of 1-8.2008, Apache 2-2.2.4 is the current version in Gutsty.
 
 cd apache2-2.2.4/
 Get the apache quota patch from the dotmac site and apply it:
-
+{{{
 wget http://dotmac.googlecode.com/svn/trunk/Patches/Apache/quota.patch.txt
 patch -p1 < quota.patch.txt
+}}}
 Review the changelog.
-
+{{{
 vi debian/changelog 
+}}}
 Build the apache2 packages from the patched source (this could take awhile, depending on your system):
-
+{{{
 debuild -us -uc
+}}}
 Now install the compiled packages:
-
+{{{
 cd ..
 ls -al
 dpkg -i apache2.2-common_2.2.4-3build1_i386.deb apache2-doc_2.2.4-3build1_all.deb apache2-prefork-dev_2.2.4-3build1_i386.deb apache2-utils_2.2.4-3build1_i386.deb 
+}}}
 Install the apache perl modules:
-
+{{{
 apt-get install libapache2-mod-perl2
 perl -MCPAN -e 'install HTTPD::UserAdmin'
 perl -MCPAN -e 'install MD5'
@@ -136,20 +145,25 @@ a2enmod dav
 a2enmod ssl
 a2enmod auth_digest
 a2enmod vhost_alias
+}}}
 Enable the dav_fs modules for apache:
-
+{{{
 ln -s /etc/apache2/mods-available/dav_fs.load /etc/apache2/mods-enabled/dav_fs.load
 ln -s /etc/apache2/mods-available/dav_lock.load /etc/apache2/mods-enabled/dav_lock.load
 ln -s /etc/apache2/mods-available/dav_fs.conf /etc/apache2/mods-enabled/dav_fs.conf
+}}}
 You should have four modules linked (one was already done):
-
+{{{
 ls -al /etc/apache2/mods-enabled/dav* 
+}}}
 Make the directory for the iDisk log default location (as of current svn 1.8.2008)
-
+{{{
 mkdir /etc/apache2/logs
+}}}
 Install an apache control package:
-
+{{{
 apt-get install apache2-mpm-itk
+}}}
 Restart apache2:
 
 /etc/init.d/apache2 force-reload
@@ -157,14 +171,17 @@ or
 
 /etc/init.d/apache2 restart
 Install subversion (svn):
-
+{{{
 apt-get install subversion
+}}}
 Change dir to the work / build directory created above:
-
+{{{
 cd ~/tmp
+}}}
 Retrieve the latest code from svn:
-
+{{{
 svn checkout http://dotmac.googlecode.com/svn/trunk/ dotmac-read-only
+}}}
 Return to the installation Guide in the wiki for the rest. I will add more as I configure my server.
 = Notes =
 == Apache 2.0.x ==
