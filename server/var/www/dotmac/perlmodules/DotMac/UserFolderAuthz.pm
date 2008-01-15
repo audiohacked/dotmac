@@ -36,9 +36,13 @@ sub handler {
 		{
 		return Apache2::Const::OK;
 		}
-	
+	elsif ($r->uri =~ m/^\/$/) {
+		return Apache2::Const::OK;
+		}
+	else {
 	$r->note_basic_auth_failure;
 	return Apache2::Const::HTTP_UNAUTHORIZED;
+	}
 }
 
 1;
