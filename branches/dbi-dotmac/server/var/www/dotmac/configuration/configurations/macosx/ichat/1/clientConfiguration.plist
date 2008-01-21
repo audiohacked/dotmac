@@ -1,0 +1,52 @@
+{
+	configurationURL = "https://configuration.apple.com/configurations/macosx/ichat/1/clientConfiguration.plist";
+
+	services = {
+		accountInfo = "https://www.mac.com/WebObjects/Info.woa/wa/Query/accountInfo";
+	};
+	
+	localizedURLs = {
+		createTrialURL = {
+			default = "https://www.mac.com/WebObjects/Signup.woa/wa/trial";
+			en = "https://www.mac.com/WebObjects/Signup.woa/wa/trial?lang=en&cty=US";
+			ja = "https://www.mac.com/WebObjects/Signup.woa/wa/trial?lang=ja&cty=JP";
+			fr = "https://www.mac.com/WebObjects/Signup.woa/wa/trial?lang=fr&cty=FR";
+			de = "https://www.mac.com/WebObjects/Signup.woa/wa/trial?lang=de&cty=DE";
+		};
+		createSubscriberURL = {
+			default = "https://www.mac.com/WebObjects/Signup.woa/wa/subscribe";
+			en = "https://www.mac.com/WebObjects/Signup.woa/wa/subscribe?lang=en&cty=US";
+			ja = "https://www.mac.com/WebObjects/Signup.woa/wa/subscribe?lang=ja&cty=JP";
+			fr = "https://www.mac.com/WebObjects/Signup.woa/wa/subscribe?lang=fr&cty=FR";
+			de = "https://www.mac.com/WebObjects/Signup.woa/wa/subscribe?lang=de&cty=DE";
+		};
+		revokeCertificateURL = {
+			default = "https://www.mac.com/WebObjects/Account.woa/wa/certificateStatus";
+			en = "https://www.mac.com/WebObjects/Account.woa/wa/certificateStatus?lang=en&cty=US";
+			ja = "https://www.mac.com/WebObjects/Account.woa/wa/certificateStatus?lang=ja&cty=JP";
+			fr = "https://www.mac.com/WebObjects/Account.woa/wa/certificateStatus?lang=fr&cty=FR";
+			de = "https://www.mac.com/WebObjects/Account.woa/wa/certificateStatus?lang=de&cty=DE";
+		};
+		iChatEncryptionExpiredURL = {
+			default = "http://www.mac.com/WebObjects/Welcome";
+			en = "http://www.mac.com/WebObjects/Welcome.woa/wa/default?lang=en&cty=US";
+			ja = "http://www.mac.com/WebObjects/Welcome.woa/wa/default?lang=ja&cty=JP";
+			fr = "http://www.mac.com/WebObjects/Welcome.woa/wa/default?lang=fr&cty=FR";
+			de = "http://www.mac.com/WebObjects/Welcome.woa/wa/default?lang=de&cty=DE";
+		};
+		iChatEncryptionLearnMoreURL = {
+			default = "http://www.mac.com/1/ichat.html";
+			en = "http://www.mac.com/1/ichat.html";
+			ja = "http://www.mac.com/2/ichat.html";
+			fr = "http://www.mac.com/3/ichat.html";
+			de = "http://www.mac.com/4/ichat.html";
+		};
+		forgottenPasswordURL = {
+			default = "https://iforgot.apple.com/cgi-bin/WebObjects/DSiForgot.woa/wa/iforgot?app_type=ext&app_id=114";
+			en = "https://iforgot.apple.com/cgi-bin/WebObjects/DSiForgot.woa/wa/iforgot?app_type=ext&app_id=114&language=en";
+			ja = "https://iforgot.apple.com/cgi-bin/WebObjects/DSiForgot.woa/wa/iforgot?app_type=ext&app_id=114&language=ja";
+			fr = "https://iforgot.apple.com/cgi-bin/WebObjects/DSiForgot.woa/wa/iforgot?app_type=ext&app_id=114&language=fr";
+			de = "https://iforgot.apple.com/cgi-bin/WebObjects/DSiForgot.woa/wa/iforgot?app_type=ext&app_id=114&language=de";
+		};
+	};
+}
