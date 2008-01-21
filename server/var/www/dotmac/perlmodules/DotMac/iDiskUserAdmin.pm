@@ -30,16 +30,17 @@ sub handler
 	my $r = shift;
 	#If you really want to use this, uncomment the following line - and comment-out the next one
 	#Note: adapt your dotmac.conf in a way that this page _need_ a (secure) login!!!
-	my $dbFile = $r->dir_config('dotMacUserDB');
-	#my $dbFile = '/var/www/idiskAdmin/foobar.passwd';
-	
-	my @htfile = (	DBType => 'Text',
-					DB     => $dbFile,
-					Server => 'apache',
-					Encrypt => 'MD5');
-	my $userAdmin = new HTTPD::UserAdmin @htfile;
-	my @users = $userAdmin->list;
-	@users = sort @users;
+
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q = $dbh->prepare("SELECT username FROM auth");
+	$q->execute;
+	my @userlist = ();
+	while (my ($u) = $q->fetchrow_array) {
+		push @userlist, $u;
+	}
+	$q->finish;
+
+	my @users = sort @userlist;
 	print 	header,
 			start_html('User management'),
 			h1('User management'),
@@ -92,7 +93,11 @@ sub handler
 		my $newuser	= param('newuser');
 		if ($newuser) {
 			#validate if newuser already exists, and then:
-			if($userAdmin->exists($newuser))
+			my $user_exists = 0;
+			for (@users) { 
+				$user_exists = 1 if ($_ eq $newuser);
+			}
+			if($user_exists)
 				{
 				print h3("User $newuser already exists"),p,"tick $newuser in the left box for editing";
 				return Apache2::Const::OK;
@@ -109,23 +114,43 @@ sub handler
 				}
 			$user = $newuser;
 			my $newpass = param('newpass1');
-			$userAdmin->add($user, "$user:idisk.mac.com:$newpass")
+			my $insertQuery = "INSERT INTO auth (username, passwd) VALUES (\'$user\', MD5(\'$newuser:idisk.mac.com:$newpass\'));";
+			my $q2 = $dbh->do($insertQuery);
+			$dbh->disconnect;
+			
 			}
 		if ($getset eq 'get') {
-			&get_user ($r, $userAdmin, $user);
+			&get_user ($r, $user);
 			}
 		elsif ($getset eq 'set') {
-			&set_user ($r, $userAdmin, $user);
+			&set_user ($r, $user);
 			}
 		}
+	$dbh->disconnect;	
 	return Apache2::Const::OK;
 	}
 
 sub get_user {
-	my ($r, $userAdmin, $user) = @_;
+	my ($r, $user) = @_;
+
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q3 = $dbh->prepare("SELECT username FROM auth");
+	$q3->execute;
+	my @userlist = ();
+	while (my ($u) = $q3->fetchrow_array) {
+		push @userlist, $u;
+	}
+	$q3->finish;
+
+
+	my @users = sort @userlist;
 	# we already verified if we got sent here by ticking the list or by typing a username
 	# a typed username might already exist though
-	if($userAdmin->exists($user))
+	my $user_exists = 0;
+	for (@users) { 
+		$user_exists = 1 if ($_ eq $user);
+	}
+	if($user_exists)
 		{
 		print h3("edit user $user"),p;
 		}
@@ -133,19 +158,15 @@ sub get_user {
 		{
 		print h3("create user $user"),p;
 		}
-	my $dotMacUserDataPath = $r->dir_config('dotMacUserDataPath');
-	my $dotMacUdataDBname = $r->dir_config('dotMacUdataDBname');
-	unless (-d "$dotMacUserDataPath/$user")
-		{
-		DotMac::CommonCode::recursiveMKdir ($dotMacUserDataPath, $user);
-		}
-	my %userData = DotMac::CommonCode::readUserDB("$dotMacUserDataPath/$user/$dotMacUdataDBname", my %attributes);
-	
 
 	my $defaultQuota = '';
-	if (exists($userData{'quota'})) {$defaultQuota = $userData{'quota'}}
 	my $defaultEmail = '';
-	if (exists($userData{'email'})) {$defaultEmail = $userData{'email'}}
+	my $query4 = "SELECT idisk_quota_limit, email_addr FROM auth WHERE username = \'$user\'";
+	my $q4 = $dbh->prepare($query4);
+	$q4->execute;
+	($defaultQuota, $defaultEmail) = $q4->fetchrow_array;
+	$q4->finish;
+	
 	print start_form,
 		hidden(-name=>'user',
 				-value=>$user,
@@ -176,21 +197,19 @@ sub get_user {
 		submit,
 		end_form,
 		hr;
+	$dbh->disconnect;	
 	}
 
 sub set_user {
-	my ($r, $userAdmin, $user) = @_;
-	my $dotMacUserDataPath = $r->dir_config('dotMacUserDataPath');
-	my $dotMacUdataDBname = $r->dir_config('dotMacUdataDBname');
-	unless (-d "$dotMacUserDataPath/$user")
-		{
-		DotMac::CommonCode::recursiveMKdir ($dotMacUserDataPath, $user);
-		}
-	my %userdata = ();
-	$userdata{'quota'} = param('quota');
-	$userdata{'email'} = param('email');
-	DotMac::CommonCode::writeUserDB("$dotMacUserDataPath/$user/$dotMacUdataDBname", %userdata);
-	return get_user($r, $userAdmin, $user);
+	my ($r, $user) = @_;
+	my $quota = param('quota');
+	my $email = param('email');
+	
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $query5 = "UPDATE auth SET idisk_quota_limit = \'$quota\', email_addr = \'$email\' WHERE username = \'$user\' ";
+	my $q5 = $dbh->do($query5);
+	$dbh->disconnect;
+	return get_user($r, $user);
 	}
 
 1;
