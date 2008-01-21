@@ -96,7 +96,7 @@ sub recursiveMKdir
 			$adddir = $addpath;
 			}
 		if (!(-d $rootpath.$slash.$adddir))  {
-			mkdir ($rootpath.$slash.$adddir, 0777) || die "sorry system is unable to create output directory ".$rootpath.$slash.$addpath;
+			mkdir ($rootpath.$slash.$adddir, 0777) || die "sorry system is unable to create output directory (check permissions/directory owned by apache user) for".$rootpath.$slash.$addpath;
 			}
 		$addpath = substr $addpath, length $adddir, length $addpath;
 		$rootpath = $rootpath.$slash.$adddir;
