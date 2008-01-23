@@ -331,7 +331,7 @@ sub check_for_dir_backref {
 	}
 }
 sub authen_user{
-	my ($dbType, $dbConnString, $user, $sent_pw) = @_;
+	my ($r, $user, $sent_pw) = @_;
 	$user =~ s/^\"|\"$//g;
 	if ($r->dir_config('dotMacDBType') eq 'file')
 		{
