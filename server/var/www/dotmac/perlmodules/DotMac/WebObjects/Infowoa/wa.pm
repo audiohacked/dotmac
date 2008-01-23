@@ -105,6 +105,9 @@ sub retrieveDiskConfiguration {
 		elsif ($name =~ m/password/){ $password = $value; }
 		elsif ($name =~ m/version/){ $dotmacversion = $value; }
 		}
+		$username =~ s/^\"|\"$//g;
+		$password =~ s/^\"|\"$//g;
+
 	#carp "username $username, version $dotmacversion";
 	# if (DotMac::CommonCode::authen_user($r, $username, $password))
 	my $home_dir = $r->dir_config('dotMaciDiskPath') . "/$username";
@@ -158,6 +161,8 @@ sub dotMacPreferencesPaneMessage {
 		elsif ($name =~ m/systemVersion/){ $systemVersion = $value; }
 		elsif ($name =~ m/version/){ $dotmacversion = $value; }
 		}
+		$username =~ s/^\"|\"$//g;
+		$password =~ s/^\"|\"$//g;
 
 	if (DotMac::CommonCode::authen_user($r, $username, $password))
 		{
