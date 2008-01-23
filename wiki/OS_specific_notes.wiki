@@ -74,6 +74,63 @@ make reinstall
 }}}
 Edit /usr/local/etc/apache22/httpd.conf and /usr/local/etc/apache22/extra/.conf to fit your needs.
 
+= Additional FreeBSD =
+
+also need the mod_perl2 port:
+{{{
+cd /usr/ports/www/mod_perl2; make install
+}}}
+Ports incantations for perl modules:
+{{{
+cd /usr/ports/textproc/p5-XML-DOM; make install
+cd /usr/ports/security/p5-MD5; make installl
+cd /usr/ports/www/p5-HTTP-DAV; make install
+cd /usr/ports/textproc/p5-XML-LibXML; make installl
+}}}
+Only HTTPD::UserAdmin doesn't have a port.
+thus as per the instructions:
+{{{
+perl -MCPAN -e 'install HTTPD::UserAdmin'
+}}}
+To eliminate an apache warning, I had to:
+{{{
+mkdir /var/www/dotmac/userxml/testuser
+}}}
+and then for each user I created, I had to do that.
+
+I would reccomend explicit suggestions on what chown commands to run.
+I did:
+{{{
+chown -R www:www /var/www/dotmac
+chown -R root:wheel /var/www/dotmac/private
+chown -R www:www /var/www/dotmac/private/iDiskAdmins
+}}}
+I also had to create /usr/local/logs:
+{{{
+mkdir /usr/local/logs
+}}}
+I had to add the following to my apache:
+{{{
+<Directory "/var/www/dotmac">
+       Options Indexes FollowSymlinks
+       AllowOverride All
+       Order allow,deny
+       Allow from all
+</Directory>
+}}}
+I also made a wildcard *.mac.com self-signed certificate:
+{{{
+openssl genrsa -out ssl.key/dotmac.key 1024
+openssl req -new -key ssl.key/dotmac.key -out ssl.csr/dotmac.csr
+Common Name: *.mac.com
+}}}
+I also had to be sure to include extra/httpd-dav.conf
+(and edit it)
+
+Also the directory within which DavLockDB lives must be owned by the web server.
+
+
+
 = Ubuntu Gutsy Gibbon Server Installation =
 
 These instructions are Ubuntu Gutsy specific. They may, or may not, work on other versions.
@@ -194,6 +251,8 @@ With
 {{{
 AuthDigestFile /var/www/dotmac/private/iDiskUsers
 }}}
+
+
 
 = Additions =
 
