@@ -4,37 +4,18 @@ use DBI;
 use strict;
 use CGI::Carp;
 
-#sub new {
-#	my ($class, @args) = @_;
-#
-#	eval "require $class" unless $class->can('new');
-#	my ($host, $db, $dbuser, $dbpass, $create) 
-#		= rearrange([
-#			[qw(HOST)],
-#			[qw(DB)],
-#			[qw(DBUSER USER)],
-#			[qw(DBPASS PASSWD)],
-#			'CREATE'
-#		],@args);
-#
-#	my $host ||= 'localhost';
-#	my $db ||= 'dotmac';
-#	my $dbuser ||= 'dotmac';
-#	my $dbpass ||= 'dotmac';
-#	#my $this = bless {}, $class;
-#
-#	my $dbcon = DBI->connect("dbi:mysql:$db".';host='.$host, $dbuser, $dbpass);
-#
-#	return bless { dbh => $dbcon }, $class;
-#}
-
 sub new {
 	my $invocant = shift;
 	my $class = ref($invocant) || $invocant;
-	my $dotmacDBconn = DBI->connect("dbi:mysql:dotmac;host=localhost", "dotmac", "dotmac");
+
+	my $dbname = exists $_{db} ? $_{db} : "dotmac";
+	my $host = exists $_{host} ? $_{host} : "localhost";
+	my $dbuser = exists $_{user} ? $_{user} : "dotmac";
+	my $dbpass = exsits $_{pass} ? $_{pass} : "dotmac";
+
+	my $dotmacDBconn = DBI->connect('dbi:mysql:database='.$dbname.';host='.$host, $dbuser, $dbpass);
 	my $self = {
 		dbh => $dotmacDBconn,
-		@_
 	};
 	return bless $self, $class;
 }
