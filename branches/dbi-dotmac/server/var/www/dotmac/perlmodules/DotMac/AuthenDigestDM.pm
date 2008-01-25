@@ -12,17 +12,7 @@ sub handler {
 	#carp $dbType;
 	my $dbType = 'mysql';
 
-	if ($dbType eq 'mysql') { # mysql
-		use DotMac::DotMacDB::MySQL;
-		$dbauth = new DotMac::DotMacDB::MySQL::;
-		#carp "using mysql";
-	} elsif ($dbType eq 'sqlite') {
-		use DotMac::DotMacDB::SQLite;
-		$dbauth = new DotMac::DotMacDB::SQLite::;
-		carp "using sqlite";
-	} else {
-		return Apache2::Const::DECLINED;
-	}
+	$dbauth = DotMac::DotMacDB::new(provider => $dbType);
 
 	my $savedHash = $dbauth->fetch_apache_auth($user, $realm);
 	if($savedHash) {
