@@ -13,6 +13,7 @@ use Apache2::RequestIO ();
 use Apache2::SubRequest ();#Perl API for Apache subrequests
 use Apache2::Const -compile => qw(OK);
 use DotMac::CommonCode;
+use DotMac::DotMacDB;
 
 use Data::Dumper; # just for testing
 
@@ -22,10 +23,10 @@ use HTTPD::UserAdmin(); # move this to common with auth subs
 
 $DotMac::WebObjects::Infowoa::wa::VERSION = '0.1';
 
-
 sub handler {
 	my $r = shift;
 	my $answer;
+	carp "WebObjects/Info.woa/wa";
 	#carp $r->as_string();
 	#carp $r->location();
 	#carp $r->document_root();
@@ -111,7 +112,8 @@ sub retrieveDiskConfiguration {
 	#carp "username $username, version $dotmacversion";
 	# if (DotMac::CommonCode::authen_user($r, $username, $password))
 	my $home_dir = $r->dir_config('dotMaciDiskPath') . "/$username";
-	my $userquota = DotMac::CommonCode::get_user_quota($r, $username);
+	my $dmdb = DotMac::DotMacDB->new();
+	my $userquota = $dmdb->get_user_quota($username);
 	$userquota *= 1024;#we set quota in 1k blocks
 	my $quotaUsedBytes = `du -sk $home_dir`; chop($quotaUsedBytes);# query for usage in KiloBytes
 	$quotaUsedBytes =~ s/^(\d+)(.*)/$1/;
@@ -144,7 +146,7 @@ sub dotMacPreferencesPaneMessage {
 			$content .= $buf;
 			}
 		}
-	#carp $content;
+	carp $content;
 	my $username = "";
 	my $password = "";
 	my $service = "";
@@ -163,8 +165,9 @@ sub dotMacPreferencesPaneMessage {
 		}
 		$username =~ s/^\"|\"$//g;
 		$password =~ s/^\"|\"$//g;
+		my $dmdb = DotMac::DotMacDB->new();
 
-	if (DotMac::CommonCode::authen_user($r, $username, $password))
+	if ($dmdb->authen_user($username, $password))
 		{
 		warn "user $username is ok to me";
 		if ($dotmacversion eq '1')
@@ -179,7 +182,7 @@ version = 1;
 			}
 		else # Leopard version# = 2
 			{
-			my $iDiskStorageInMB = DotMac::CommonCode::get_user_quota($r, $username);
+			my $iDiskStorageInMB = $dmdb->get_user_quota($username);
 			$iDiskStorageInMB /= 1024;#we set quota in 1k blocks and  report them in MB
 			my $messageHTML = "<html><head><title></title></head><body><table cellspacing='0' cellpadding='0' border='0'><tr><td><table cellspacing='0' cellpadding='0' border='0'><tr><td>Account Type:</td><td width='8'></td><td><b>Regular</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Member Since:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Mail Storage:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>iDisk Storage:</td><td width='8'></td><td><b>%@</b></td></tr></table></td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td>Your account will expire when our server dies, but you'll be probably dead by then.</td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Account Details&nbsp;' onclick='document.location.href=\\\"https://www.mac.com/WebObjects/Account.woa\\\"'></td><td width='20'></td></tr><tr><td height='10' colspan='2'></td></tr><tr><td>To change your password and manage your billing information, view your account details.</td><td width='20'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Donate&nbsp;' onclick='document.location.href=\\\"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=walinskydotcom\@hotmail.com&item_name=walinskydotcom&item_number=dotmac&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8\\\"'></td><td width='20'></td></tr></table><div style='position:absolute; right:0px; bottom:0px;'><IMG src='http://www.walinsky.com/dotwalinskysmall.png' alt='dotwalinsky' width='50' height='61' /></div></body></html>";
 			$answer = 	qq±{
@@ -264,7 +267,7 @@ sub QUERYaccountInfo {
 			$content .= $buf;
 			}
 		}
-	#carp $content;
+	carp $content;
 	
 	$answer = "{
     payload = {servicesAvailable = (iDisk, iSync, SharingCertificate, Email, WebHosting); }; 
@@ -285,7 +288,7 @@ sub configureDisk {
 			$content .= $buf;
 			}
 		}
-	#carp $content;
+	carp $content;
 	
 	$answer = "{
     payload = {
