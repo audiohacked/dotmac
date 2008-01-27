@@ -4,7 +4,6 @@ use strict;
 use CGI::Carp;
 use Data::Dumper;
 #use DotMac::Utils::Rearrange;
-use DotMac::DotMacDB::mysql;
 
 sub new {
 	carp "new DotMacDB";
@@ -13,11 +12,9 @@ sub new {
 	my ($db_provider, @args) = rearrange(['provider'], @_);
 	$db_provider ||= 'mysql';
 
-
 	my $backend = "DotMac::DotMacDB::\L${db_provider}\E";
-	eval "use $backend" if $backend->can('new');
-
-	#my $backend = "DotMac::DotMacDB::mysql";
+	carp $backend;
+	eval "require $backend"; # if $backend->can('new');
 
 	my $this = bless {}, $self;
 	$this->{backend} = $backend->new(@args);
