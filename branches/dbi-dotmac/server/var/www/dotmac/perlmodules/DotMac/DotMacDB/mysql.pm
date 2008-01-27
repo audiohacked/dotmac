@@ -77,7 +77,7 @@ sub get_user_quota{
 	my $dbh = $self->{dbh};
 
 	my $dbq = $dbh->prepare(qq{SELECT idisk_quota_limit FROM auth WHERE username=? AND realm=?});
-	$dbq->execute;
+	$dbq->execute($user,$realm);
 	my ($quota) = $dbq->fetchrow_array;
 	$dbq->finish;
 	return $quota;
