@@ -13,7 +13,7 @@ sub new {
 	$db_provider ||= 'mysql';
 
 	my $backend = "DotMac::DotMacDB::\L${db_provider}\E";
-	carp $backend;
+	#carp $backend;
 	eval "require $backend"; # if $backend->can('new');
 
 	my $this = bless {}, $self;

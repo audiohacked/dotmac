@@ -11,9 +11,9 @@ sub handler {
 	my $dbauth;
 
 	my $dbType = $r->dir_config('dotMacDBServType');
-	carp $dbType;
-	carp $user;
-	carp $realm;
+	#carp $dbType;
+	#carp $user;
+	#carp $realm;
 
 	$dbauth = DotMac::DotMacDB->new( -provider=>'mysql', 
 		-db=>'dotmac',
@@ -23,7 +23,7 @@ sub handler {
 		);
 
 	my $savedHash = $dbauth->fetch_apache_auth($user, $realm);
-	carp $savedHash;
+	#carp $savedHash;
 	if($savedHash) {
 		$$hash = $savedHash;
 		return Apache2::Const::OK;
