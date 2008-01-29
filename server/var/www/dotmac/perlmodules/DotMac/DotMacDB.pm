@@ -60,6 +60,37 @@ sub list_users{
 	return $self->{backend}->list_users($realm);# if $self->{backend}->can('list_users');
 }
 
+sub add_user{
+	my $self = shift;
+	my ($user, $newpass, $realm) = @_;
+
+	carp "DotMacDB: add_user";
+
+	$realm ||= 'idisk.mac.com';
+	return $self->{backend}->add_user($user, $newpass, $realm);# if $self->{backend}->can('list_users');
+}
+
+sub update_user_info{
+	my $self = shift;
+	my ($user, $email, $quota, $realm) = @_;
+	
+	carp "DotMacDB: update_user_info";
+
+	$realm ||= 'idisk.mac.com';
+	return $self->{backend}->update_user_info($user, $email, $quota, $realm);# if $self->{backend}->can('list_users');
+}
+
+sub fetch_user_info{
+	my $self = shift;
+	my ($user, $realm) = @_;
+	
+	carp "DotMacDB: fetch_user_info";
+
+	$realm ||= 'idisk.mac.com';
+	return $self->{backend}->fetch_user_info($user, $realm);# if $self->{backend}->can('list_users');
+}
+
+
 sub rearrange {
     my($order,@param) = @_;
     return unless @param;

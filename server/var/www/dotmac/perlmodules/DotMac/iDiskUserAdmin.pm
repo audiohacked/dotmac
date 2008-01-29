@@ -23,24 +23,27 @@ use DB_File;
 use Encode;#use encoding "utf8";
 use DotMac::CommonCode;
 use Apache2::RequestRec ();
+use DotMac::DotMacDB;
+
 # retrieve var, set by PerlSetVar in httpd.conf:
 # $foo = $r->dir_config('foo');
 sub handler
 	{
 	my $r = shift;
+	my $realm = $r->dir_config('dotMacRealm');
 	#If you really want to use this, uncomment the following line - and comment-out the next one
 	#Note: adapt your dotmac.conf in a way that this page _need_ a (secure) login!!!
 
-	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
-	my $q = $dbh->prepare("SELECT username FROM auth");
-	$q->execute;
-	my @userlist = ();
-	while (my ($u) = $q->fetchrow_array) {
-		push @userlist, $u;
-	}
-	$q->finish;
+	my $dbadmin = DotMac::DotMacDB->new( 
+		-provider=>'mysql', 
+		-db=>'dotmac',
+		-host=>'localhost',
+		-user=>'dotmac',
+		-pass=>'dotmac'
+		);
 
-	my @users = sort @userlist;
+	my @users = $dbadmin->list_users($realm);
+	
 	print 	header,
 			start_html('User management'),
 			h1('User management'),
@@ -114,10 +117,8 @@ sub handler
 				}
 			$user = $newuser;
 			my $newpass = param('newpass1');
-			my $insertQuery = "INSERT INTO auth (username, passwd) VALUES (\'$user\', MD5(\'$newuser:idisk.mac.com:$newpass\'));";
-			my $q2 = $dbh->do($insertQuery);
-			$dbh->disconnect;
-			
+			$dbadmin->add_user($user, $newpass, $realm);
+
 			}
 		if ($getset eq 'get') {
 			&get_user ($r, $user);
@@ -126,24 +127,23 @@ sub handler
 			&set_user ($r, $user);
 			}
 		}
-	$dbh->disconnect;	
 	return Apache2::Const::OK;
 	}
 
 sub get_user {
 	my ($r, $user) = @_;
+	my $realm = $r->dir_config('dotMacRealm');
 
-	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
-	my $q3 = $dbh->prepare("SELECT username FROM auth");
-	$q3->execute;
-	my @userlist = ();
-	while (my ($u) = $q3->fetchrow_array) {
-		push @userlist, $u;
-	}
-	$q3->finish;
+	my $dbadmin = DotMac::DotMacDB->new(
+		-provider=>'mysql', 
+		-db=>'dotmac',
+		-host=>'localhost',
+		-user=>'dotmac',
+		-pass=>'dotmac'
+		);
 
-
-	my @users = sort @userlist;
+	my @users = $dbadmin->list_users($realm);
+	
 	# we already verified if we got sent here by ticking the list or by typing a username
 	# a typed username might already exist though
 	my $user_exists = 0;
@@ -158,15 +158,9 @@ sub get_user {
 		{
 		print h3("create user $user"),p;
 		}
-
-	my $defaultQuota = '';
-	my $defaultEmail = '';
-	my $query4 = "SELECT idisk_quota_limit, email_addr FROM auth WHERE username = \'$user\'";
-	my $q4 = $dbh->prepare($query4);
-	$q4->execute;
-	($defaultQuota, $defaultEmail) = $q4->fetchrow_array;
-	$q4->finish;
 	
+	($defaultQuota, $defaultEmail) = $dbadmin->fetch_user_info($user, $realm);
+		
 	print start_form,
 		hidden(-name=>'user',
 				-value=>$user,
@@ -197,18 +191,24 @@ sub get_user {
 		submit,
 		end_form,
 		hr;
-	$dbh->disconnect;	
 	}
 
 sub set_user {
 	my ($r, $user) = @_;
 	my $quota = param('quota');
 	my $email = param('email');
-	
-	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
-	my $query5 = "UPDATE auth SET idisk_quota_limit = \'$quota\', email_addr = \'$email\' WHERE username = \'$user\' ";
-	my $q5 = $dbh->do($query5);
-	$dbh->disconnect;
+	my $realm = $r->dir_config('dotMacRealm');
+
+	my $dbadmin = DotMac::DotMacDB->new(
+		-provider=>'mysql', 
+		-db=>'dotmac',
+		-host=>'localhost',
+		-user=>'dotmac',
+		-pass=>'dotmac'
+		);
+
+	$dbadmin->update_user_info($user,$email,$quota,$realm);
+
 	return get_user($r, $user);
 	}
 
