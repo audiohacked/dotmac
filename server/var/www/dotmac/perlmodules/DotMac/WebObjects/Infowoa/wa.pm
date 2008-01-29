@@ -267,7 +267,7 @@ sub QUERYaccountInfo {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+	#carp $content;
 	
 	$answer = "{
     payload = {servicesAvailable = (iDisk, iSync, SharingCertificate, Email, WebHosting); }; 
@@ -288,7 +288,7 @@ sub configureDisk {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+	#carp $content;
 	
 	$answer = "{
     payload = {
