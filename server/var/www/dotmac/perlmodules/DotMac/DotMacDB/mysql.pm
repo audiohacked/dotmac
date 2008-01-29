@@ -87,7 +87,7 @@ sub add_user{
 	my $self = shift;
 	my ($user, $newpass, $realm) = @_;
 
-	my $dbh-> $self->{dbh};
+	my $dbh = $self->{dbh};
 	
 	my $insertQuery = "INSERT INTO auth (username, passwd) VALUES (\'$user\', MD5(\'$user:$realm:$newpass\'));";
 	my $q = $dbh->do($insertQuery);
@@ -97,8 +97,10 @@ sub add_user{
 sub update_user_info{
 	my $self = shift;
 	my ($user, $email, $quota, $realm) = @_;
-	
-	my $q5 = $dbh->prepare(qq{UPDATE auth SET idisk_quota_limit=?, email_addr=? WHERE username=? AND realm=?});
+
+	my $dbh = $self->{dbh};
+
+	my $q = $dbh->prepare(qq{UPDATE auth SET idisk_quota_limit=?, email_addr=? WHERE username=? AND realm=?});
 	$q->execute($quota, $email, $user, $realm);
 	$q->finish;
 }
@@ -106,9 +108,11 @@ sub update_user_info{
 sub fetch_user_info{
 	my $self = shift;
 	my ($user, $realm) = @_;
-	
+
 	my $defaultQuota = '';
 	my $defaultEmail = '';
+
+	my $dbh = $self->{dbh};
 	
 	my $q = $dbh->prepare(qq{SELECT idisk_quota_limit, email_addr FROM auth WHERE username=? AND realm=?});
 	$q->execute($user,$realm);
