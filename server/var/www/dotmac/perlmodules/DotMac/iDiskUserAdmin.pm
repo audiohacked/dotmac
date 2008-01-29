@@ -159,7 +159,7 @@ sub get_user {
 		print h3("create user $user"),p;
 		}
 	
-	($defaultQuota, $defaultEmail) = $dbadmin->fetch_user_info($user, $realm);
+	my ($defaultQuota, $defaultEmail) = $dbadmin->fetch_user_info($user, $realm);
 		
 	print start_form,
 		hidden(-name=>'user',
