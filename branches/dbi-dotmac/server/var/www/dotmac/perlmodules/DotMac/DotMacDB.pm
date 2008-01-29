@@ -9,15 +9,18 @@ sub new {
 	carp "new DotMacDB";
 	my $self = shift;
 
-	my ($db_provider, @args) = rearrange(['provider'], @_);
-	$db_provider ||= 'mysql';
+    
+    my $var_hash={@_};
+  	my $db_provider = exists $var_hash->{'provider'} ? $var_hash->{'provider'} : "mysql";
+  	
+	#my ($db_provider, @args) = rearrange(['provider'], @_);
 
 	my $backend = "DotMac::DotMacDB::\L${db_provider}\E";
 	#carp $backend;
 	eval "require $backend"; # if $backend->can('new');
 
 	my $this = bless {}, $self;
-	$this->{backend} = $backend->new(@args);
+	$this->{backend} = $backend->new(@_);
 	return $this;
 }
 

@@ -11,12 +11,12 @@ sub new {
 
 	carp "new DotMacDB-mysql";
 
-	my ($dbname, $host, $dbuser, $dbpass, @args) = rearrange(['db','host','user','pass'], @_);
+    my $var_hash={@_};
+  	my $dbname = exists $var_hash->{'db'} ? $var_hash->{'db'} : "dotmac";
+	my $host = exists $var_hash->{'host'} ? $var_hash->{'host'} : "localhost";
+	my $dbuser = exists $var_hash->{'user'} ? $var_hash->{'user'} : "dotmac";
+	my $dbpass = exists $var_hash->{'pass'} ? $var_hash->{'pass'} : "dotmac";
 
-	my $dbname ||= 'dotmac';
-	my $host ||= 'localhost';
-	my $dbuser ||= 'dotmac';
-	my $dbpass ||= 'dotmac';
 
 	my $dotmacDBconn = DBI->connect('dbi:mysql:database='.$dbname.';host='.$host, $dbuser, $dbpass);
 	my $self = {
