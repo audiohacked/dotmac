@@ -4,6 +4,12 @@ use DotMac::DotMacDB;
 use Apache2::Const -compile => qw(OK DECLINED HTTP_UNAUTHORIZED);
 use CGI::Carp;
 use strict;
+use Apache2::RequestIO ();
+use Apache2::RequestRec ();
+use Apache2::RequestUtil ();
+use Apache2::Log;
+use Apache2::ServerUtil ();
+use Data::Dumper;
 
 sub handler {
 	carp "AuthenDigestDM";
@@ -11,16 +17,12 @@ sub handler {
 	my $dbauth;
 
 	my $dbType = $r->dir_config('dotMacDBServType');
-	#carp $dbType;
+	my $s = Apache2::ServerUtil->server;	
+
 	#carp $user;
 	#carp $realm;
 
-	$dbauth = DotMac::DotMacDB->new( -provider=>'mysql', 
-		-db=>'dotmac',
-		-host=>'localhost',
-		-user=>'dotmac',
-		-pass=>'dotmac'
-		);
+	$dbauth = DotMac::DotMacDB->new();
 
 	my $savedHash = $dbauth->fetch_apache_auth($user, $realm);
 	#carp $savedHash;

@@ -24,6 +24,8 @@ use Encode;#use encoding "utf8";
 use DotMac::CommonCode;
 use Apache2::RequestRec ();
 use DotMac::DotMacDB;
+use Data::Dumper;
+use CGI::Carp;
 
 # retrieve var, set by PerlSetVar in httpd.conf:
 # $foo = $r->dir_config('foo');
