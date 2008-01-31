@@ -4,6 +4,11 @@ use strict;
 use CGI::Carp;
 use Data::Dumper;
 #use DotMac::Utils::Rearrange;
+use Apache2::ServerUtil ();
+use Apache2::RequestIO ();
+use Apache2::RequestRec ();
+use Apache2::RequestUtil ();
+use Apache2::Log;
 
 sub new {
 	carp "new DotMacDB";
@@ -11,86 +16,38 @@ sub new {
 
     
     my $var_hash={@_};
-  	my $db_provider = exists $var_hash->{'provider'} ? $var_hash->{'provider'} : "mysql";
-  	
+#  	my $db_provider = exists $var_hash->{'provider'} ? $var_hash->{'provider'} : "mysql";
+  	my $srv_cfg;
+  	my $s = Apache2::ServerUtil->server;
 	#my ($db_provider, @args) = rearrange(['provider'], @_);
-
+	
+	
+	if (exists $var_hash->{'cfg_array'}) {
+		$srv_cfg = arraytohash($var_hash->{'cfg_array'});
+	}else {
+		$srv_cfg = $s->dir_config;
+	}
+	#carp Dumper($srv_cfg);
+	my $db_provider = exists $srv_cfg->{'dotMacDBServType'} ? $srv_cfg->{'dotMacDBServType'} : "null";
 	my $backend = "DotMac::DotMacDB::\L${db_provider}\E";
 	#carp $backend;
 	eval "require $backend"; # if $backend->can('new');
 
 	my $this = bless {}, $self;
-	$this->{backend} = $backend->new(@_);
-	return $this;
+	$this->{backend} = $backend->new(($srv_cfg));
+	#carp Dumper($this->{backend});
+	return $this->{backend};
 }
 
-sub fetch_apache_auth{
-	carp "DotMacDB: fetch_apache_auth";
-	my $self = shift;
-	my ($user, $realm) = @_;
 
-
-	$realm ||= 'idisk.mac.com';
-	return $self->{backend}->fetch_apache_auth($user, $realm); # if $self->{backend}->can('fetch_apache_auth');
+sub arraytohash {
+	my ($array) = @_;
+	my (%cfg_hash,$val);
+	foreach $val (@$array) {
+		$cfg_hash{$$val[0]} = $$val[1];
+	}
+	return \%cfg_hash;
 }
 
-sub authen_user{
-	carp "DotMacDB: authen_user";
-	my $self = shift;
-	my ($user, $sent_pw, $realm) = @_;
-
-	$realm ||= 'idisk.mac.com';
-	return $self->{backend}->authen_user($user, $sent_pw, $realm);# if $self->{backend}->can('authen_user');
-}
-
-sub get_user_quota{
-	my $self = shift;
-	my ($user, $realm) = @_;
-
-	carp "DotMacDB: get_user_quota";
-
-	$realm ||= 'idisk.mac.com';
-	return $self->{backend}->get_user_quota($user, $realm);# if $self->{backend}->can('get_user_quota');
-}
-
-sub list_users{
-	my $self = shift;
-	my ($realm) = @_;
-
-	carp "DotMacDB: list_users";
-
-	$realm ||= 'idisk.mac.com';
-	return $self->{backend}->list_users($realm);# if $self->{backend}->can('list_users');
-}
-
-sub add_user{
-	my $self = shift;
-	my ($user, $newpass, $realm) = @_;
-
-	carp "DotMacDB: add_user";
-
-	$realm ||= 'idisk.mac.com';
-	return $self->{backend}->add_user($user, $newpass, $realm);# if $self->{backend}->can('list_users');
-}
-
-sub update_user_info{
-	my $self = shift;
-	my ($user, $email, $quota, $realm) = @_;
-	
-	carp "DotMacDB: update_user_info";
-
-	$realm ||= 'idisk.mac.com';
-	return $self->{backend}->update_user_info($user, $email, $quota, $realm);# if $self->{backend}->can('list_users');
-}
-
-sub fetch_user_info{
-	my $self = shift;
-	my ($user, $realm) = @_;
-	
-	carp "DotMacDB: fetch_user_info";
-
-	$realm ||= 'idisk.mac.com';
-	return $self->{backend}->fetch_user_info($user, $realm);# if $self->{backend}->can('list_users');
-}
 
 1;
