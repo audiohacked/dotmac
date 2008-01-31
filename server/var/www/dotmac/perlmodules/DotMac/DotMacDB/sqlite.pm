@@ -2,22 +2,25 @@ package DotMac::DotMacDB::sqlite;
 
 use DBI;
 use strict;
+use CGI::Carp;
 
 sub new {
 	my $invocant = shift;
 	my $class = ref($invocant) || $invocant;
 
-	carp "new DotMacDB-mysql";
+	carp "new DotMacDB-sqlite";
 
-    my $var_hash={@_};
-  	my $dbname = exists $var_hash->{'db'} ? $var_hash->{'db'} : "dotmac";
-	my $dbuser = exists $var_hash->{'user'} ? $var_hash->{'user'} : "dotmac";
-	my $dbpass = exists $var_hash->{'pass'} ? $var_hash->{'pass'} : "dotmac";
+    my ($var_hash)=@_;
+    
+    my $privatePath = exists $var_hash->{'dotMacPrivatePath'} ?  $var_hash->{'dotMacPrivatePath'} : "nullprivatepath";
+  	my $dbname = exists $var_hash->{'dotMacDBName'} ? $var_hash->{'dotMacDBName'} : "nulldbname";
+	my $dbistring= 'dbi:SQLite:dbname='.$privatePath.'/'.$dbname;
 
-
-	my $dotmacDBconn = DBI->connect('dbi:SQLite:dbname='.$dbname, "", "");
+	my $dotmacDBconn = DBI->connect($dbistring, "", "");
+	carp $dbistring;
+	$dotmacDBconn->do("	PRAGMA default_synchronous = OFF");
 	my $self = {
-		dbh => $dotmacDBconn,
+		dbh => $dotmacDBconn, 
 	};
 	return bless $self, $class;
 }
