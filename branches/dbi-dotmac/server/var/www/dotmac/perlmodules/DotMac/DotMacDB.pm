@@ -15,11 +15,9 @@ sub new {
 	my $self = shift;
 
     
-    my $var_hash={@_};
-#  	my $db_provider = exists $var_hash->{'provider'} ? $var_hash->{'provider'} : "mysql";
+	my $var_hash={@_};
   	my $srv_cfg;
   	my $s = Apache2::ServerUtil->server;
-	#my ($db_provider, @args) = rearrange(['provider'], @_);
 	
 	
 	if (exists $var_hash->{'cfg_array'}) {

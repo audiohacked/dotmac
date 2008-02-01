@@ -16,9 +16,6 @@ sub handler {
 	my ($r, $user, $realm, $hash) = @_;
 	my $dbauth;
 
-	my $dbType = $r->dir_config('dotMacDBServType');
-	my $s = Apache2::ServerUtil->server;	
-
 	#carp $user;
 	#carp $realm;
 
