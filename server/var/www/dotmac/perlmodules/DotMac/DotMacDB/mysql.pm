@@ -11,16 +11,17 @@ sub new {
 
 	carp "new DotMacDB-mysql";
 
-    my $var_hash={@_};
+	my $var_hash={@_};
   	my $dbname = exists $var_hash->{'db'} ? $var_hash->{'db'} : "dotmac";
 	my $host = exists $var_hash->{'host'} ? $var_hash->{'host'} : "localhost";
 	my $dbuser = exists $var_hash->{'user'} ? $var_hash->{'user'} : "dotmac";
 	my $dbpass = exists $var_hash->{'pass'} ? $var_hash->{'pass'} : "dotmac";
-
+	my $dbRealm = exists $var_hash->{'dotMacRealm'} ? $var_hash->{'dotMacRealm'} : "idisk.mac.com";
 
 	my $dotmacDBconn = DBI->connect('dbi:mysql:database='.$dbname.';host='.$host, $dbuser, $dbpass);
 	my $self = {
 		dbh => $dotmacDBconn,
+		realm => $dbRealm,
 	};
 	return bless $self, $class;
 }
@@ -30,6 +31,7 @@ sub fetch_apache_auth{
 	my ($user, $realm) = @_;
 
 	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
 
 	my $QueryPW = $dbh->prepare(qq{SELECT passwd FROM auth WHERE username=? AND realm=?});
 	$QueryPW->execute($user, $realm);
@@ -52,6 +54,7 @@ sub authen_user{
 	my ($user, $sent_pw, $realm) = @_;
 
 	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
 
 	my $QueryPW = $dbh->prepare(qq{SELECT passwd FROM auth WHERE username=? AND realm=?});
 	$QueryPW->execute($user, $realm);
@@ -75,6 +78,7 @@ sub get_user_quota{
 	my ($user, $realm) = @_;
 
 	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
 
 	my $dbq = $dbh->prepare(qq{SELECT idisk_quota_limit FROM auth WHERE username=? AND realm=?});
 	$dbq->execute($user,$realm);
@@ -88,6 +92,7 @@ sub add_user{
 	my ($user, $newpass, $realm) = @_;
 
 	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
 	
 	my $insertQuery = "INSERT INTO auth (username, passwd) VALUES (\'$user\', MD5(\'$user:$realm:$newpass\'));";
 	my $q = $dbh->do($insertQuery);
@@ -99,6 +104,7 @@ sub update_user_info{
 	my ($user, $email, $quota, $realm) = @_;
 
 	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
 
 	my $q = $dbh->prepare(qq{UPDATE auth SET idisk_quota_limit=?, email_addr=? WHERE username=? AND realm=?});
 	$q->execute($quota, $email, $user, $realm);
@@ -113,6 +119,7 @@ sub fetch_user_info{
 	my $defaultEmail = '';
 
 	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
 	
 	my $q = $dbh->prepare(qq{SELECT idisk_quota_limit, email_addr FROM auth WHERE username=? AND realm=?});
 	$q->execute($user,$realm);
@@ -126,6 +133,7 @@ sub list_users{
 	my ($realm) = @_;
 
 	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
 	
 	my $q = $dbh->prepare(qq{SELECT username FROM auth WHERE realm=?});
 	$q->execute($realm);

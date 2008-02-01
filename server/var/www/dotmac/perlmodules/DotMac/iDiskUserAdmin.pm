@@ -36,13 +36,7 @@ sub handler
 	#If you really want to use this, uncomment the following line - and comment-out the next one
 	#Note: adapt your dotmac.conf in a way that this page _need_ a (secure) login!!!
 
-	my $dbadmin = DotMac::DotMacDB->new( 
-		-provider=>'mysql', 
-		-db=>'dotmac',
-		-host=>'localhost',
-		-user=>'dotmac',
-		-pass=>'dotmac'
-		);
+	my $dbadmin = DotMac::DotMacDB->new();
 
 	my @users = $dbadmin->list_users($realm);
 	
@@ -136,13 +130,7 @@ sub get_user {
 	my ($r, $user) = @_;
 	my $realm = $r->dir_config('dotMacRealm');
 
-	my $dbadmin = DotMac::DotMacDB->new(
-		-provider=>'mysql', 
-		-db=>'dotmac',
-		-host=>'localhost',
-		-user=>'dotmac',
-		-pass=>'dotmac'
-		);
+	my $dbadmin = DotMac::DotMacDB->new();
 
 	my @users = $dbadmin->list_users($realm);
 	
@@ -201,13 +189,7 @@ sub set_user {
 	my $email = param('email');
 	my $realm = $r->dir_config('dotMacRealm');
 
-	my $dbadmin = DotMac::DotMacDB->new(
-		-provider=>'mysql', 
-		-db=>'dotmac',
-		-host=>'localhost',
-		-user=>'dotmac',
-		-pass=>'dotmac'
-		);
+	my $dbadmin = DotMac::DotMacDB->new();
 
 	$dbadmin->update_user_info($user,$email,$quota,$realm);
 
