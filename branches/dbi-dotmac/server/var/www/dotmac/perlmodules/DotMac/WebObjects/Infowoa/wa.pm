@@ -288,9 +288,35 @@ sub configureDisk {
 			$content .= $buf;
 			}
 		}
-	#carp $content;
+	carp $content;
+	my $authenticatedReadEnabled ='';
+	my $authenticatedWriteEnabled = '';
+	my $generalPassword = '';
+	my $guestReadEnabled = '';
+	my $guestWriteEnabled = '';
+	my $username = '';
+	my $password = '';
+	my $dotmacversion = '';
+	my(@name_value_array) = split(/;/, $content);
+	foreach my $name_value_pair (@name_value_array) {
+		chomp ($name_value_pair);
+		my($name, $value) = split(/ = /, $name_value_pair);
+		if    ($name =~ m/authenticatedReadEnabled/) { $authenticatedReadEnabled = $value; }
+		elsif ($name =~ m/authenticatedWriteEnabled/){ $authenticatedWriteEnabled = $value; }
+		elsif ($name =~ m/generalPassword/){ $generalPassword = $value; }
+		elsif ($name =~ m/guestReadEnabled/){ $guestReadEnabled = $value; }
+		elsif ($name =~ m/guestWriteEnabled/){ $guestWriteEnabled = $value; }
+		elsif ($name =~ m/username/){ $username = $value; }
+		elsif ($name =~ m/password/){ $password = $value; }
+		elsif ($name =~ m/version/){ $dotmacversion = $value; }
+		}
+		#carp $authenticatedWriteEnabled;
+		#carp $guestReadEnabled;
+		#carp $generalPassword;
 	
-	$answer = "{
+	if ($guestReadEnabled eq '1') {
+		if ($guestWriteEnabled eq '1') {
+			$answer = "{
     payload = {
         guestReadEnabled = Y; 
         guestWriteEnabled = Y; 
@@ -299,8 +325,21 @@ sub configureDisk {
     }; 
     statusCode = success; 
 }";
-# this for when public password gets set
-my $pwAnser = '{
+		} elsif ($guestWriteEnabled eq '0') {
+			$answer = "{
+    payload = {
+        guestReadEnabled = Y; 
+        guestWriteEnabled = N; 
+        hasGeneralPassword = N; 
+        relativePath = Public; 
+    }; 
+    statusCode = success; 
+}";			
+		}
+	} elsif ($guestReadEnabled eq '0') {
+		if ($authenticatedWriteEnabled eq '1') {
+			# this for when public password gets set
+			$answer = '{
     payload = {
         authenticatedReadEnabled = Y; 
         authenticatedWriteEnabled = Y; 
@@ -311,6 +350,20 @@ my $pwAnser = '{
     }; 
     statusCode = success; 
 }';
-	return $answer;
+		} elsif ($authenticatedWriteEnabled eq '0') {
+			$answer = '{
+    payload = {
+        authenticatedReadEnabled = Y; 
+        authenticatedWriteEnabled = N; 
+        guestReadEnabled = N; 
+        guestWriteEnabled = N; 
+        hasGeneralPassword = Y; 
+        relativePath = Public; 
+    }; 
+    statusCode = success; 
+}';
+		}
 	}
+	return $answer;
+}
 1;
