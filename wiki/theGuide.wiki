@@ -170,4 +170,8 @@ please continue reporting!
 
   * Perl modules are only compiled (once) at server startup. When updating perlmodules over svn, make sure issuing a (apachectl) graceful/restart.
 
-  * *_Do_* use the 'Issues' tab; both users and developers are helping each-other out there.
+  * *_Do_* use the [http://code.google.com/p/dotmac/issues/list Issues] tab; both users and developers are helping each-other out there.
+
+==== Continue Reading ====
+  * [http://code.google.com/p/dotmac/wiki/Help_the_project Help the project]
+  * [http://code.google.com/p/dotmac/wiki/Plans Plans]
