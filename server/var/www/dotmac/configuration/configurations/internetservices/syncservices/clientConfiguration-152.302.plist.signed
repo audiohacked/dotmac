@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>lock_acquire_sleep_seconds</key>
+    <integer>30</integer>
+    <key>max_lock_acquire_attempts</key>
+    <integer>5</integer>
+    <key>min_client_version.dotmacsyncclient</key>
+    <integer>155</integer>
+    <key>enable_dmnotify_support</key>
+    <integer>1</integer>
+    <key>dataclasses</key>
+    <dict>
+      <key>com.apple.Bookmarks</key>
+      <dict>
+        <key>min_client_version</key>
+        <string>dotmacsyncclient-155</string>
+      </dict>
+      <key>com.apple.Calendars</key>
+      <dict>
+        <key>min_client_version</key>
+        <string>dotmacsyncclient-155</string>
+      </dict>
+      <key>com.apple.Contacts</key>
+      <dict>
+        <key>min_client_version</key>
+        <string>dotmacsyncclient-155</string>
+      </dict>
+    </dict>
+    <key>baseroller</key>
+    <dict>
+      <key>auto_baseroll_enable</key>
+      <integer>0</integer>
+    </dict>
+  </dict>
+</plist>
+----BEGIN RSA SIGNATURE----
+iuu	À™ÎìOáŞ²õæõ¨×™¯³’‡¥Hk¢ºQ½p6È ˆˆ”Pùíà,!A/5*’
+2ÿõ}§ĞF;
