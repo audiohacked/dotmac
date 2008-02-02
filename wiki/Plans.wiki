@@ -14,7 +14,7 @@ The .htdigest/BerkeleyDB combination cannot suffice our needs here; we'll move t
 
 ===Work in progress (in random order)===
 
-  * Build a pluggable auth system, supporting various (dbi) backends. Sqlite will be the default install option, mySQL optional. It should be fairly simple to add LDAP or even Opendirectory support.
+  * Build a pluggable auth system, supporting various (dbi) backends. Sqlite will be the default install option, mySQL optional. It should be fairly simple to add other (dbi) backends.
   * Public folder access.
   * More sophisticated idiskAdmin.
 
