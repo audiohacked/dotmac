@@ -28,6 +28,7 @@ use Apache2::SubRequest ();
 use DotMac::NullOutputFilter;
 use DotMac::PostingInputFilter;
 use Data::Dumper;
+use Digest::MD5;
 use DBI;
 
 sub writeDeltaRecord{
@@ -538,6 +539,13 @@ sub dmmkpath_response
 	return ($responsexml->toString());
 	}
 
+sub URLDecode {
+    my $theURL = $_[0];
+    $theURL =~ tr/+/ /;
+    $theURL =~ s/%([a-fA-F0-9]{2,2})/chr(hex($1))/eg;
+    $theURL =~ s/<!--(.|\n)*-->//g;
+    return File::Spec->canonpath($theURL);
+}
 
 sub movefile 
 	{ 
@@ -557,22 +565,17 @@ sub check_for_dir_backref {
 }
 sub authen_user{
 	my ($r, $user, $sent_pw) = @_;
+	$user =~ s/^\"|\"$//g;
 	if ($r->dir_config('dotMacDBType') eq 'file')
 		{
 		return authen_user_file($r, $user, $sent_pw);
 		}
-	elsif ($r->dir_config('dotMacDBType') eq 'SQL')
+	elsif ($r->dir_config('dotMacDBType') eq 'dbd')
 		{
-		
+		return authen_user_sql($dsn, $user, $sent_pw);
 		}
     }
-sub URLDecode {
-    my $theURL = $_[0];
-    $theURL =~ tr/+/ /;
-    $theURL =~ s/%([a-fA-F0-9]{2,2})/chr(hex($1))/eg;
-    $theURL =~ s/<!--(.|\n)*-->//g;
-    return File::Spec->canonpath($theURL);
-}
+
 sub authen_user_file{
 	my ($r, $username, $password) = @_;
 	carp $r->dir_config('dotMacUserDB');
@@ -592,15 +595,59 @@ sub authen_user_file{
 	else {
 		return 0;
 		}
-  
-    }
+	}
 
-sub authen_user_SQL{
-      my ($r, $user, $sent_pw) = @_;
-      return "Not implemented yet !";
+sub authen_user_sql{
+	my ($dsn, $user, $sent_pw) = @_;
+	carp "AuthenDOTMAC_SQL";
+	my $u = $user;
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q = "SELECT passwd FROM auth WHERE username=\'$u\'";
+	my $QueryPW = $dbh->prepare($q);
+	$QueryPW->execute;
+	my $passwd = $QueryPW->fetchrow_array;
+	
+	$QueryPW->finish;
+	$dbh->disconnect;
+
+	my $md5 = Digest::MD5->new();
+	$md5->add("$u:idisk.mac.com:$sent_pw");
+	my $gen_passwd = $md5->hexdigest; 
+
+	if ($passwd eq $gen_passwd) {
+		return 1;
+	} else {
+		return 0;
+	}
     }
 
 sub get_user_quota{
+	my ($r, $user) = @_;
+	$user =~ s/^\"|\"$//g;
+	if ($r->dir_config('dotMacDBType') eq 'file')
+		{
+		return get_user_quota_file($r, $user);
+		}
+	elsif ($r->dir_config('dotMacDBType') eq 'dbd')
+		{
+		return get_user_quota_sql($dsn, $user);
+		}
+	}
+
+sub get_user_quota_sql{
+	my ($dsn, $user) = @_;
+	carp "QuotaDotMac_SQL";
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q = "SELECT idisk_quota_limit FROM auth WHERE username=\'$user\'"; 
+	my $dbq = $dbh->prepare($q);
+	$dbq->execute;
+	my ($quota) = $dbq->fetchrow_array;
+	$dbq->finish;
+	$dbh->disconnect;
+	return $quota;
+	}
+
+sub get_user_quota_file{
 	my ($r, $user) = @_;
 	my $dotMacUserDataPath = $r->dir_config('dotMacUserDataPath');
 	my $dotMacUdataDBname = $r->dir_config('dotMacUdataDBname');
@@ -629,11 +676,11 @@ sub list_users{
 		{
 		return list_users_file($r);
 		}
-	elsif ($r->dir_config('dotMacDBType') eq 'SQL')
+	elsif ($r->dir_config('dotMacDBType') eq 'dbd')
 		{
-		
+		return list_users_sql($dsn);
 		}
-    }
+	}
 
  sub list_users_file{
 	my ($r) = @_;
@@ -650,6 +697,24 @@ sub list_users{
 	my $userAdmin = new HTTPD::UserAdmin @htfile;
 	my @users = $userAdmin->list;
 	return sort @users;
+	}
+
+sub list_users_sql{
+	my ($dsn) = @_;
+	carp "ListUsersDotMac_SQL";
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q = $dbh->prepare("SELECT username FROM auth");
+	$q->execute;
+
+	my @userlist = ();
+	while (my ($user) = $q->fetchrow_array) {
+		push @userlist, $user;
+	}
+
+	$q->finish;
+	$dbh->disconnect;
+
+	return sort @userlist;
 	}
 
  sub dec2hex {
