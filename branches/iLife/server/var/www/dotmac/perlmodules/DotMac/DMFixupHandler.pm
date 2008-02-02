@@ -35,8 +35,15 @@ sub handler
 	my $user = $r->user;
 	my $userAgent = $r->headers_in->{'User-Agent'} || '';
 	chomp($userAgent);
+	
+	
+	if (($r->method() eq "DELETE") || ($r->method() eq "PUT") || ($r->method() eq "MOVE") || ($r->method() eq "MKCOL")) {
+		DotMac::CommonCode::writeDeltaRecord($r);
+	}
+	
 	my $ifHeader = $r->headers_in->{'If'} || '';
-	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->get_server_name(), $r->get_server_port(),$userAgent,$rmethod,$r->main&&"Subrequest",$ifHeader,$r->uri,$r->user, $r->headers_in->{'X-Webdav-Method'}));
+	my $xwebdavmethod = $r->headers_in->{'X-Webdav-Method'} || '';
+	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->get_server_name(), $r->get_server_port(),$userAgent,$rmethod,$r->main&&"Subrequest",$ifHeader,$r->uri,$r->user, $xwebdavmethod));
 
 	$logging =~ m/Headers/&&$rlog->info($r->as_string());
 	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK") | ($rmethod eq "DELETE") | ($rmethod eq "UNLOCK")){
@@ -106,37 +113,48 @@ sub handler
 #			carp $r->as_string();
 			# LOCK /walinsky/.FileSync
 			my $dotFilesyncFolder = "/$user/.FileSync";
-			if (($rmethod eq "MOVE") && ($r->headers_in->{'If'}) && ($r->headers_in->{'If'} !~ m/<.*> \(<.*>\)/)) { # =~ m/^http:\/\/idisk.mac.com$dotFilesyncFolder/)) {
-				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
-				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+			if ($rmethod eq "MOVE") {
+				if (($r->headers_in->{'If'}) && ($r->headers_in->{'If'} =~ m/^(\(<.*>\))(\(<.*>\))$/)) {
+					my $tok1 = $1;
+					my $tok2 = $2;
+					$logging =~ m/Locks/&&$r->log->info("Found 2 opaquelocktokens on a move");
+					my $target = $r->headers_in->{'Destination'};
+					$target =~ m|http[s]{0,1}://([a-zA-Z0-9\.]*)/(.*)|;
+					$target = $2;		
+					$r->headers_in->{'If'} = "<".$r->uri."> $tok1 <$target> $tok2";
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+				} elsif (($r->headers_in->{'If'}) && ($r->headers_in->{'If'} =~ m/^(\(<.*>\))/)) {
+					my $tok1=$1;
+					my $target = $r->headers_in->{'Destination'};
+					$target =~ m|http[s]{0,1}://([a-zA-Z0-9\.]*)/(.*)|;
+					$target = $2;		
+					$r->headers_in->{'If'} = "<".$target."> $tok1";
+					$logging =~ m/Locks/&&$r->log->info("Found 1 opaquelocktoken on a move");
+
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				}
-			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If-Match'})) { # ugly! - should also test for locking $dotFilesyncFolder itself - we get requests for lock (refresh) on exact match
+			} elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If-Match'})) { # ugly! - should also test for locking $dotFilesyncFolder itself - we get requests for lock (refresh) on exact match
 				$r->headers_in->{'If-Match'} = "*";
-				}
-			elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If'}) && ($r->uri =~ m/$dotFilesyncFolder/)) { 
+			} elsif (($rmethod eq "LOCK") && ($r->headers_in->{'If'}) && ($r->uri =~ m/$dotFilesyncFolder/)) { 
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
 				$logging=~ m/Sections/&&$rlog->info("Match Lock + .filesync + if header");
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 				
-				}				
-			elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$dotFilesyncFolder/)) {
+			} elsif (($rmethod eq "PUT") && ($r->uri =~ m/^$dotFilesyncFolder/)) {
 				$r->headers_in->{'If'} = "<$dotFilesyncFolder> $ifHeader";
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
-				}
-			elsif (($rmethod eq "DELETE") && ($r->headers_in->{'If'})) {
+			} elsif (($rmethod eq "DELETE") && ($r->headers_in->{'If'})) {
 				my $rUri = $r->uri;
 				$r->headers_in->{'If'} = "<$rUri> $ifHeader";
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
-				}
-			elsif ($rmethod eq "MKCOL") {
+			} elsif ($rmethod eq "MKCOL") {
 				my $rUri = $r->uri;
 				$rUri =~ s|/\Z(?!\n)|| unless $rUri eq "/"; # strip possible trailing slash
 				if ($ifHeader) {
 					$r->headers_in->{'If'} = "<$rUri> $ifHeader";
 					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 					}
-			}
-			elsif ($rmethod eq "POST") {
+			} elsif ($rmethod eq "POST") {
 				# *sigh*
 				# X-Webdav-Method: DMMKPATH
 				# X-Webdav-Method: DMPUTFROM
@@ -220,7 +238,7 @@ sub handler
 					elsif ($XWebdavMethod eq 'SETREDIRECT')
 						{
 						my $buf;
-						my $content;
+						my $content="";
 						my $content_length = $r->header_in('Content-Length');
 						if ($content_length > 0)
 							{

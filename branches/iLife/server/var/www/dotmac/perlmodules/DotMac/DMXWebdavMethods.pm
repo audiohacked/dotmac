@@ -162,7 +162,7 @@ sub truthget {
 
 	#<updated>2007-12-29T20:05:20-08:00</updated>
 	my @datearray=gmtime(time());
-	my $lastupdate=sprintf('%s-%#.2d-%#.2dT%#.2d:%#.2d:%#.2d-00:00',@datearray[5]+1900,@datearray[4]+1,@datearray[3],@datearray[2],@datearray[1],@datearray[0]);
+	my $lastupdate=sprintf('%s-%#.2d-%#.2dT%#.2d:%#.2d:%#.2d-00:00',$datearray[5]+1900,$datearray[4]+1,$datearray[3],$datearray[2],$datearray[1],$datearray[0]);
 	foreach my $a (@args) {
 		(my $att,my $val) = split '=', $a;
 		$params{$att} = $val ;
