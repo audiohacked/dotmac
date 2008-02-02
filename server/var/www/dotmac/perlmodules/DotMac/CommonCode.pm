@@ -28,6 +28,45 @@ use Apache2::SubRequest ();
 use DotMac::NullOutputFilter;
 use DotMac::PostingInputFilter;
 use Data::Dumper;
+use DBI;
+
+sub writeDeltaRecord{
+	my ($r) = @_;
+	my ($dbh);
+	my $opcode="";
+	my $source="";
+	my $target="";
+	my $user = $r->user();
+	my $timestamp = time();
+	my $dbargs = {	AutoCommit => 1, 
+					PrintError => 1};
+	my $dbpath= $r->dir_config('dotMacRootPath');
+	$dbh = DBI->connect("dbi:SQLite:dbname=".$dbpath."/private/deltadb.db","","",$dbargs);
+	if ($dbh->err()) { $r->log->error($DBI::errstr); }
+	if ($r->method() eq "MOVE") { 
+		$opcode="MOV";
+		$source=$r->uri;
+		$target=$r->headers_in->{'Destination'};
+		$target =~ m|http[s]{0,1}://([a-zA-Z0-9\.]*)/(.*)|;
+		$target = $2;		
+	} elsif ($r->method() eq "PUT") {
+		$opcode="PUT";
+		$source=$r->uri;
+	} elsif ($r->method() eq "DELETE") {
+		$opcode="DEL";
+		$source=$r->uri;
+	} elsif ($r->method() eq "MKCOL") {
+		$opcode="MKD";
+		$source=$r->uri;
+	} else {
+		$r->log->info("writeDeltaRecord: unhandled opcode");
+	}
+	
+	$dbh->do("insert into deltaentry values('$user','$opcode','$source','$target',$timestamp)");
+	$dbh->disconnect();
+	return 1;
+	
+}
 
 sub readUserDB
 	{ my ($dbpath, %attributes) = @_;

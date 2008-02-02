@@ -33,7 +33,7 @@ sub handler {
               $content);
 	
 	# none existent users:
-	# print ('Account Error: Nonexistent');
+#	print ('Account Error: Nonexistent');
 	# return Apache2::Const::HTTP_PAYMENT_REQUIRED; # does this give me the spinning pizza of death ?
 	return Apache2::Const::OK;
 }
