@@ -1,5 +1,23 @@
 #file:DotMac/DMFixupHandler.pm
 #--------------------------------
+
+## Copyright (C) 2007 Walinsky, Robert See
+## This file is part of dotMac. 
+
+## dotMac is free software: you can redistribute it and/or modify
+## it under the terms of the Affero GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+
+## dotMac is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## Affero GNU General Public License for more details.
+
+## You should have received a copy of the Affero GNU General Public License
+## along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+
+
 package DotMac::DMFixupHandler;
 
 use strict;
@@ -36,14 +54,22 @@ sub handler
 	my $userAgent = $r->headers_in->{'User-Agent'} || '';
 	chomp($userAgent);
 	
-	
 	if (($r->method() eq "DELETE") || ($r->method() eq "PUT") || ($r->method() eq "MOVE") || ($r->method() eq "MKCOL")) {
 		DotMac::CommonCode::writeDeltaRecord($r);
 	}
 	
 	my $ifHeader = $r->headers_in->{'If'} || '';
 	my $xwebdavmethod = $r->headers_in->{'X-Webdav-Method'} || '';
-	$logging&&$rlog->info(join(':',"DMFixupHandler", $r->get_server_name(), $r->get_server_port(),$userAgent,$rmethod,$r->main&&"Subrequest",$ifHeader,$r->uri,$r->user, $xwebdavmethod));
+	$logging&&$rlog->info(join(':',"DMFixupHandler", 
+	$r->get_server_name(), 
+	$r->get_server_port(),
+	$userAgent,$rmethod,
+	$r->main&&"Subrequest"||"",
+	$ifHeader,
+	$r->uri,
+	$r->user, 
+	$xwebdavmethod));
+
 
 	$logging =~ m/Headers/&&$rlog->info($r->as_string());
 	if (($rmethod eq "PUT") | ($rmethod eq "MKCOL")  | ($rmethod eq "MOVE") | ($rmethod eq "POST") | ($rmethod eq "LOCK") | ($rmethod eq "DELETE") | ($rmethod eq "UNLOCK")){
@@ -57,6 +83,8 @@ sub handler
 			if (($rmethod eq "PUT") && ($r->uri =~ m/^$clientsfolder(.*).client$/)) {
 				$logging =~ m/Sections/&&$rlog->info("Put and SyncServices/Clients Section");
 				$r->headers_in->{'If'} = "<$clientsfolder> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+
 				}
 			# LOCK /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Bookmarks/
 			# PUT /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Bookmarks/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp
@@ -65,6 +93,8 @@ sub handler
 				$logging =~ m/Sections/&&$rlog->info("In the PUT and SyncServices/Schemas Section");
 				my $childfolder = $1;
 				$r->headers_in->{'If'} = "<$schemasfolder/$childfolder> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+
 				}
 			# (<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)(<opaquelocktoken:a3e612de-bcc3-49bd-9dcc-4369bc1c17b1>)
 			elsif (($rmethod eq "MOVE") && ($r->uri =~ m/^$schemasfolder\/(.*)\//)) {
@@ -79,6 +109,8 @@ sub handler
 				# MOVE /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Contacts/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp HTTP/1.1" 502 (Bad Gateway)
 				if ($ifHeader =~ m/^\(<(.*?)>\)\(<(.*?)>\)/) {
 					$r->headers_in->{'If'} = "<$schemasfolder/$childfolder> (<$2>)";
+					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+
 					$r->headers_in->{'Destination'} =~ s{^http://idisk.mac.com}{https://idisk.mac.com}s; # we don't want a  HTTP/1.1" 502 (Bad Gateway)
 					}
 				

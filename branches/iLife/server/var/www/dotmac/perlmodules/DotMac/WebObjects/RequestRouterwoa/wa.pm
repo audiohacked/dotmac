@@ -77,7 +77,7 @@ sub accountInfo {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+	#carp $content;
 	my(@name_value_array) = split(/;/, $content);
 	foreach my $name_value_pair (@name_value_array) {
 		chomp ($name_value_pair);

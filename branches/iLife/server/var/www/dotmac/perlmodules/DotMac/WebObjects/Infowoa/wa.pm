@@ -167,6 +167,7 @@ sub dotMacPreferencesPaneMessage {
 		$password =~ s/^\"|\"$//g;
 		my $dmdb = DotMac::DotMacDB->new();
 
+
 	if ($dmdb->authen_user($username, $password))
 		{
 		warn "user $username is ok to me";
@@ -288,7 +289,7 @@ sub configureDisk {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+	#carp $content;
 	my $authenticatedReadEnabled ='';
 	my $authenticatedWriteEnabled = '';
 	my $generalPassword = '';
