@@ -240,6 +240,59 @@ Retrieve the latest code from svn:
 svn checkout http://dotmac.googlecode.com/svn/trunk/ dotmac-read-only
 }}}
 Return to the installation Guide in the wiki for the rest. I will add more as I configure my server.
+
+
+= Fedora/FC8 =
+
+A transcript of .bash_history on a clean Fedora 8 install:
+{{{
+yum install perl perl-CPAN
+rpm -Uvh http://download.fedora.redhat.com/pub/fedora/linux/releases/8/Everything/source/SRPMS/httpd-2.2.6-3.src.rpm
+cd /usr/src/redhat/SPECS/
+cp httpd.spec httpd.spec.orig
+http://dotmac.googlecode.com/svn/trunk/extras/platform_specific/fedora/FC8/httpd-2.2.6-3.spec
+mv httpd-2.2.6-3.spec httpd.spec
+cd ../SOURCES/
+wget http://dotmac.googlecode.com/svn/trunk/Patches/Apache/ampquotefix.patch
+mv ampquotefix.patch httpd-2.2.6-ampquotefix.patch
+wget http://dotmac.googlecode.com/svn/trunk/Patches/Apache/quota.patch.txt
+mv quota.patch.txt httpd-2.2.6-quota.patch
+cd ..
+rpmbuild -ba SPECS/httpd.spec 
+cd RPMS/i386
+rpm -Uvh httpd-2.2.6-3.i386.rpm httpd-manual-2.2.6-3.i386.rpm httpd-tools-2.2.6-3.i386.rpm mod_ssl-2.2.6-3.i386.rpm 
+yum install  mod_perl 
+perl -MCPAN -e 'install HTTPD::UserAdmin'
+perl -MCPAN -e 'install MD5'
+perl -MCPAN -e 'install XML::DOM'
+perl -MCPAN -e 'install HTTP::DAV'
+perl -MCPAN -e 'install Test::More'
+perl -MCPAN -e 'install XML::LibXML'
+cd /etc/httpd/conf.d/
+wget http://dotmac.googlecode.com/svn/trunk/Configuration/Apache/dotmac.conf
+}}}
+fetch the 'dotmac' folder - and copy it to /var/www/(dotmac)
+{{{
+chown -R apache:apache /var/www/dotmac
+cd /var/www/dotmac/private
+chown root:root *
+chown apache:apache iDiskUsers
+}}}
+edit the line: my $dotMacIPAddress = '###.###.###.###'; to reflect your server's ip-address
+{{{
+vim /etc/httpd/conf.d/dotmac.conf
+}}}
+change the admin password for idiskAdmin
+{{{
+htdigest /var/www/dotmac/private/iDiskAdmins idisk.mac.com admin
+}}}
+
+{{{
+apachectl restart
+}}}
+Apache will throw a warning about a non-existent (testuser) userdb; never mind: once you've used idiskAdmin, the db will be created automatically
+
+
 = Notes =
 == Apache 2.0.x ==
 With Apache 2.0.x, a change to dotmac.conf is necessary. Replace the following lines:
@@ -251,8 +304,6 @@ With
 {{{
 AuthDigestFile /var/www/dotmac/private/iDiskUsers
 }}}
-
-
 
 = Additions =
 
