@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>updates</key>
+	<array>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Ouvrir Mise à jour de logiciels</string>
+			<key>cancel button label</key>
+			<string>Ne pas mettre à jour maintenant</string>
+			<key>checkbox label</key>
+			<string>Ne plus m’informer sur la mise à jour iWeb 2.0.3.</string>
+			<key>description</key>
+			<string>Cette mise à jour d’iWeb résout les problèmes de compatibilité avec Mac OS X.</string>
+			<key>language</key>
+			<string>French</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Une mise à jour d’iWeb est disponible.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Apri Aggiornamento Software</string>
+			<key>cancel button label</key>
+			<string>Non aggiornare adesso</string>
+			<key>checkbox label</key>
+			<string>Non informarmi più dell'aggiornamento iWeb 2.0.3.</string>
+			<key>description</key>
+			<string>Questo aggiornamento a iWeb migliora la compatibilità con Mac OS X.</string>
+			<key>language</key>
+			<string>Italian</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>È disponibile un aggiornamento iWeb.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>ソフトウェア・アップデートを開く</string>
+			<key>cancel button label</key>
+			<string>今はアップデートしない</string>
+			<key>checkbox label</key>
+			<string>今後 iWeb 2.0.3 アップデートについて通知しない。</string>
+			<key>description</key>
+			<string>この iWeb アップデートは、Mac OS X との互換性を改善します。</string>
+			<key>language</key>
+			<string>Japanese</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>iWeb のアップデートをお使いになれます。</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Abrir Actualización de Software</string>
+			<key>cancel button label</key>
+			<string>No actualizar ahora</string>
+			<key>checkbox label</key>
+			<string>No volver a mostrar información sobre la Actualización iWeb 2.0.3</string>
+			<key>description</key>
+			<string>Esta actualización de iWeb mejora la compatibilidad con el sistema Mac OS X.</string>
+			<key>language</key>
+			<string>Spanish</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Hay una actualización de iWeb disponible.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Åbn Softwareopdatering</string>
+			<key>cancel button label</key>
+			<string>Opdater ikke nu</string>
+			<key>checkbox label</key>
+			<string>Fortæl mig ikke om iWeb 2.0.3-opdatering igen.</string>
+			<key>description</key>
+			<string>Denne opdatering til iWeb løser problemer med kompatibiliteten med Mac OS X.</string>
+			<key>language</key>
+			<string>da</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Der er en opdatering til iWeb.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Softwareaktualisierung öffnen</string>
+			<key>cancel button label</key>
+			<string>Nicht aktualisieren</string>
+			<key>checkbox label</key>
+			<string>Nicht erneut an das iWeb-Update 2.0.3 erinnern.</string>
+			<key>description</key>
+			<string>Dieses iWeb-Update verbessert die Kompatibilität mit Mac OS X.</string>
+			<key>language</key>
+			<string>German</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Es ist ein Update für iWeb verfügbar.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Open Software Update</string>
+			<key>cancel button label</key>
+			<string>Don't Update Now</string>
+			<key>checkbox label</key>
+			<string>Don't tell me about the iWeb 2.0.3 update again.</string>
+			<key>description</key>
+			<string>This update to iWeb addresses compatibility with Mac OS X.</string>
+			<key>language</key>
+			<string>English</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>An iWeb update is available.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Avaa Ohjelmiston päivitys</string>
+			<key>cancel button label</key>
+			<string>Älä päivitä nyt</string>
+			<key>checkbox label</key>
+			<string>Älä muistuta iWeb 2.0.3 -päivityksestä enää.</string>
+			<key>description</key>
+			<string>Tämä iWeb-päivitys parantaa iWebin Mac OS X -yhteensopivuutta.</string>
+			<key>language</key>
+			<string>fi</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>iWeb-päivitys on saatavilla.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>소프트웨어 업데이트 열기</string>
+			<key>cancel button label</key>
+			<string>지금 업데이트 안 함</string>
+			<key>checkbox label</key>
+			<string>iWeb 2.0.3 업데이트에 관해 다시 묻지 않기.</string>
+			<key>description</key>
+			<string>이 iWeb 업데이트는 Mac OS X과의 호환성을 해결하였습니다.</string>
+			<key>language</key>
+			<string>ko</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>iWeb 업데이트를 사용할 수 있습니다.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Open Software-update</string>
+			<key>cancel button label</key>
+			<string>Werk nu niet bij</string>
+			<key>checkbox label</key>
+			<string>Toon melding over iWeb 2.0.3-update niet opnieuw</string>
+			<key>description</key>
+			<string>Deze update voor iWeb verbetert de compatibiliteit met Mac OS X.</string>
+			<key>language</key>
+			<string>Dutch</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Er is een update voor iWeb beschikbaar.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Åpne Programvareoppdatering</string>
+			<key>cancel button label</key>
+			<string>Ikke oppdater nå</string>
+			<key>checkbox label</key>
+			<string>Ikke fortell meg om iWeb 2.0.3-oppdateringen igjen.</string>
+			<key>description</key>
+			<string>Denne iWeb-oppdateringen forbedrer kompatibiliteten med Mac OS X.</string>
+			<key>language</key>
+			<string>no</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>En iWeb-oppdatering er tilgjengelig.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Otwórz Uaktualnienia programów</string>
+			<key>cancel button label</key>
+			<string>Nie uaktualniaj teraz</string>
+			<key>checkbox label</key>
+			<string>Nie przypominaj mi więcej o uaktualnieniu iWeb 2.0.3.</string>
+			<key>description</key>
+			<string>To uaktualnienie iWeb rozwiązuje problem zgodności z Mac OS X.</string>
+			<key>language</key>
+			<string>pl</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Dostępne jest uaktualnienie iWeb.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Abrir a Actualização de Software</string>
+			<key>cancel button label</key>
+			<string>Não actualizar agora</string>
+			<key>checkbox label</key>
+			<string>Não voltar a avisar acerca da actualização do iWeb 2.0.3.</string>
+			<key>description</key>
+			<string>Esta actualização do iWeb visa a compatibilidade com o Mac OS X.</string>
+			<key>language</key>
+			<string>pt_PT</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Está disponível uma actualização do iWeb.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Открыть Обновление программ</string>
+			<key>cancel button label</key>
+			<string>Не обновлять сейчас</string>
+			<key>checkbox label</key>
+			<string>Больше не сообщать об обновлении iWeb 2.0.3.</string>
+			<key>description</key>
+			<string>Данное обновление iWeb содержит усовершенствования в области совместимости с Mac OS X.</string>
+			<key>language</key>
+			<string>ru</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>Доступно обновление iWeb.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>Öppna Programuppdatering</string>
+			<key>cancel button label</key>
+			<string>Uppdatera inte nu</string>
+			<key>checkbox label</key>
+			<string>Berätta inte om iWeb 2.0.3-uppdateringen igen.</string>
+			<key>description</key>
+			<string>Den här iWeb-uppdateringen förbättrar kompatibiliteten med Mac OS X.</string>
+			<key>language</key>
+			<string>sv</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>En iWeb-uppdatering är tillgänglig.</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>打开软件更新</string>
+			<key>cancel button label</key>
+			<string>现在不更新</string>
+			<key>checkbox label</key>
+			<string>不再告诉我有关 iWeb 2.0.3 更新的信息。</string>
+			<key>description</key>
+			<string>此更新解决了 iWeb 与 Mac OS X 的兼容性问题。</string>
+			<key>language</key>
+			<string>zh_CN</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>iWeb 更新可用。</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<integer>1</integer>
+			<key>button B label</key>
+			<string>打開軟體更新</string>
+			<key>cancel button label</key>
+			<string>不要立即更新</string>
+			<key>checkbox label</key>
+			<string>請勿再告知我 iWeb 2.0.3 更新的相關資訊。</string>
+			<key>description</key>
+			<string>此 iWeb 更新項目解決了與 Mac OS X 的相容性問題。</string>
+			<key>language</key>
+			<string>zh_TW</string>
+			<key>max os</key>
+			<string>0.0</string>
+			<key>max product</key>
+			<string>2.0.2</string>
+			<key>min os</key>
+			<string>0.0</string>
+			<key>min product</key>
+			<string>2.0</string>
+			<key>new product name</key>
+			<string>iWeb</string>
+			<key>new product version</key>
+			<string>2.0.3</string>
+			<key>title</key>
+			<string>iWeb 更新項目已可使用。</string>
+		</dict>
+	</array>
+</dict>
+</plist>
