@@ -39,10 +39,10 @@ sub handler {
 	elsif ($r->uri =~ m/^\/$/) {
 		return Apache2::Const::OK;
 		}
-	else {
-	$r->note_basic_auth_failure;
-	return Apache2::Const::HTTP_UNAUTHORIZED;
-	}
+
+$r->note_basic_auth_failure;
+return Apache2::Const::HTTP_UNAUTHORIZED;
+
 }
 
 1;
