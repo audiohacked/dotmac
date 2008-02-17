@@ -83,14 +83,10 @@ cd /usr/ports/www/mod_perl2; make install
 Ports incantations for perl modules:
 {{{
 cd /usr/ports/textproc/p5-XML-DOM; make install
-cd /usr/ports/security/p5-MD5; make installl
+cd /usr/ports/security/p5-MD5; make install
 cd /usr/ports/www/p5-HTTP-DAV; make install
-cd /usr/ports/textproc/p5-XML-LibXML; make installl
-}}}
-Only HTTPD::UserAdmin doesn't have a port.
-thus as per the instructions:
-{{{
-perl -MCPAN -e 'install HTTPD::UserAdmin'
+cd /usr/ports/textproc/p5-XML-LibXML; make install
+cd /usr/ports/www/p5-HTTPD-User-Manage ; make install
 }}}
 To eliminate an apache warning, I had to:
 {{{
