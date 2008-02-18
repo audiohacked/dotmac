@@ -24,4 +24,4 @@ Dotmac is free software. We build it just because we can. It's the result of hun
 
 If you enjoy using our software and would like to demonstrate your support please consider making a [https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=walinskydotcom%40hotmail%2ecom&item_name=walinskydotcom&item_number=dotmac&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8 donation].
 If you really can't decide on how much to donate, think of it this way; it really sounds fair donating $1 for each client machine you successfully installed, doesn't it !?
-Your donation is truly appreciated - it might be that little bit of motivation when a developer really got stuck; or when has to explain his girlfriend again what he's waisting his time on; or... when he's buying that beer that is 'as in free beer' by the book ;)
+Your donation is truly appreciated - it might be that little bit of motivation when a developer really got stuck; or when has to explain to his girlfriend again what he's waisting his time on; or... when he's buying that beer that is 'as in free beer' by the book ;)
