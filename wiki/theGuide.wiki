@@ -35,16 +35,10 @@ In most linux distros it should end up in /etc/httpd/conf.d or /etc/apache2/conf
 
 mod_perl needs to be installed with your webserver. mod_perl is available as package for most
 popular linux distributions.
-All folders _except_ ./dotmac/private should be owned by the user/group apache runs as.
+  * All folders _except_ ./dotmac/private should be owned by the user/group apache runs as.
 (nobody, apache, www-data)
-./dotmac/private contains both server certificates and the .htdigest (user/password) database.
-
-You'll find the file 'startup.pl' in .dotmac/perlmodules/
-This file also needs editing for reflecting the correct path to perlmodules
-_(*New* from SVN > v112 )_ 'startup.pl' isn't used anymore
-
-_(*New* from SVN > v112 )_
-/var/www/dotmac/private/iDiskUsers should be writable by the user/group apache runs as.
+  * ./dotmac/private contains both server certificates and the .htdigest (user/password) databases for admins and users.
+  * ./dotmac/private/iDiskUsers should be writable by the user/group apache runs as.
 
 The perlmodules have a few dependencies; they're easily installed from CPAN:
 {{{
@@ -81,26 +75,11 @@ _(*note - several users have reported that Leopard doesn't honour /etc/hosts lik
 ==Step 5==
 ====Create your first user(s)====
 
-at your prompt, for your first iDisk user; issue:
-{{{
-htdigest -c /var/www/dotmac/private/iDiskUsers idisk.mac.com username
-}}}
-(you'll be prompted for password twice)
-for additional users, issue:
-{{{
-htdigest /var/www/dotmac/private/iDiskUsers idisk.mac.com username
-}}}
 A skeleton is provided for new users; create /var/www/dotmac/username, and copy everything in /var/www/dotmac/skel/ to /var/www/idisk/username/
-In every userfolder (/var/www/idisk/username) create a .htaccess file with 2 lines:
-`Dav On
-DAVSATMaxAreaSize 1024000`
-(edit DAVSATMaxAreaSize according to your needs - it calculates in KB)
 
 for testing purposes, a test user has been provided: l/p testuser/dotmac
 
-_(*New* from SVN > v112 )_
-
-dotmac.conf has been completely re-written in perl. It automatically creates locations for users, with quota specified (no need for .htaccess files (quota) anymore - this fixes the iDisk sync issues on Leopard).
+dotmac.conf has been completely re-written in perl. It automatically creates (.conf) locations for users, with quota specified.
 
 This requires the use of idiskAdmin; http://configuration.apple.com/idiskAdmin
 
@@ -148,8 +127,6 @@ Enjoy the magic, when choosing your .mac preferences pane from your system prefe
 
 _(*note - currently there's no interoperability between 10.4 and 10.5 sync clients)_
 
-_(*note - iDisk sync on Leopard will report 'failed' when using a .htaccess file. If quota is not much of an issue, just remove all .htaccess files; and set a high value for DAVSATMaxAreaSize in dotmac.conf. (this is cumulative for all users(!). You can also choose for setting a <location/> per user (with Dav on, and DAVSATMaxAreaSize # directives). We're working on setting these automatically. *partially fixed in SVN >113* )_
-
 ==== Operating Systems Verified ====
 
 Users reported the following Operating Systems Working:
@@ -161,6 +138,11 @@ Users reported the following Operating Systems Working:
   * Solaris 10
 
 please continue reporting!
+
+==== Updates for the binary release (0.5) ====
+2 files were edited after the binary release - so these have to be updated by hand:
+  * http://dotmac.googlecode.com/svn/trunk/server/var/www/dotmac/perlmodules/DotMac/UserFolderAuthz.pm should end up in /var/www/dotmac/perlmodules (replacing the old one)
+  * http://dotmac.googlecode.com/svn/trunk/server/var/www/dotmac/configuration/configurations/internetservices/syncservices/clientConfiguration-10.5.2 should end up in /var/www/dotmac/configuration/configurations/internetservices/syncservices/
 
 ==== Global Hints ====
 
