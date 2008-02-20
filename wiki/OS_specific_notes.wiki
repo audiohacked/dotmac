@@ -237,6 +237,8 @@ svn checkout http://dotmac.googlecode.com/svn/trunk/ dotmac-read-only
 }}}
 Return to the installation Guide in the wiki for the rest. I will add more as I configure my server.
 
+= Fedora/FC6 =
+install the fedora-logos RPM from FC8, and follow the guide for Fedora/FC8
 
 = Fedora/FC8 =
 
