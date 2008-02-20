@@ -301,6 +301,12 @@ With
 AuthDigestFile /var/www/dotmac/private/iDiskUsers
 }}}
 
+==Multi-homed machines ==
+On a multi-homed machine you'll probably want to designate a ip address to your dotmac solution.
+This means you'll need to move from name based virtual hosts to ip-based virtual hosts.
+To achieve this you'll need to:
+  * remove/change the `NameVirtualHost *:80`
+  *  edit the dotmac.conf file, change all the `*:80` to `$dotMacIPAddress:80`
 = Additions =
 
 If you find anything incomplete/incorrect - use the comments here; we'll try and edit the page accordingly.
