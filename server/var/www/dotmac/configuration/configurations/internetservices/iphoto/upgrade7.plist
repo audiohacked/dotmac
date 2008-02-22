@@ -1,0 +1,1029 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>updates</key>
+	<array>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Ouvrir Mise à jour de logiciels</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Plus tard</string>
+			<key>checkbox label</key>
+			<string>Ne pas me rappeler la mise à jour iPhoto 7.1.2.</string>
+			<key>description</key>
+			<string>Cette mise à jour résout les problèmes de publication de photos sur galerie web .Mac, améliore la stabilité dans son ensemble et corrige un certain nombre d’autres problèmes secondaires.</string>
+			<key>language</key>
+			<string>French</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Une mise à jour iPhoto est disponible. Voulez-vous ouvrir la Mise à jour de logiciels ?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Ouvrir Mise à jour de logiciels</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Plus tard</string>
+			<key>checkbox label</key>
+			<string>Ne plus m’informer sur la mise à jour iPhoto 7.1.</string>
+			<key>description</key>
+			<string>Cette mise à jour corrige des problèmes rencontrés lors du déplacement de photos entre événements, elle comprend de nouveaux thèmes de cartes de vœux, dont des cartes pour les fêtes. Elle prend également en charge la compatibilité avec Mac OS X 10.5, améliore l’ensemble de la stabilité et résout un certain nombre d’autres problèmes secondaires. Pour effectuer la mise à jour vers iPhoto 7.1, cliquez sur le bouton ci-dessous pour exécuter la Mise à jour de logiciels.</string>
+			<key>language</key>
+			<string>French</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Une mise à jour iPhoto est disponible. Voulez-vous ouvrir la Mise à jour de logiciels ?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Apri Aggiornamento Software</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Non aggiornare adesso</string>
+			<key>checkbox label</key>
+			<string>Non informarmi più dell'aggiornamento 7.1.2 di iPhoto.</string>
+			<key>description</key>
+			<string>Questo aggiornamento risolve problemi che si verificano durante la pubblicazione di foto in una galleria web .Mac, migliora la stabilità in generale e risolve una serie di altri problemi di minore importanza.</string>
+			<key>language</key>
+			<string>Italian</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>È disponibile un aggiornamento di iPhoto. Desideri aprire Aggiornamento Software?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Apri Aggiornamento Software</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Non aggiornare adesso</string>
+			<key>checkbox label</key>
+			<string>Non informarmi più sull'aggiornamento di iPhoto 7.1.</string>
+			<key>description</key>
+			<string>Questo aggiornamento corregge i problemi riscontrati durante lo spostamento delle foto tra Eventi, aggiunge nuovi temi per i biglietti di auguri, compresi i design per i biglietti delle vacanze. Corregge inoltre problemi relativi alla compatibilità con Mac OS X 10.5, migliora la stabilità complessiva e corregge diversi problemi minori.  Per aggiornare iPhoto 7.1, fai clic sul pulsante sottostante per eseguire Aggiornamento Software.</string>
+			<key>language</key>
+			<string>Italian</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>È disponibile un aggiornamento di iPhoto. Desideri aprire Aggiornamento Software?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>ソフトウェア・アップデートを開く</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>今はアップデートしない</string>
+			<key>checkbox label</key>
+			<string>今後 iPhoto 7.1.2 アップデートについて通知しない。</string>
+			<key>description</key>
+			<string>このアップデートは、.Mac ウェブギャラリーに写真を公開する際の問題を解決し、全体的な安定性が向上し、またその他の小さな問題にも対処しています。</string>
+			<key>language</key>
+			<string>Japanese</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>iPhoto のアップデートがお使いになれます。“ソフトウェア・アップデート”を起動しますか？</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>ソフトウェア・アップデートを開く</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>今はアップデートしない</string>
+			<key>checkbox label</key>
+			<string>今後 iPhoto 7.1 アップデートについて通知しない。</string>
+			<key>description</key>
+			<string>このアップデートでは、イベント間で写真を移動する際に発生する問題に対処するほか、ホリデーカードのデザインを含む新しいグリーティングカードのテーマにも対応しています。また、Mac OS X 10.5 との互換性、全体的な安定性の向上、およびその他の小さな問題にも対処しています。iPhoto 7.1 にアップデートするには、下のボタンをクリックして“ソフトウェア・アップデート”を起動します。</string>
+			<key>language</key>
+			<string>Japanese</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>iPhoto のアップデートがお使いになれます。“ソフトウェア・アップデート”を起動しますか？</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Abrir Actualización de Software</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>No actualizar ahora</string>
+			<key>checkbox label</key>
+			<string>No volver a mostrar información sobre la actualización de iPhoto 7.1.2.</string>
+			<key>description</key>
+			<string>Esta actualización soluciona los problemas relacionados con la publicación de fotos en la galería web de .Mac, mejora la estabilidad general de la aplicación y corrige una serie de pequeños problemas de menor importancia.</string>
+			<key>language</key>
+			<string>Spanish</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Hay una actualización de iPhoto disponible. ¿Desea abrir Actualización de Software?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Abrir Actualización de Software</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>No actualizar ahora</string>
+			<key>checkbox label</key>
+			<string>No volver a recordarme la actualización de iPhoto 7.1.</string>
+			<key>description</key>
+			<string>Esta actualización soluciona problemas detectados al trasladar fotos entre distintos eventos, e incorpora nuevas plantillas para tarjetas de felicitación, entre las que se incluyen diseños para tarjetas de vacaciones. Esta actualización también ofrece compatibilidad con el Mac OS X 10.5, mejora la estabilidad general y soluciona diversos problemas de menor relevancia. Para actualizar a la versión 7.1 de iPhoto, haga clic en el botón de abajo para abrir Actualización de Software.</string>
+			<key>language</key>
+			<string>Spanish</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Hay una actualización de iPhoto disponible. ¿Desea abrir Actualización de Software?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Åbn Softwareopdatering</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Opdater ikke nu</string>
+			<key>checkbox label</key>
+			<string>Fortæl mig ikke om iPhoto 7.1.2-opdateringen igen.</string>
+			<key>description</key>
+			<string>Denne opdatering løser problemer med publicering af fotografier til et .Mac-webgalleri, forbedrer stabiliteten generelt og løser en række andre små problemer.</string>
+			<key>language</key>
+			<string>da</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Der er en opdatering til iPhoto. Vil du åbne Softwareopdatering?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Åbn Softwareopdatering</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Opdater ikke nu</string>
+			<key>checkbox label</key>
+			<string>Fortæl mig ikke om iPhoto 7.1-opdatering igen.</string>
+			<key>description</key>
+			<string>Denne opdatering løser problemer, der opstår, når fotografier flyttes mellem begivenheder, og indeholder nye temaer til lykønskningskort, inkl. feriepostkort. Den er også kompaitibel med Mac OS X 10.5, forbedrer stabiliteten og løser et antal mindre problemer. Du opdaterer til iPhoto 7.1 ved at klikke på nedenstående knap for at starte Softwareopdatering.</string>
+			<key>language</key>
+			<string>da</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Der er en opdatering til iPhoto. Vil du åbne Softwareopdatering?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Softwareaktualisierung öffnen</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Nicht aktualisieren</string>
+			<key>checkbox label</key>
+			<string>Nicht erneut an das iPhoto 7.1.2 Update erinnern.</string>
+			<key>description</key>
+			<string>Dieses Update behebt Probleme beim Veröffentlichen von Fotos auf einer .Mac Web Galerie. Es verbessert außerdem die allgemeine Stabilität und behebt einige weitere kleinere Probleme.</string>
+			<key>language</key>
+			<string>German</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Es ist ein iPhoto-Update verfügbar. Möchten Sie „Softwareaktualisierung“ öffnen?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Software-Aktualisierung öffnen</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Nicht aktualisieren</string>
+			<key>checkbox label</key>
+			<string>Nicht erneut an das iPhoto 7.1 Update erinnern</string>
+			<key>description</key>
+			<string>Dieses Update behebt Probleme beim Bewegen von Fotos zwischen Ereignissen und enthält neue Themen für Grußkarten, einschließlich Designs für Feiertagskarten. Außerdem wird die Kompatibilität mit Mac OS X 10.5 sowie die allgemeine Stabilität verbessert und es werden weitere kleinere Probleme behoben. Um auf iPhoto 7.1 zu aktualisieren, klicken Sie unten auf die Taste, um „Softwareaktualisierung“ zu starten.</string>
+			<key>language</key>
+			<string>German</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Es ist ein iPhoto-Update verfügbar. Möchten Sie „Softwareaktualisierung“ öffnen?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Open Software Update</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Don’t Update Now</string>
+			<key>checkbox label</key>
+			<string>Don’t tell me about the iPhoto 7.1.2 update again.</string>
+			<key>description</key>
+			<string>This update addresses issues when publishing photos to a .Mac Web Gallery, improves overall stability, and fixes a number of other minor issues.</string>
+			<key>language</key>
+			<string>English</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>An iPhoto update is available. Would you like to open Software Update?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Open Software Update</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Don’t Update Now</string>
+			<key>checkbox label</key>
+			<string>Don’t tell me about the iPhoto 7.1 update again.</string>
+			<key>description</key>
+			<string>This update addresses issues encountered when moving photos between Events, plus new greeting card themes, including holiday card designs. It also supports compatibility with Mac OS X 10.5, improves overall stability, and addresses a number of other minor issues.  To update to iPhoto 7.1, click the button below to run Software Update.</string>
+			<key>language</key>
+			<string>English</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>An iPhoto update is available. Would you like to open Software Update?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Avaa Ohjelmiston päivitys</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Älä päivitä nyt</string>
+			<key>checkbox label</key>
+			<string>Älä muistuta iPhoto 7.1.2 -päivityksestä enää.</string>
+			<key>description</key>
+			<string>Tämä päivitys ratkaisee valokuvien .Mac-verkkogalleriaan julkaisemisessa esiintyviä ongelmia, parantaa yleistä vakautta sekä ratkaisee joukon pienempiä ongelmia.</string>
+			<key>language</key>
+			<string>fi</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>iPhoto-päivitys on saatavilla. Haluatko avata Ohjelmiston päivityksen?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Avaa Ohjelmiston päivitys</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Älä päivitä nyt</string>
+			<key>checkbox label</key>
+			<string>Älä muistuta iPhoto 7.1 -päivityksestä enää.</string>
+			<key>description</key>
+			<string>Tämä päivitys ratkaisee ongelmia, jotka liittyvät valokuvien siirtämiseen tapahtumien välillä, sekä sisältää uusia korttiteemoja mukaan lukien joulukorttiteemoja. Päivitys myös lisää yhteensopivuuden Mac OS X 10.5:n kanssa, parantaa yleistä vakautta ja ratkaisee useita pieniä ongelmia. Voit päivittää iPhoto 7.1:een suorittamalla Ohjelmiston päivityksen alla olevaa painiketta osoittamalla.</string>
+			<key>language</key>
+			<string>fi</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>iPhoto-päivitys on saatavilla. Haluatko avata Ohjelmiston päivityksen?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>소프트웨어 업데이트 열기</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>지금 업데이트 안 함</string>
+			<key>checkbox label</key>
+			<string>iPhoto 7.1.2 업데이트에 관하여 다시 묻지 않기.</string>
+			<key>description</key>
+			<string>이 업데이트는 사진을 .Mac 웹 갤러리로 발행할 때 발생하는 문제를 해결하고, 전체적인 안정성을 향상시키며, 많은 다른 사소한 문제들을 수정합니다.</string>
+			<key>language</key>
+			<string>ko</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>사용 가능한 iPhoto 업데이트가 있습니다. 소프트웨어 업데이트를 열겠습니까?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>소프트웨어 업데이트 열기</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>지금 업데이트 안 함</string>
+			<key>checkbox label</key>
+			<string>iPhoto 7.1 업데이트에 관하여 다시 묻지 않기.</string>
+			<key>description</key>
+			<string>이 업데이트는 공휴일 카드 디자인을 포함하는 새로운 인사장 테마 및 이벤트로 사진을 이동하는 동안에 발생하는 문제들을 해결합니다. 이 업데이트는 또한 Mac OS X 10.5와의 호환성을 지원하고, 전체적인 안정성을 향상시키며, 많은 다른 사소한 문제들을 해결합니다. iPhoto 7.1로 업데이트하려면, 아래 단추를 클릭하여 소프트웨어 업데이트를 실행하십시오.</string>
+			<key>language</key>
+			<string>ko</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>사용 가능한 iPhoto 업데이트가 있습니다. 소프트웨어 업데이트를 열겠습니까?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Open Software-update</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Werk nu niet bij</string>
+			<key>checkbox label</key>
+			<string>Toon melding over iPhoto 7.1.2-update niet opnieuw</string>
+			<key>description</key>
+			<string>Deze update verhelpt problemen met het publiceren van foto's in een .Mac-webgalerie, verbetert de algehele stabiliteit en verhelpt een aantal andere kleine problemen.</string>
+			<key>language</key>
+			<string>Dutch</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Er is een update voor iPhoto beschikbaar. Wilt u Software-update openen?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Open Software-update</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Werk nu niet bij</string>
+			<key>checkbox label</key>
+			<string>Toon melding over iPhoto 7.1-update niet opnieuw</string>
+			<key>description</key>
+			<string>Deze update verhelpt problemen bij het verplaatsen van foto's tussen gebeurtenissen en bevat nieuwe thema's voor wenskaarten, waaronder kaartontwerpen voor de feestdagen. Deze update biedt bovendien ondersteuning voor Mac OS X 10.5, verbetert de algehele stabiliteit en verhelpt een aantal kleine problemen. Om bij te werken naar iPhoto 7.1, klikt u op de onderstaande knop om Software-update te starten.</string>
+			<key>language</key>
+			<string>Dutch</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Er is een update voor iPhoto beschikbaar. Wilt u Software-update openen?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Åpne Programvareoppdatering</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Ikke oppdater nå</string>
+			<key>checkbox label</key>
+			<string>Ikke fortell meg om iPhoto 7.1.2-oppdateringen igjen.</string>
+			<key>description</key>
+			<string>Denne oppdateringen retter opp problemer med publisering av bilder på .Mac-webgallerier, forbedrer den generelle stabiliteten og retter opp noen mindre problemer.</string>
+			<key>language</key>
+			<string>no</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>En iPhoto-oppdatering er tilgjengelig. Vil du åpne Programvareoppdatering?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Åpne Programvareoppdatering</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Ikke oppdater nå</string>
+			<key>checkbox label</key>
+			<string>Ikke fortell meg om iPhoto 7.1-oppdateringen igjen.</string>
+			<key>description</key>
+			<string>Denne oppdateringen løser problemer som kan oppstå ved flytting av bilder mellom hendelser. I tillegg gir den kompatibilitet med Mac OS X versjon 10.5, løser en rekke mindre problemer og forbedrer den generelle stabiliteten. Oppdateringen inneholder nye korttemaer, blant annet juletemaer. Hvis du vil oppdatere til iPhoto 7.1, klikker du på knappen nedenfor for å starte Programvareoppdatering.</string>
+			<key>language</key>
+			<string>no</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>En iPhoto-oppdatering er tilgjengelig. Vil du åpne Programvareoppdatering?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Otwórz Uaktualnienie oprogramowania</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Nie uaktualniaj teraz</string>
+			<key>checkbox label</key>
+			<string>Nie przypominaj mi więcej o uaktualnieniu iPhoto 7.1.2.</string>
+			<key>description</key>
+			<string>To uaktualnienie rozwiązuje problem z publikowaniem zdjęć w Galerii WWW na .Mac, poprawia ogólną stabilność i rozwiązuje kilka zagadnień mniejszej wagi.</string>
+			<key>language</key>
+			<string>pl</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Dostępne jest uaktualnienie iPhoto. Czy chcesz otworzyć teraz Uaktualnienie oprogramowania?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Otwórz Uaktualnienie oprogramowania</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Nie uaktualniaj teraz</string>
+			<key>checkbox label</key>
+			<string>Nie przypominaj mi więcej o uaktualnieniu iPhoto 7.1.</string>
+			<key>description</key>
+			<string>To uaktualnienie rozwiązuje problem związany z przenoszeniem zdjęć pomiędzy zdarzeniami, dodaje kilka nowych motywów pocztówek, włącznie z projektami wakacyjnymi. Rozwiązuje także problemy zgodności z Mac OS X 10.5, poprawia ogólną stabilność i rozwiązuje kilka innych problemów mniejszej wagi. Aby uaktualnić do iPhoto 7.1, kliknij w przycisk poniżej i uruchom Uaktualnienie programów.</string>
+			<key>language</key>
+			<string>pl</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Dostępne jest uaktualnienie iPhoto. Czy chcesz otworzyć teraz Uaktualnienie oprogramowania?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Abrir a actualização de software</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Não actualizar agora</string>
+			<key>checkbox label</key>
+			<string>Não informar novamente sobre a actualização do iPhoto 7.1.2.</string>
+			<key>description</key>
+			<string>Esta actualização visa questões relacionadas com a publicação de fotos numa Galeria Web do .Mac, melhora a estabilidade geral, e soluciona várias outras questões menores.</string>
+			<key>language</key>
+			<string>pt_PT</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Está disponível uma actualização do iPhoto. Abrir a Actualização de Software?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Abrir a actualização de software</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Não actualizar agora</string>
+			<key>checkbox label</key>
+			<string>Não informar novamente sobre a actualização do iPhoto 7.1</string>
+			<key>description</key>
+			<string>Esta actualização visa questões encontradas ao mover fotos entre eventos, e inclui novos temas de cartões de felicitações, incluindo cartões para ocasiões festivas. Também suporta a compatibilidade com o Mac OS X 10.5, melhora a estabilidade geral e visa várias outras questões menores. Para actualizar para o iPhoto 7.1, clique no botão abaixo para executar a Actualização de Software.</string>
+			<key>language</key>
+			<string>pt_PT</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Está disponível uma actualização do iPhoto. Abrir a Actualização de Software?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Открыть Обновление программ</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Не обновлять сейчас</string>
+			<key>checkbox label</key>
+			<string>Больше не сообщать об обновлении iPhoto 7.1.2.</string>
+			<key>description</key>
+			<string>Данное обновление решает проблемы, связанные с публикацией фотографий в интернет-галерее .Mac, повышает общую стабильность работы и содержит ряд других исправлений.</string>
+			<key>language</key>
+			<string>ru</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>Доступно обновление iPhoto. Открыть Обновление программ?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Открыть Обновление программ</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Не обновлять сейчас</string>
+			<key>checkbox label</key>
+			<string>Больше не сообщать об обновлении iPhoto 7.1.</string>
+			<key>description</key>
+			<string>Данное обновление содержит решение проблем, возникавших при перемещении фотографий из одного события в другое, новые темы для поздравительных открыток, включая виды дизайна праздничных открыток. Обновление также обеспечивает поддержку в области совместимости с Mac OS X 10.5, повышает уровень общей стабильности, а также содержит ряд других незначительных усовершенствований. Чтобы обновить до iPhoto 7.1 и запустить Обновление программ, нажмите кнопку ниже.</string>
+			<key>language</key>
+			<string>ru</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>Доступно обновление iPhoto.\nОткрыть Обновление программ?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Öppna Programuppdatering</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Uppdatera inte nu</string>
+			<key>checkbox label</key>
+			<string>Berätta inte om iPhoto 7.1.2-uppdateringen igen</string>
+			<key>description</key>
+			<string>Den här uppdateringen åtgärdar problem vid publicering av bilder i ett webbgalleri på .Mac, förbättrar den allmänna stabiliteten och löser ett antal mindre problem.</string>
+			<key>language</key>
+			<string>sv</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>En iPhoto-uppdatering finns tillgänglig. Vill du öppna Programuppdatering?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>Öppna Programuppdatering</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>Uppdatera inte nu</string>
+			<key>checkbox label</key>
+			<string>Berätta inte om iPhoto 7.1-uppdateringen igen</string>
+			<key>description</key>
+			<string>Den här uppdateringen åtgärdar problem vid flyttning av bilder mellan händelser, plus nya teman för gratulationskort och julkortsdesigner. Den ger även kompatibilitet med Mac OS X 10.5, förbättrar den allmänna stabiliteten och åtgärdar ett antal mindre problem. Uppdatera till iPhoto 7.1 genom att klicka på knappen nedan så öppnas Programuppdatering.</string>
+			<key>language</key>
+			<string>sv</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>En iPhoto-uppdatering finns tillgänglig. Vill du öppna Programuppdatering?</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>打开软件更新</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>现在不更新</string>
+			<key>checkbox label</key>
+			<string>不再告诉我有关 iPhoto 7.1.2 更新的信息。</string>
+			<key>description</key>
+			<string>此更新解决了将照片发布到 .Mac 网络画廊时出现的问题，提高了总体稳定性，并修正了许多其他的小问题。</string>
+			<key>language</key>
+			<string>zh_CN</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>有一个 iPhoto 更新。您想打开“软件更新”吗？</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>打开软件更新</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>现在不更新</string>
+			<key>checkbox label</key>
+			<string>不再告诉我有关 iPhoto 7.1 更新的信息。</string>
+			<key>description</key>
+			<string>此更新解决了在“事件”间移动照片时遇到的问题，加上了新的贺卡主题，其中包括节日卡设计。此更新还支持了与 Mac OS X 10.5 的兼容性，增强了整体稳定性，并解决了其他一些小问题。若要更新到 iPhoto 7.1，请点按以下按钮来运行“软件更新”。</string>
+			<key>language</key>
+			<string>zh_CN</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>有一个 iPhoto 更新。您想打开“软件更新”吗？</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>打開軟體更新</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>不要立即更新</string>
+			<key>checkbox label</key>
+			<string>請勿再告知我 iPhoto 7.1.2 更新項目的相關資訊。</string>
+			<key>description</key>
+			<string>此更新項目解決了將照片發佈至“.Mac 網路圖庫”時所發生的問題、改進了整體穩定性，以及修正了一些其他的小問題。</string>
+			<key>language</key>
+			<string>zh_TW</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.1.1</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.1</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1.2</string>
+			<key>title</key>
+			<string>iPhoto 更新項目已可使用。您要打開“軟體更新”嗎？</string>
+		</dict>
+		<dict>
+			<key>button B default</key>
+			<true/>
+			<key>button B label</key>
+			<string>打開軟體更新</string>
+			<key>cancel button alternate</key>
+			<true/>
+			<key>cancel button label</key>
+			<string>不要立即更新</string>
+			<key>checkbox label</key>
+			<string>請勿再告知我 iPhoto 7.1 更新項目的相關資訊。</string>
+			<key>description</key>
+			<string>此更新項目解決了在“事件”間搬移照片的問題，並加入了新的問候卡主題，其中包含了節日卡的設計。此更新項目也支援了 Mac OS X 10.5 相容性、改進了整體穩定性，並解決了一些其他的小問題。若要更新至 iPhoto 7.1，請按一下下方的按鈕來執行“軟體更新”。</string>
+			<key>language</key>
+			<string>zh_TW</string>
+			<key>max os</key>
+			<string>10.5.99</string>
+			<key>max product</key>
+			<string>7.0.2</string>
+			<key>min os</key>
+			<string>10.4.1</string>
+			<key>min product</key>
+			<string>7.0</string>
+			<key>new product name</key>
+			<string>iPhoto</string>
+			<key>new product version</key>
+			<string>7.1</string>
+			<key>title</key>
+			<string>iPhoto 更新項目已可使用。您要打開“軟體更新”嗎？</string>
+		</dict>
+	</array>
+</dict>
+</plist>
