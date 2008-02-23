@@ -2,6 +2,7 @@ CREATE TABLE auth (
 id INTEGER  PRIMARY KEY AUTOINCREMENT,
 username VARCHAR(32) ,
 realm VARCHAR(128) default 'idisk.mac.com',
+password VARCHAR(128),
 idisk_quota_limit INT default 2048000,
 mail_quota_limit INT default 1024000,
 is_admin INT default 0,
