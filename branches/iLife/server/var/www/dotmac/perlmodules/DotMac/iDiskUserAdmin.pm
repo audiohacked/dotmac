@@ -45,6 +45,7 @@ sub handler
 		print "<p>Please wait... Apache is restarting</p>";
 		$r->rflush;
 		system($r->dir_config('dotMacApacheRestart'));
+		
 	} elsif (param('htdigestGen') eq "Generate HTDigest Files") {
 		$dbadmin->generate_htdigest_files($r->dir_config('dotMacUserDB'),$r->dir_config('dotMacAdminDB'));
 	} 
@@ -53,7 +54,11 @@ sub handler
 	print "<BR />";
 	my @idiskuserstat=stat($r->dir_config('dotMacAdminDB'));
 	print $r->dir_config('dotMacAdminDB')." last modified on:". scalar localtime($idiskuserstat[9]);		
+	my @idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
+	print "<br />";
+	print "Apache last restarted on:". scalar localtime($idiskuserstat[9]);
 	
+	print dotMacPrivatePath
 	my $apacheRestartButton;
 	my $htdigestGenerateButton;
 	
