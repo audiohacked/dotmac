@@ -48,12 +48,10 @@ sub writeDeltaRecord{
 	my $source="";
 	my $target="";
 	my $user = $r->user();
-	my $timestamp = time();
 	my $dbargs = {	AutoCommit => 1, 
 					PrintError => 1};
-	my $dbpath= $r->dir_config('dotMacRootPath');
-	$dbh = DBI->connect("dbi:SQLite:dbname=".$dbpath."/private/deltadb.db","","",$dbargs);
-	if ($dbh->err()) { $r->log->error($DBI::errstr); }
+
+	
 	if ($r->method() eq "MOVE") { 
 		$opcode="MOV";
 		$source=$r->uri;
@@ -71,10 +69,10 @@ sub writeDeltaRecord{
 		$source=$r->uri;
 	} else {
 		$r->log->info("writeDeltaRecord: unhandled opcode");
+		return;
 	}
-	
-	$dbh->do("insert into deltaentry values('$user','$opcode','$source','$target',$timestamp)");
-	$dbh->disconnect();
+	my $dmdb = DotMac::DotMacDB->new();
+	$dmdb->write_delta_record($user, $opcode, $source, $target);
 	return 1;
 	
 }
@@ -573,18 +571,6 @@ sub check_for_dir_backref {
 		return 0;
 	}
 }
-sub authen_user{
-	my ($r, $user, $sent_pw) = @_;
-	$user =~ s/^\"|\"$//g;
-	if ($r->dir_config('dotMacDBType') eq 'file')
-		{
-		return authen_user_file($r, $user, $sent_pw);
-		}
-	elsif ($r->dir_config('dotMacDBType') eq 'dbd')
-		{
-		return authen_user_sql($dsn, $user, $sent_pw);
-		}
-    }
 
 sub authen_user_file{
 	my ($r, $username, $password) = @_;
@@ -631,18 +617,6 @@ sub authen_user_sql{
 	}
     }
 
-sub get_user_quota{
-	my ($r, $user) = @_;
-	$user =~ s/^\"|\"$//g;
-	if ($r->dir_config('dotMacDBType') eq 'file')
-		{
-		return get_user_quota_file($r, $user);
-		}
-	elsif ($r->dir_config('dotMacDBType') eq 'dbd')
-		{
-		return get_user_quota_sql($dsn, $user);
-		}
-	}
 
 sub get_user_quota_sql{
 	my ($dsn, $user) = @_;
@@ -678,18 +652,6 @@ sub get_user_quota_used{
 	my $quotaUsedBytes = `du -sk $home_dir`; chop($quotaUsedBytes);# query for usage in KiloBytes
 	$quotaUsedBytes =~ s/^(\d+)(.*)/$1/;
 	return $quotaUsedBytes;
-	}
-
-sub list_users{
-	my ($r) = @_;
-	if ($r->dir_config('dotMacDBType') eq 'file')
-		{
-		return list_users_file($r);
-		}
-	elsif ($r->dir_config('dotMacDBType') eq 'dbd')
-		{
-		return list_users_sql($dsn);
-		}
 	}
 
  sub list_users_file{
