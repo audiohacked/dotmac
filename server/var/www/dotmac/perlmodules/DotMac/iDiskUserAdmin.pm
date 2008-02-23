@@ -35,11 +35,33 @@ sub handler
 	my $realm = $r->dir_config('dotMacRealm');
 	#If you really want to use this, uncomment the following line - and comment-out the next one
 	#Note: adapt your dotmac.conf in a way that this page _need_ a (secure) login!!!
-
 	my $dbadmin = DotMac::DotMacDB->new();
 
 	my @users = $dbadmin->list_users($realm);
 	
+	if (param('ApacheRes') eq "Restart Apache") {
+		print header;
+		print "<meta http-equiv=\"refresh\" content=\"10\">";
+		print "<p>Please wait... Apache is restarting</p>";
+		$r->rflush;
+		system($r->dir_config('dotMacApacheRestart'));
+	} elsif (param('htdigestGen') eq "Generate HTDigest Files") {
+		$dbadmin->generate_htdigest_files($r->dir_config('dotMacUserDB'),$r->dir_config('dotMacAdminDB'));
+	} 
+	my @idiskuserstat=stat($r->dir_config('dotMacUserDB'));
+	print $r->dir_config('dotMacUserDB')." last modified on:". scalar localtime($idiskuserstat[9]);	
+	print "<BR />";
+	my @idiskuserstat=stat($r->dir_config('dotMacAdminDB'));
+	print $r->dir_config('dotMacAdminDB')." last modified on:". scalar localtime($idiskuserstat[9]);		
+	
+	my $apacheRestartButton;
+	my $htdigestGenerateButton;
+	
+	if($r->dir_config('dotMacApacheRestart') ne "none"){
+		$apacheRestartButton=submit(-name=>"ApacheRes", -value=>'Restart Apache');
+	}
+
+	$htdigestGenerateButton=submit(-name=>"htdigestGen", -value=>'Generate HTDigest Files');
 	print 	header,
 			start_html('User management'),
 			h1('User management'),
@@ -47,7 +69,8 @@ sub handler
 			hidden(-name=>'getset',
 					-value=>'get',
 					-override=>1),
-
+			$apacheRestartButton,
+			$htdigestGenerateButton,
 			table({border=>1},
 				TR	(			
 					td(
@@ -84,7 +107,6 @@ sub handler
 			
 			end_form,
 			hr;
-	
 	if (param())
 		{
 		my $user	= param('user');
@@ -149,8 +171,10 @@ sub get_user {
 		print h3("create user $user"),p;
 		}
 	
-	my ($defaultQuota, $defaultEmail) = $dbadmin->fetch_user_info($user, $realm);
-		
+	my $userValues = $dbadmin->fetch_user_info($user, $realm);
+	my $defaultQuota;
+	my $defaultEmail;
+
 	print start_form,
 		hidden(-name=>'user',
 				-value=>$user,
@@ -160,22 +184,38 @@ sub get_user {
 				-override=>1),
 		table({border=>1},
 			TR	(
-				th({valign=>'TOP',align=>'RIGHT'}, 'quota'),
+				th({valign=>'TOP',align=>'RIGHT'}, 'iDisk quota'),
 				td	(popup_menu(-name=>'quota',
-							-values=>[qw/0 1048576 2097152 5242880 10485760 15728640 20971520/],
-							-labels=>{'0'=>'-',
-									'1048576'=>'1GB',
-									'2097152'=>'2GB',
-									'5242880'=>'5GB',
-									'10485760'=>'10GB',
-									'15728640'=>'15GB',
-									'20971520'=>'20GB'},
-							-defaults=> $defaultQuota)
+                  -values=>[qw/0 1048576 2097152 5242880 10485760 15728640 20971520 104857600 157286400 209715200 419430400 524288000 629145600 734003200 786432000/],
+                  -labels=>{'0'=>'-',                                                     
+							'1048576'=>'1GB',                                                                       
+							'2097152'=>'2GB',                                                                       
+							'5242880'=>'5GB',                                                                       
+							'10485760'=>'10GB',                                                                       
+							'15728640'=>'15GB',                                                                       
+							'20971520'=>'20GB',                                                                       
+							'104857600'=>'100GB',                                                                       
+							'157286400'=>'15G0B',                                                                       
+							'209715200'=>'200GB',                                                                       
+							'419430400'=>'400GB',                                                                       
+							'524288000'=>'500GB',                                                                       
+							'629145600'=>'600GB',                                                                       
+							'734003200'=>'700GB',
+							'786432000'=>'750GB'},
+					-defaults=> $userValues->{'idisk_quota_limit'})
 					)
 				),
 			TR	(
 				th({valign=>'TOP',align=>'RIGHT'},"email"),
-				td(textfield(-name=>'email', -default=>$defaultEmail, -size=>40)) #-maxlength=>number
+				td(textfield(-name=>'email', -default=>$userValues->{'email_addr'}, -size=>40)) #-maxlength=>number
+				),
+			TR (
+				th({valign=>'TOP',align=>'RIGHT'},"Administrator"),
+				td(radio_group(-name=>'is_admin',-default=>$userValues->{'is_admin'}?$userValues->{'is_admin'}:0, -values=>[1,0] ,-labels=>{1=>'yes',0=>'no'}))
+				),
+			TR (
+				th({valign=>'TOP',align=>'RIGHT'},"iDisk"),
+				td(radio_group(-name=>'is_idisk',-default=>$userValues->{'is_idisk'}?$userValues->{'is_idisk'}:0, -values=>[1,0] ,-labels=>{1=>'Enabled',0=>'Disabled'}))
 				)
 			),
 		submit,
@@ -188,10 +228,14 @@ sub set_user {
 	my $quota = param('quota');
 	my $email = param('email');
 	my $realm = $r->dir_config('dotMacRealm');
-
+	my @paramNames=param();
+	my $storageHash;
+	foreach (@paramNames) {
+	$storageHash->{$_} = param($_);
+	}
 	my $dbadmin = DotMac::DotMacDB->new();
 
-	$dbadmin->update_user_info($user,$email,$quota,$realm);
+	$dbadmin->update_user_info($storageHash,$realm);
 
 	return get_user($r, $user);
 	}

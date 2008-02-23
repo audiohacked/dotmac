@@ -122,7 +122,7 @@ sub dmmkpaths {
 		while ($r->read($buf, $content_length)) {
 			$content .= $buf;
 		}
-		carp $content;
+		#carp $content;
 	}
 	$r->print(DotMac::CommonCode::dmmkpath_response(DotMac::CommonCode::dmmkpath_request( $r, $content)));
 	$r->content_type('text/xml;charset=utf-8');

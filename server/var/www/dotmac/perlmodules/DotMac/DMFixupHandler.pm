@@ -27,7 +27,7 @@ use Apache2::RequestIO ();
 use Apache2::RequestRec ();
 use Apache2::RequestUtil ();
 use Apache2::Log;
-
+use Apache2::ServerRec;
 use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST DONE :log);
 use APR::Const    -compile => qw(:error SUCCESS);
 use CGI::Carp;
