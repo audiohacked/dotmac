@@ -52,13 +52,12 @@ sub handler
 	my @idiskuserstat=stat($r->dir_config('dotMacUserDB'));
 	print $r->dir_config('dotMacUserDB')." last modified on:". scalar localtime($idiskuserstat[9]);	
 	print "<BR />";
-	my @idiskuserstat=stat($r->dir_config('dotMacAdminDB'));
+	@idiskuserstat=stat($r->dir_config('dotMacAdminDB'));
 	print $r->dir_config('dotMacAdminDB')." last modified on:". scalar localtime($idiskuserstat[9]);		
-	my @idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
+	@idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
 	print "<br />";
 	print "Apache last restarted on:". scalar localtime($idiskuserstat[9]);
 	
-	print dotMacPrivatePath
 	my $apacheRestartButton;
 	my $htdigestGenerateButton;
 	
