@@ -13,7 +13,7 @@ A transcript of .bash_history on a clean debian net install (this is not entirel
 {{{
 apt-get update
 
-apt-get install dpkg-dev file gcc g++ libc6-dev make patch perl autoconf dh-make devscripts fakeroot gnupg g77 gpc xutils lintian linda pbuilder debian-policy developers-reference sudo wget libxml-dev
+apt-get install dpkg-dev file gcc g++ libc6-dev make patch perl autoconf dh-make devscripts fakeroot gnupg g77 gpc xutils lintian linda pbuilder debian-policy developers-reference sudo wget libxml2-dev
 
 cd /home/dotmac
 apt-get source apache2
