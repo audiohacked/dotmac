@@ -140,12 +140,12 @@ sub processXML {
 		#if ( $indata =~ s{<file fiop="([^"]+)" length="([^"]+)"/>(.*?)</file>}{}s ) { # now notice the difference; this is the non-greedy way: now we have the risk of having a </file> part within the binary data
 		if ( $indata =~ s{<file fiop="([^"]+)" length="([^"]+)"/>(.*)</file>}{}s ) { # assuming we have only 1 <file/> node we match the latest occurence (greedy) of </file>, and assume binary $fileData to run until there
 			( $fiop, $fileLength, $fileData ) = ( $1, $2, $3 );
-			carp "extracted $fiop, $fileLength, (won't show fileData); left $indata";
+	#		carp "extracted $fiop, $fileLength, (won't show fileData); left $indata";
 			# we could even test if length($fileData) == $fileLength
 			# actually we should
 			}
 		}
-	carp "request: $indata";
+	#carp "request: $indata";
 	# instantiate parser for indata
 	#ErrorContext => 2 gives us some detailed info on possible xml errors
 	my $xp = new XML::DOM::Parser(ErrorContext => 2);
@@ -233,7 +233,7 @@ sub processXML {
 						{
 						$fileData = processGetfile($username, $responsexml, $transaction, $responsetransaction, $locktoken, $fiop, $fileData);
 						$postProcess = 'getfile';
-						carp "length fileData is now: ".length($fileData);
+						# carp "length fileData is now: ".length($fileData);
 						}
 					else
 						{
@@ -248,9 +248,9 @@ sub processXML {
 		$responserootnode->appendChild($responsetransaction); # append the 'transaction' childnode;
 	}
 	$outdata = $responserootnode->toString;
-	carp "response: $outdata"; # don't show binary data
+	# carp "response: $outdata"; # don't show binary data
 	if ($postProcess) {
-		carp 'replacing __________FileData__________ with fileData';
+		# carp 'replacing __________FileData__________ with fileData';
 		$outdata =~ s/__________FileData__________/$fileData/;
 		}
 	
@@ -280,7 +280,7 @@ sub processAuthorization {
 	my $ok = 'true';
 	if ((exists($attributes{"locktoken"})) && ($attributes{"locktoken"} ne '')) {
 		$locktoken = $attributes{"locktoken"};
-		carp "processAuthorization got locktoken: $locktoken";
+		# carp "processAuthorization got locktoken: $locktoken";
 		}
 	
 	if((exists($attributes{"type"})) && ($attributes{"type"} eq "token")) {
@@ -294,12 +294,12 @@ sub processAuthorization {
 			&setObjectAttributes($responsetransactionobject, %user);
 			$responsetransaction->appendChild($responsetransactionobject);
 			&addSuccess($responsexml, $responsetransaction);
-			carp "authorized user: $username by token";
+			# carp "authorized user: $username by token";
 			}
 		else
 			{
 			addFailure($responsexml, $responsetransaction, ,"-1","Missing required attribute &apos;username&apos;");
-			carp "could not authorize user by token";
+			# carp "could not authorize user by token";
 			}
 		}
 	else
@@ -312,7 +312,7 @@ sub processAuthorization {
 				my $responsetransactionobject = $responsexml->createElement('object');
 				$username = $attributes{"username"};
 				%user = getUserCredentials($username);
-				carp "generating token";
+				# carp "generating token";
 				my $token = getNewToken();
 				addUsertoken($username, $token);
 				&setObjectAttributes($responsetransactionobject, %user);
@@ -336,7 +336,7 @@ sub processAuthorization {
 	}
 
 sub processSelect {
-	carp "processing select request";
+	# carp "processing select request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction) = @_; #we get pointers to the xml-object, requesttransaction node and responsetransaction node
 	my $storageconsumed = 0;# total storage consumed by all sync clients under 1 account
 	my $object = getFirstChildByName ($requesttransaction, 'object');
@@ -352,13 +352,13 @@ sub processSelect {
 	}
  	if(exists($attributes{"info"})) {
  		if((($attributes{"info"} eq "device") || ($attributes{"info"} eq "devices")) && ($object->getAttributeNode('entityname')->getValue eq ".mac")){
-			carp "info is device(s) and entityname = .mac";
+			# carp "info is device(s) and entityname = .mac";
 			my %user = getUserCredentials($username);
 			&setObjectAttributes($responsetransactionobject, %user);
 
 			my @subdirs = findSubDirs($devicedir);
 			foreach  my $subdir (@subdirs) {
-				carp "$subdir";
+				# carp "$subdir";
 				my $responsetransactionobjectobject = $responsexml->createElement('object');
 				#&setObjectAttributes($responsetransactionobjectobject, %user);
 				loadObject($responsexml, $responsetransactionobjectobject, $subdir);
@@ -366,7 +366,7 @@ sub processSelect {
 				}
 			}
 		elsif ($attributes{"info"} eq "dc") {
-			carp "info is dc";
+			# carp "info is dc";
 			my $dcdir = $rootpath.'/'.$username.'/dc';
 			if (!(-d $dcdir))  {
 				my $dcdirok = recursiveMKdir($rootpath, $username.'/dc');
@@ -376,7 +376,7 @@ sub processSelect {
 			
 			my @subdirs = findSubDirs($dcdir);
 			foreach  my $subdir (@subdirs) {
-				carp "$subdir";
+				# carp "$subdir";
 				my $responsetransactionobjectobject = $responsexml->createElement('object');
 				
 				#now we could either issue a loadobject; and read the attributes database again;
@@ -413,7 +413,7 @@ sub processSelect {
 	}
 
 sub processCreate {
-	carp "processing create request";
+	# carp "processing create request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction) = @_; #we get pointers to the xml-object, requesttransaction node and responsetransaction node
 	my $object = getFirstChildByName ($requesttransaction, 'object');
 	my $attributelist = $object->getElementsByTagName('attribute');
@@ -466,7 +466,7 @@ sub processCreate {
 
 
 sub processLock {
-	carp "processing lock request";
+	# carp "processing lock request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction, $locktoken) = @_; #we get pointers to the xml-object, requesttransaction node and responsetransaction node
 	my $transactiontype = $requesttransaction->getAttributeNode('type')->getValue;
 	my $object = getFirstChildByName ($requesttransaction, 'object');
@@ -509,7 +509,7 @@ sub processLock {
 	}
 
 sub processDelete {
-	carp "processing delete request";
+	# carp "processing delete request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction) = @_; #we get pointers to the xml-object, requesttransaction node and responsetransaction node
 	my $object = getFirstChildByName ($requesttransaction, 'object');
 #	my $attributelist = $object->getElementsByTagName('attribute');
@@ -535,7 +535,7 @@ sub processDelete {
 	}
 
 sub processPutfile {
-	carp "processing putfile request";
+	# carp "processing putfile request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction, $locktoken, $fiop, $fileData) = @_;
 	my $object = getFirstChildByName ($requesttransaction, 'object');
 	my $attributelist = $object->getElementsByTagName('attribute');
@@ -596,7 +596,7 @@ sub processPutfile {
 	}
 
 sub processGetfile {
-	carp "processing getfile request";
+	# carp "processing getfile request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction, $locktoken, $fiop, $fileData) = @_;
 	my $object = getFirstChildByName ($requesttransaction, 'object');
 	#object doesn't have 'attribute' childnodes
@@ -624,18 +624,18 @@ sub processGetfile {
 	binmode GETFILE;
 	read (GETFILE, $fileData, $binfileLength);
 	close(GETFILE);
-	carp "reading $getFile";
+	# carp "reading $getFile";
 
 	
 	
 	# let's see if (string) filelength differs from (binary) filelength
 	my $fileLength = length($fileData);
 	if ($fileLength != $binfileLength) {
-		carp "filelength string ($fileLength) actually differs from filelength binary ($binfileLength)";
+		# carp "filelength string ($fileLength) actually differs from filelength binary ($binfileLength)";
 		}
 	else
 		{
-		carp "filelength string ($fileLength) matches filelength binary ($binfileLength)";
+		# carp "filelength string ($fileLength) matches filelength binary ($binfileLength)";
 		}
  	# now for some strange reason, notmac not only just constructs a new object node (without attributes)
  	# but also explicitly removes attributes, and child attribute nodes from this newly created object node
@@ -655,7 +655,7 @@ sub processGetfile {
 	}
 
 sub processCommit {
-	carp "processing commit request";
+	# carp "processing commit request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction, $locktoken) = @_; #we get pointers to the xml-object, requesttransaction node and responsetransaction node
 	my $object = getFirstChildByName ($requesttransaction, 'object');
 	my $attributelist = $object->getElementsByTagName('attribute');
@@ -666,7 +666,7 @@ sub processCommit {
 
 	my $guid = $object->getAttributeNode('resourceguid')->getValue;
 	my $entityname = $object->getAttributeNode('entityname')->getValue;
-	#carp $rootpath.'/'.$username.'/dc/'.$guid;
+	# carp $rootpath.'/'.$username.'/dc/'.$guid;
 	if (!(-d $rootpath.'/'.$username.'/dc/'.$guid))  {
 		makeObject($rootpath.'/'.$username.'/dc/', "", "", $entityname, "", $guid);
 	}
@@ -696,7 +696,7 @@ sub processCommit {
 	if (!($localversion eq ''))
 		{
 		# fetch the locktoken
-		carp 'fetch the locktoken / machine guid here; and create the directory';
+		# carp 'fetch the locktoken / machine guid here; and create the directory';
 		my $machineGuid = getGuidFromLockToken($locktoken);
 		if (!(-d $rootpath.'/'.$username.'/dc/'.$guid.'/'.$machineGuid)) {
 			my $guiddirok = recursiveMKdir($rootpath.'/'.$username.'/dc/'.$guid, $machineGuid);
@@ -714,7 +714,7 @@ sub processCommit {
 	}
 
 sub processReset {
-	carp "processing reset request";
+	# carp "processing reset request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction) = @_; #we get pointers to the xml-object, requesttransaction node and responsetransaction node
 	my $object = getFirstChildByName ($requesttransaction, 'object');
 	#my $attributelist = $object->getElementsByTagName('attribute');
@@ -750,7 +750,7 @@ sub processReset {
 
 #doesn't do anything yet, except return failure to client
 sub processUpdate {
-	carp "processing update request";
+	# carp "processing update request";
 	my ($username, $responsexml, $requesttransaction, $responsetransaction) = @_; #we get pointers to the xml-object, requesttransaction node and responsetransaction node
 	my $object = getFirstChildByName ($requesttransaction, 'object');
 	my $attributelist = $object->getElementsByTagName('attribute');
@@ -937,7 +937,7 @@ sub loadAttributes
 sub getUserCredentials
 	{
 	my $username = shift; # we get an associative array %attributes of user credentials
-	#carp "getUserCredentials usercredentials:";
+	# carp "getUserCredentials usercredentials:";
 
 
 	
@@ -951,7 +951,7 @@ sub getUserCredentials
 
 	if (!(-f $userinfo)) { # the info for user does not exist
 		#create it!
-		#carp "user info doesnt exist; creating $userinfo";
+		# carp "user info doesnt exist; creating $userinfo";
 		$properties{'entityid'}= '100';
 		$properties{'entitytype'}= '7';
 		$properties{'entityname'}= '.mac';
