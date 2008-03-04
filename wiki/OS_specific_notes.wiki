@@ -6,7 +6,8 @@ Any OS specific notes we get are put here.
 
 We don't verify these - we just list them.
 
-
+= Mac OS 10.5 (Leopard) =
+You'll find complete setup instructions for Leopard at the [http://code.google.com/p/dotmac/wiki/LeopardInstallationGuide LeopardInstallationGuide Wiki page].
 = Ubuntu/Debian =
 
 A transcript of .bash_history on a clean debian net install (this is not entirely complete):
