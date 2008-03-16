@@ -41,6 +41,8 @@ use Data::Dumper;
 use Digest::MD5;
 use DBI;
 
+use DotMac::UserAgentDM;
+
 sub writeDeltaRecord{
 	my ($r) = @_;
 	my ($dbh);
@@ -330,8 +332,11 @@ sub dmpatchpaths_request {
 				$propblock->setAttribute($key,$nshash{$key});
 			}
 			$newXML->appendChild($propblock);
-			$logging =~ m/Sections/&&$r->log->info("Found a PROPPATCH buried in DMPATCHPATHS, uri: ".$href);	
-			push(@retarr,subrequest($r, "PROPPATCH", $href, $newXML->toString()));
+			$logging =~ m/Sections/&&$r->log->info("Found a PROPPATCH buried in DMPATCHPATHS, uri: ".$href);
+			my $newXMLstring = $newXML->toString();
+			my $proppatchResult = DotMac::UserAgentDM::handler($r, "PROPPATCH", $href, $newXMLstring);
+			$logging =~ m/Sections/&&$r->log->info("PROPPATCH result: ".$proppatchResult->[1]);
+			push(@retarr,$proppatchResult);
 			}
      }
 	return @retarr;
@@ -355,6 +360,7 @@ sub subrequest {
 			$subreq->headers_in->add($key,$$headers{$key});
 		}
 	}
+	$subreq->headers_in->{'Content-Length'} = length($xml);
 	$subreq->pnotes('postdata',$xml);
 	$rc=$subreq->run();
 	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$subreq->pnotes('returndata'));
