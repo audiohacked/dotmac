@@ -54,7 +54,7 @@ nano ports.conf
 
 install the perl prerequisites with:
 {{{
-emerge HTTPD-User-Manage MD5 XML-DOM HTTP-DAV
+emerge HTTPD-User-Manage MD5 XML-DOM HTTP-DAV XML-LibXML
 }}}
 
 Also the .conf went to /etc/apache2/vhosts.d/
