@@ -29,6 +29,7 @@ use Data::Dumper;
 use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST DONE :log);
 use CGI::Carp;
 use DotMac::CommonCode;
+use Compress::Zlib;
 
 sub handler
 	{
@@ -72,8 +73,9 @@ sub dmpatchpaths {
 		while ($r->read($buf, $content_length)) {
 			$content .= $buf;
 		}
+		$logging =~ m/Sections/&&$rlog->info("Content from POST: $content");
 	}
-	DotMac::CommonCode::dmpatchpaths_response($r,DotMac::CommonCode::dmpatchpaths_request( $r, $content));
+	$r->print(DotMac::CommonCode::dmpatchpaths_response($r,DotMac::CommonCode::dmpatchpaths_request( $r, $content)));
 	$r->content_type('text/xml');
 	$r->status(207);
 	return Apache2::Const::OK;
@@ -167,6 +169,36 @@ sub dmoverlay {
 	return Apache2::Const::OK;
 }
 
+sub setprocess {
+	my $r = shift;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $rlog = $r->log;
+	$logging =~ /Sections/&&$rlog->info("Content Handler: setprocess");
+	my $buf;
+	my $content;
+	my $content_length = $r->headers_in->{'Content-Length'};
+	if ($content_length > 0)
+		{
+		while ($r->read($buf, $content_length)) {
+			$content .= $buf;
+			}
+		my $xmldata = Compress::Zlib::memGunzip( \$content );
+		$logging =~ m/Sections/&&$rlog->info("Content from POST: $xmldata");
+		}		
+	#my $putFile = '/tmp/setprocess.gz';
+	#open(PUTFILE,">$putFile") || `cat /dev/null > $putFile;chmod 666 $putFile`;
+	#binmode PUTFILE;
+	#print PUTFILE $content;
+	#close(PUTFILE);	
+	#$logging =~ m/Sections/&&$rlog->info($r->as_string());
+	
+	# for now - give them an ordinary 'success'
+	$r->content_type('text/xml');
+	$r->print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
+<methodResponse><params><param><value>success</value></param></params></methodResponse>");
+	$r->status(207);
+	return Apache2::Const::OK;
+}
 sub truthget {
 	my $r = shift;
 	my $logging = $r->dir_config('LoggingTypes');
@@ -197,6 +229,16 @@ sub acl {
 	$logging =~ /Sections/&&$rlog->info("Content Handler: acl");
 	my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
 
+	my $buf;
+	my $content;
+	my $content_length = $r->headers_in->{'Content-Length'};
+	if ($content_length > 0)
+	{
+		while ($r->read($buf, $content_length)) {
+			$content .= $buf;
+		}
+		$logging =~ m/Sections/&&$rlog->info("Content from POST: $content");
+	}
 	# we might want to check if the uri starts with username ;)
 	#DotMac::CommonCode::recursiveMKdir($dotMaciDiskPath, $r->uri);
 	$r->content_type('text/plain');
