@@ -36,12 +36,16 @@ use Apache2::RequestUtil ();
 use Apache2::Log;
 use Apache2::SubRequest ();
 use DotMac::NullOutputFilter;
+use DotMac::CaptureOutputFilter;
 use DotMac::PostingInputFilter;
 use Data::Dumper;
 use Digest::MD5;
 use DBI;
 
-use DotMac::UserAgentDM;
+use DotMac::DMUserAgent;
+use HTTP::Request;
+use HTTP::Request::Common;
+use HTTP::Response;
 
 sub writeDeltaRecord{
 	my ($r) = @_;
@@ -283,15 +287,14 @@ sub recursiveMKCOL
 sub dmpatchpaths_response {
 	my ($r, @resparr) = @_;
 	my $innerarr;
-	$r->print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>
-<INS:response-status-set xmlns:INS=\"http://idisk.mac.com/_namespace/set/\">\n");
+	my $content="<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<INS:response-status-set xmlns:INS=\"http://idisk.mac.com/_namespace/set/\">\n";
 	foreach $innerarr (@resparr) {
 		my $xmlout=$innerarr->[1];
 		$xmlout=~s/\<\?xml version="1.0" encoding="utf-8"\?\>//g;
-		$r->print($xmlout);
+		$content=$content.$xmlout;
 		}
-	$r->print("</INS:response-status-set>\n");
-
+	$content=$content."</INS:response-status-set>\n";
+	return $content;
 	}
 sub dmpatchpaths_request {
 	my ($r, $inXML) = @_;
@@ -326,6 +329,7 @@ sub dmpatchpaths_request {
 			my $newXML = XML::DOM::Document->new();
 			my $decl=new XML::DOM::XMLDecl;
 			$decl->setVersion("1.0");
+			$decl->setEncoding("UTF-8"); 
 			$newXML->setXMLDecl($decl);
 			$propblock->setOwnerDocument($newXML);
 			foreach my $key (keys %nshash) {
@@ -347,24 +351,15 @@ sub subrequest {
 	my ($r, $method, $href, $xml, $headers) = @_;
 	my $subreq;
 	my $rc;
-	my $logging = $r->dir_config('LoggingTypes');
-	$subreq = $r->lookup_method_uri($method, $href);
+	my $logging = $r->dir_config('LoggingTypes')
 	my ($key,$value);
-
 	$r->log->info("source: ".$href." Destination: ".$$headers{'Destination'});
-	$subreq->add_output_filter(\&DotMac::NullOutputFilter::CaptureOutputFilter);			
-	$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
+	#$subreq->add_output_filter(\&DotMac::CaptureOutputFilter);			
+	#$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
 	$subreq->headers_in->{'X-Webdav-Method'}="";
-	if ($headers) {
-		foreach $key (keys %$headers) {
-			$subreq->headers_in->add($key,$$headers{$key});
-		}
-	}
-	$subreq->headers_in->{'Content-Length'} = length($xml);
-	$subreq->pnotes('postdata',$xml);
-	$rc=$subreq->run();
-	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$subreq->pnotes('returndata'));
-	return ([$rc,$subreq->pnotes('returndata')]);
+    my $returndata=DotMac::DMUs§erAgent::handler($r,$method, $href, $xml, $headers);
+	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$returndata);
+	return ([$rc,$returndata]);
 }
 
 sub dmmkpath_request { 

@@ -15,7 +15,7 @@
 ### along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-package DotMac::UserAgentDM;
+package DotMac::DMUserAgent;
  # file: DotMac/UserAgentDM.pm
  
 use strict;
@@ -37,7 +37,7 @@ my $realm;
 my $uNameRealmPwHash;
 
 sub handler {
-	my ($r, $rMethod, $href, $newXMLstring) = @_;
+	my ($r, $rMethod, $href, $newXMLstring, $headers) = @_;
 	my $logging = $r->dir_config('LoggingTypes');
 	$username = $r->user();
 	$realm  = $r->dir_config('dotMacRealm');
@@ -56,6 +56,11 @@ sub handler {
 	$request->header( 'Host' => $host );
 	$request->header( 'Content-Type' => 'text/xml' );
 	$request->header( 'If' => $r->headers_in->{'If'} );
+	if ($headers) {
+		foreach $key (keys %$headers) {
+			$request->header($key => $$headers{$key});
+		}
+	}
 	$request->content($newXMLstring);
 	$logging =~ m/Sections/&&$r->log->info("Request href: $href content: $newXMLstring");
 	my $response = $UA->request($request);
