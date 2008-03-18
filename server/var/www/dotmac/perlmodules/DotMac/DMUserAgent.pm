@@ -57,7 +57,7 @@ sub handler {
 	$request->header( 'Content-Type' => 'text/xml' );
 	$request->header( 'If' => $r->headers_in->{'If'} );
 	if ($headers) {
-		foreach $key (keys %$headers) {
+		foreach my $key (keys %$headers) {
 			$request->header($key => $$headers{$key});
 		}
 	}
