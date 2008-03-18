@@ -221,6 +221,21 @@ sub generate_htdigest_files{
 	
 }
 
+sub list_user_idisk{
+	my $self = shift;
+	my ($realm,$user) = @_;
+
+	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
+	
+	my $q = $dbh->prepare(qq{SELECT username FROM auth WHERE realm=? and username=? and is_idisk=1});
+	$q->execute($realm,$user);
+
+	$q->finish;
+
+	return $q->fetchrow_array;
+}
+
 sub list_users_idisk{
 	my $self = shift;
 	my ($realm) = @_;

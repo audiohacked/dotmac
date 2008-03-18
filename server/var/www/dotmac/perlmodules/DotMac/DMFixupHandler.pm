@@ -54,9 +54,6 @@ sub handler
 	my $userAgent = $r->headers_in->{'User-Agent'} || '';
 	chomp($userAgent);
 	
-	if (($r->method() eq "DELETE") || ($r->method() eq "PUT") || ($r->method() eq "MOVE") || ($r->method() eq "MKCOL")) {
-		DotMac::CommonCode::writeDeltaRecord($r);
-	}
 	
 	my $ifHeader = $r->headers_in->{'If'} || '';
 	my $xwebdavmethod = $r->headers_in->{'X-Webdav-Method'} || '';
@@ -283,6 +280,39 @@ sub handler
 						#$r->handler('perl-script');
 						#$r->set_handlers(PerlResponseHandler => \&acl_handler);
 						}
+					elsif ($XWebdavMethod eq 'SETPROCESS')
+						{
+						carp "setting perlresponsehandler to SETPROCESS_handler";
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::setprocess);
+						}
+					else {
+						my $buf;
+						my $content;
+						my $content_length = $r->header_in('Content-Length');
+						$rlog->info("##### Unmatched X-Webdav-Method #####: $XWebdavMethod");
+						if ($content_length > 0)
+							{
+							while ($r->read($buf, $content_length)) {
+								$content .= $buf;
+								}
+							$logging =~ m/Body/&&$rlog->info("Content from POST: $content");
+							}
+						}
+					}
+				elsif ($r->uri eq "/_secondaryAccountManagement")
+					{
+					my $buf;
+					my $content;
+					my $content_length = $r->header_in('Content-Length');
+					$rlog->info("##### _secondaryAccountManagement #####");
+					if ($content_length > 0)
+						{
+						while ($r->read($buf, $content_length)) {
+							$content .= $buf;
+							}
+						$logging =~ m/Body/&&$rlog->info("Content from POST: $content");
+						}
 					}
 				}
 			elsif ($rmethod eq "MOVE") {
@@ -361,6 +391,9 @@ sub handler
 						}
 					elsif ($XWebdavMethod eq 'DMPATCHPATHS') {
 						$rlog->info("Matched DMPATCHPATHS");
+						my $sitesfolder = "/$user/Web/Sites";
+						# LOCK /walinsky/Web/Sites
+						$r->headers_in->{'If'} = "<$sitesfolder> $ifHeader";
 						$r->handler('perl-script');
 						$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmpatchpaths);
 					}
