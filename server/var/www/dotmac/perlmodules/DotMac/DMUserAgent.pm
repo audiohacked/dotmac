@@ -44,7 +44,7 @@ sub handler {
 	my $dotMacIPAddress = $r->dir_config('dotMacIPAddress');
 	my $dbauth = DotMac::DotMacDB->new();
 	$uNameRealmPwHash = $dbauth->fetch_apache_auth($username, $realm);
-	
+	$logging =~ m/Sections/&&$r->log->info("Request href: $href method: $rMethod");
 	#set _all_ headers here!!!
 	#fetch 'our' server ip-address here from $r->dir_config
 	my $httpType="http://";
@@ -52,7 +52,11 @@ sub handler {
 	my $host = $r->headers_in->{'Host'};
 	$href = $httpType.$dotMacIPAddress.$href;
 	my $request = HTTP::Request->new($rMethod, $href);
-	$request->header( 'Content-Length' => length($newXMLstring) );
+	if ($newXMLstring) {
+		$request->header( 'Content-Length' => length($newXMLstring) );
+		$request->content($newXMLstring);
+		$logging =~ m/Sections/&&$r->log->info("content: $newXMLstring");
+		}
 	$request->header( 'Host' => $host );
 	$request->header( 'Content-Type' => 'text/xml' );
 	$request->header( 'If' => $r->headers_in->{'If'} );
@@ -61,8 +65,8 @@ sub handler {
 			$request->header($key => $$headers{$key});
 		}
 	}
-	$request->content($newXMLstring);
-	$logging =~ m/Sections/&&$r->log->info("Request href: $href content: $newXMLstring");
+	
+	
 	my $response = $UA->request($request);
 	
 	# $response->header('Content-type')
