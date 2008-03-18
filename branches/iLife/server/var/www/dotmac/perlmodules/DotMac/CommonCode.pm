@@ -350,16 +350,16 @@ sub dmpatchpaths_request {
 sub subrequest {
 	my ($r, $method, $href, $xml, $headers) = @_;
 	my $subreq;
-	my $rc;
+	#my $rc;
 	my $logging = $r->dir_config('LoggingTypes');
 	my ($key,$value);
 	$r->log->info("source: ".$href." Destination: ".$$headers{'Destination'});
 	#$subreq->add_output_filter(\&DotMac::CaptureOutputFilter);			
 	#$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
-	$subreq->headers_in->{'X-Webdav-Method'}="";
+	#$subreq->headers_in->{'X-Webdav-Method'}="";
     my $returndata=DotMac::DMUserAgent::handler($r,$method, $href, $xml, $headers);
-	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$returndata);
-	return ([$rc,$returndata]);
+	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$returndata->[1]);
+	return ($returndata);
 }
 
 sub dmmkpath_request { 
