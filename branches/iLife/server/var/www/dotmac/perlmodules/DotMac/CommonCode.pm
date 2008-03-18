@@ -36,7 +36,7 @@ use Apache2::RequestUtil ();
 use Apache2::Log;
 use Apache2::SubRequest ();
 use DotMac::NullOutputFilter;
-use DotMac::CaptureOutputFilter;
+# use DotMac::CaptureOutputFilter;
 use DotMac::PostingInputFilter;
 use Data::Dumper;
 use Digest::MD5;
