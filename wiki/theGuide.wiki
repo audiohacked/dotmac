@@ -66,11 +66,9 @@ homepage.mac.com
 should all point to your server. You can either do this by editing /etc/hosts on your client machine(s);
 {{{
 ###.###.###.### www.mac.com syncmgmt.mac.com idisk.mac.com configuration.apple.com lcs.mac.com certinfo.mac.com delta.mac.com notify.mac.com publish.mac.com homepage.mac.com
-}}}
-_(*note - several users have reported that Leopard doesn't honour /etc/hosts like this all the time, a solution seems to be adding the hosts again with a trailing dot)_
-{{{
 ###.###.###.### www.mac.com. syncmgmt.mac.com. idisk.mac.com. configuration.apple.com. lcs.mac.com. certinfo.mac.com. delta.mac.com. notify.mac.com. publish.mac.com. homepage.mac.com.
 }}}
+_(*note - several users have reported that Leopard doesn't honour /etc/hosts like this all the time, a solution seems to be adding the hosts again with a trailing dot)_
 or by setting up your own DNS server.
 ==Step 5==
 ====Create your first user(s)====
