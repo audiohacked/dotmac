@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "www.apple.com-PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!-- Publish Location Information -->
+    <key>pub.host</key>
+    <string>publish.mac.com</string>
+    <key>pub.path</key>
+    <string>/Web/Sites</string>
+    <key>pub.port</key>
+    <string>80</string>
+    <key>pub.rss.path</key>
+    <string>/Web/Sites</string>
+    <key>pub.rss.maxitems</key>
+    <integer>20</integer>
+    <key>pub.scheme</key>
+    <string>http</string>
+    <key>rss.host</key>
+    <string>web.mac.com</string>
+    <key>rss.port</key>
+    <string>80</string>
+    <key>rss.scheme</key>
+    <string>http</string>
+    <key>web.host</key>
+    <string>web.mac.com</string>
+    <key>web.port</key>
+    <string>80</string>
+    <key>web.scheme</key>
+    <string>http</string>
+	<!-- Retry -->
+	<key>retryTransactionsPut</key>
+	<string>2</string>
+	<key>retryTransactionsTotal</key>
+	<string>25</string>
+    <!-- Search Information -->
+    <key>locationSearchJavascript</key>
+    <string>http://www.mac.com/1/up/comments/scripts/search.js</string>
+    <!-- Comments Settings Information -->
+    <key>locationCommentSummaryJavascript</key>
+    <string>http://www.mac.com/1/up/comments/scripts/comment_summary.js</string>
+    <key>locationCommentsJavascript</key>
+    <string>http://www.mac.com/1/up/comments/scripts/comments.js</string>
+    <!-- Slideshow Settings Information -->
+    <key>locationOpenerJavascript</key>
+    <string>http://www.mac.com/1/slideshow/scripts/slideOptions.js</string>
+    <key>locationLauncherJavascript</key>
+    <string>http://www.mac.com/1/slideshow/scripts/launcher.js</string>
+    <key>locationSlideshowJavascript</key>
+    <string>http://www.mac.com/1/slideshow/scripts/slideshow.js</string>
+    <key>locationTransitionsCSS</key>
+    <string>http://www.mac.com/1/slideshow/scripts/transitions.css</string>
+
+    <key>navbarUsesStaticFeed</key>
+    <false/>
+
+    <key>photoShareUsesStaticFeed</key>
+    <false/>
+
+    <key>slideshowImageThumbnails</key>
+    <array>
+      <dict>
+        <key>imageCompressionFactor</key>
+        <real>0.6</real>
+        <key>imagePPI</key>
+        <integer>72</integer>
+        <key>landscapeLongestDimension</key>
+        <integer>69</integer>
+        <key>portraitLongestDimension</key>
+        <integer>69</integer>
+        <key>transformName</key>
+        <string>mini</string>
+      </dict>
+    </array>
+    <key>slideshowPrimaryImage</key>
+    <dict>
+      <key>constrainImageProperties</key>
+      <true/>
+      <key>imageCompressionFactor</key>
+      <real>0.6</real>
+      <key>imagePPI</key>
+      <integer>72</integer>
+      <key>landscapeLongestDimension</key>
+      <integer>800</integer>
+      <key>portraitLongestDimension</key>
+      <integer>800</integer>
+    </dict>
+    <key>domainHostingConfigurationURL</key>
+    <string>https://www.mac.com/WebObjects/Account.woa</string>
+    <!-- Photocast Information -->
+    <key>photocast.host</key>
+    <string>photocast.mac.com</string>
+    <key>photocast.port</key>
+    <string>80</string>
+    <key>photocast.scheme</key>
+    <string>http</string>
+
+    <key>share.host</key>
+    <string>gallery.mac.com</string>
+    <key>share.path</key>
+    <string>/Web/Sites/_gallery</string>
+    <key>share.port</key>
+    <string>80</string>
+    <key>share.scheme</key>
+    <string>http</string>
+
+	<key>share.theme.config.url</key>
+    <string>http://configuration.apple.com/configurations/internetservices/iapps/themeConfiguration.plist</string>
+    <key>statsURL</key>
+    <string>mac.com/stats.woa</string>
+    <key>mobileServicesAppName</key>
+    <string>MobileServices</string>
+    <key>viewIdentifiers</key>
+    <dict>
+        <key>index</key>
+        <integer>1</integer>
+        <key>album</key>
+        <integer>2</integer>
+        <key>asset</key>
+        <integer>3</integer>
+        <key>iphoto.video</key>
+        <integer>4</integer>
+        <key>movie</key>
+        <integer>5</integer>
+    </dict>
+    <key>imageProcessingInfo</key>
+    <dict>
+        <key>web</key>
+        <dict>
+          <key>imageCompressionFactor</key>
+          <real>0.7</real>
+          <key>imagePPI</key>
+          <integer>72</integer>
+          <key>landscapeLongestDimension</key>
+          <integer>800</integer>
+          <key>portraitLongestDimension</key>
+          <integer>800</integer>
+        </dict>
+        <key>large</key>
+        <dict>
+          <key>imageCompressionFactor</key>
+          <real>0.7</real>
+          <key>imagePPI</key>
+          <integer>72</integer>
+          <key>landscapeLongestDimension</key>
+          <integer>800</integer>
+          <key>portraitLongestDimension</key>
+          <integer>800</integer>
+        </dict>
+    </dict>
+    <key>webwidgets.clippingurls</key>
+        <dict>
+            <key>photoalbum</key>
+            <string>http://gallery.mac.com/g/flash/photowidget.txt</string>
+            <key>moviealbum</key>
+            <string>http://gallery.mac.com/g/flash/moviewidget.txt</string>
+            <key>index</key>
+            <string></string>
+        </dict>
+    <key>iphoto.announce.template.url</key>
+    <string>http://www.mac.com/email/Production/en/announce/announce_email.html</string>
+    <key>hitCounterHTML</key>
+    <string>&lt;div class="CounterDivClass"&gt;&lt;script type="text/javascript" src="http://web.mac.com/i/chp/NGHitCounter.js"&gt;&lt;/script&gt;&lt;script type="text/javascript" src="http://web.mac.com/%@/%@?webdav-method=propget&amp;counter"&gt;&lt;/script&gt;&lt;div id="CounterDiv"&gt;&lt;img src="http://web.mac.com/i/chp/1/spacer.gif" alt="" /&gt;&lt;/div&gt;&lt;/div&gt;</string>
+  <key>podcastCategoriesURL</key>
+  <string>http://www.mac.com/st/1/sharedassets/podcastcategories/iweb2/podcastCategories.plist</string>
+
+    <key>scrubSpriteEnabled</key>
+    <true/>
+    <key>scrubSpriteFrameWidth</key>
+    <integer>180</integer >
+    <key>scrubSpriteFrameCount</key>
+    <integer >20</integer >
+    <key>scrubSpriteQuality</key>
+    <real>0.7</real>
+    <key>posterFrameQuality</key>
+    <real>0.9</real>
+
+  <key>adsense.accountservice.url</key>
+  <string>https://configuration.apple.com/_googleAccount</string>
+  <key>adsense.contentservice.url</key>
+  <string>https://configuration.apple.com/_googleContent</string>
+  <key>adsense.namespace.url</key>
+  <string>http://www.google.com/api/adsense/v2</string>
+    <key>iphoto.announce.template.url</key>
+    <dict>
+        <key>de</key>
+        <string>http://www.mac.com/email/Production/de/announce/announce_email.html</string>
+        <key>da</key>
+        <string>http://www.mac.com/email/Production/dk/announce/announce_email.html</string>
+        <key>en</key>
+        <string>http://www.mac.com/email/Production/en/announce/announce_email.html</string>
+        <key>es</key>
+        <string>http://www.mac.com/email/Production/es/announce/announce_email.html</string>
+        <key>fi</key>
+        <string>http://www.mac.com/email/Production/fi/announce/announce_email.html</string>
+        <key>fr</key>
+        <string>http://www.mac.com/email/Production/fr/announce/announce_email.html</string>
+        <key>it</key>
+        <string>http://www.mac.com/email/Production/it/announce/announce_email.html</string>
+        <key>ja</key>
+        <string>http://www.mac.com/email/Production/ja/announce/announce_email.html</string>
+        <key>ko</key>
+        <string>http://www.mac.com/email/Production/ko/announce/announce_email.html</string>
+        <key>nl</key>
+        <string>http://www.mac.com/email/Production/nl/announce/announce_email.html</string>
+        <key>nb</key>
+        <string>http://www.mac.com/email/Production/no/announce/announce_email.html</string>
+        <key>pt_PT</key>
+        <string>http://www.mac.com/email/Production/pt/announce/announce_email.html</string>
+        <key>pt</key>
+        <string>http://www.mac.com/email/Production/pt_BR/announce/announce_email.html</string>
+        <key>ru</key>
+        <string>http://www.mac.com/email/Production/ru/announce/announce_email.html</string>
+        <key>pl</key>
+        <string>http://www.mac.com/email/Production/pl/announce/announce_email.html</string>
+        <key>sv</key>
+        <string>http://www.mac.com/email/Production/sv/announce/announce_email.html</string>
+        <key>zh_CN</key>
+        <string>http://www.mac.com/email/Production/zh_CN/announce/announce_email.html</string>
+        <key>zh_TW</key>
+        <string>http://www.mac.com/email/Production/zh_TW/announce/announce_email.html</string>
+    </dict>
+
+
+  </dict>
+</plist>
