@@ -32,15 +32,77 @@ sub handler {
 	# my $user = $r->user;
 	#carp $r->method;
 	#carp $r->uri;)
-			my $buf;
+
+	my $buf;
 	while ($r->read($buf, $r->header_in('Content-Length'))) {
-			$content .= $buf;
-			}
+		$content .= $buf;
+	}
 	$r->log->info("Wscomments:".$r->as_string()."Content: ".$content);
+
+	my $parser = XML::LibXML->new();
+	my $dom = $parser->parse_string($content);
+	my $rootnode = $dom->documentElement;
+
+	my $method = $rootnode->findvalue('/methodCall/methodName');
+
+	if( $method eq 'comment.authenticate' ){
+		$answer = &successResponse();
+	} elsif( $method eq 'comment.commentProperties' ){
+		my $path = $rootnode->findvalue('/methodCall/params/param/value/string');
+		$answer = &notEnabledResponse($path);
+	} elsif( $method eq 'comment.terminateSession' ){
+		$answer = &successResponse();
+	} else {
+		$answer = &successResponse();
+	}
+
 	$r->headers_out->{'Content-Type'}="text/xml; charset=utf-8";
-	$r->print("<?xml version=\"1.0\"?><methodResponse><params><param><value><boolean>1</boolean></value></param></params></methodResponse>");
+	$r->print( $answer->toString() );
 	
 	return Apache2::Const::OK;
-	}
+}
+
+sub successResponse() {
+	my $answer = XML::LibXML::Document->new();
+
+	my $rootElem = $answer->createElement('methodResponse');
+	$answer->setDocumentElement($rootElem);
+
+	my $params = $rootElem->appendChild( $answer->createElement('params') );
+	my $param = $params->appendChild( $answer->createElement('param') );
+	my $value = $param->appendChild( $answer->createElement('value') );
+	my $boolean = $value->appendChild( $answer->createElement('boolean') );
+	$boolean->appendChild( XML::LibXML::Text->new('1') );
+
+	return $answer;
+}
+
+sub notEnabledResponse( $ ) {
+	my $path = shift;
+
+	my $answer = XML::LibXML::Document->new();
+
+	my $rootElem = $answer->createElement('methodResponse');
+	$answer->setDocumentElement($rootElem);
+
+	my $fault = $rootElem->appendChild( $answer->createElement('fault') );
+	my $value = $fault->appendChild( $answer->createElement('value') );
+	my $struct = $value->appendChild( $answer->createElement('struct') );
+
+	my $stringMember = $struct->appendChild( $answer->createElement('member') );
+	my $stringName = $stringMember->appendChild( $answer->createElement('name') );
+	$stringName->appendChild( XML::LibXML::Text->new('faultString') );
+	my $stringValue = $stringMember->appendChild( $answer->createElement('value') );
+	$stringValue->appendChild( XML::LibXML::Text->new("org.apache.xmlrpc.XmlRpcException: Resource at path [$path] is not enabled for commenting.") );
+
+	my $codeMember = $struct->appendChild( $answer->createElement('member') );
+	my $codeName = $codeMember->appendChild( $answer->createElement('name') );
+	$codeName->appendChild( XML::LibXML::Text->new('faultCode') );
+	my $codeValue = $codeMember->appendChild( $answer->createElement('value') );
+	my $codeValueInt = $codeValue->appendChild( $answer->createElement('int') );
+	$codeValueInt->appendChild( XML::LibXML::Text->new('1408') );
+
+	return $answer;
+}
 
 1;
