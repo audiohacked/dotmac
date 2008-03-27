@@ -35,12 +35,12 @@ sub handler {
 	
 	if ($r->uri eq "/WebObjects/RequestRouter.woa/wa/HomePagePublishing/accountInfo/")
 		{
-		carp 'executing dotMacPreferencesPaneMessage';
+		carp 'executing wa/HomePagePublishing/accountInfo/';
 		$answer = accountInfo($r);
 		}
-	elsif ($r->uri eq "/WebObjects/Info.woa/wa/Query/retrieveDiskConfiguration")
+	else
 		{
-		carp 'Hi, I am just a placeholder - this should not happen';
+		carp 'Hi, RequestRouter.woa/wa was called with a uri I do not know: ' . $r->uri;
 		}
 
 	

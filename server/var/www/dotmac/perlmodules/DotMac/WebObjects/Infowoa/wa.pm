@@ -146,7 +146,7 @@ sub dotMacPreferencesPaneMessage {
 			$content .= $buf;
 			}
 		}
-	carp $content;
+#	carp $content;
 	my $username = "";
 	my $password = "";
 	my $service = "";
@@ -224,7 +224,7 @@ sub XMLRPCaccountinfo {
 			$content .= $buf;
 			}
 		}
-	#carp $content;
+#	carp $content;
 	
 	# instantiate parser
 	my $xp = new XML::DOM::Parser();

@@ -338,7 +338,7 @@ sub dmpatchpaths_request {
 			$newXML->appendChild($propblock);
 			$logging =~ m/Sections/&&$r->log->info("Found a PROPPATCH buried in DMPATCHPATHS, uri: ".$href);
 			my $newXMLstring = $newXML->toString();
-			my $proppatchResult = DotMac::UserAgentDM::handler($r, "PROPPATCH", $href, $newXMLstring);
+			my $proppatchResult = DotMac::DMUserAgent::handler($r, "PROPPATCH", $href, $newXMLstring);
 			$logging =~ m/Sections/&&$r->log->info("PROPPATCH result: ".$proppatchResult->[1]);
 			push(@retarr,$proppatchResult);
 			}
