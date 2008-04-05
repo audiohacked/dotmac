@@ -301,16 +301,9 @@ sub handler
 				}
 			}
 			elsif ($r->uri eq "/_secondaryAccountManagement") {
-				my $buf;
-				my $content;
-				my $content_length = $r->header_in('Content-Length');
 				$rlog->info("##### _secondaryAccountManagement #####");
-				if ($content_length > 0) {
-					while ($r->read($buf, $content_length)) {
-						$content .= $buf;
-					}
-					$logging =~ m/Body/&&$rlog->info("Content from POST: $content");
-				}
+				$r->handler('perl-script');
+				$r->set_handlers(PerlResponseHandler => \&DotMac::SecondaryAcct);
 			}
 		}
 		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iPho/) {
@@ -413,7 +406,9 @@ sub handler
 		}
 	} 
 	elsif ($rmethod eq "GET") {
-		if (($r->headers_in->{'Host'} eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/)) {
+	#	if (($r->headers_in->{'Host'} eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/)) {
+		if ($r->headers_in->{'Host'} eq 'publish.mac.com') {
+
 			if($r->args()) {
 				my @args = split '&', $r->args();
 				my %params;
