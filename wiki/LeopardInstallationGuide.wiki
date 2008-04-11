@@ -8,7 +8,8 @@ The information given in this document is, to the best of the authors' knowledge
 
 ==Revision history:==
 || *Date*     || *Contributor* || *Changes* ||
-|| 2008-03-03 || DKNewsham     || Converted to wiki format
+|| 2008-03-31 || DKNewsham     || Corrected typo in `curl` command ||
+|| 2008-03-03 || DKNewsham     || Converted to wiki format ||
 || 2008-02-29 || DKNewsham     || Corrected commands for backup and for permissions (Thanks, walinsky) ||
 || 2008-02-28 || DKNewsham     || Simplified install by using the provided httpd-ssl.conf and dotmac.conf files for Leopard using /Library/WebServer/dotmac as path ||
 || 2008-02-25 || DKNewsham     || Initial draft of document based on theGuide written by walinsky ||
@@ -24,7 +25,7 @@ You will need the following things before you can set up a dotMac server on Mac 
  * Internet connection
  * A couple of hours
 
-Selected key words are shown in *bold* font and terminal commands are shown in `code` font. The terminal commands should not be used without scrutiny. If you are unsure of what a command will do, look it up first. Working with `sudo` is dangerous.
+Selected key words are shown in *bold* font and terminal commands are shown in `code` font. Syntax highlighting is automatically applied by the wiki and should be ignored. The terminal commands should not be used without scrutiny. If you are unsure of what a command will do, look it up first. Working with `sudo` is dangerous.
 
 ==Procedures:==
 
@@ -50,8 +51,8 @@ Use SubVersion to download the newest version of dotMac to your home directory. 
 In this document we will use Apache 2.2.6 (the version that ships with Leopard), but later versions should work as well. Use the cURL tool to download the appropriate version of Apache from the Apache.org archive server to your home folder then unpack it.
 {{{
 	$ cd ~
-	~ $ curl -O http://archive.apache.org/dist/httpd/httpd-2.2.6.tar.bz2
-	~ $ gnutar -xzf httpd-2.2.6.tar.bz2
+	~ $ curl -O http://archive.apache.org/dist/httpd/httpd-2.2.6.tar.gz
+	~ $ gnutar -xzf httpd-2.2.6.tar.gz
 }}}
 
 Apply the quota patch provided with dotMac to enable iDisk quota support. (The patches are built against different versions of Apache, so we will need to skip the highest level of the tree.)
@@ -203,7 +204,7 @@ Restart the dotMac server.
 ===Finish===
 You should now have a fully working dotMac server with iDisk and iSync support.
 
-Clean up by removing the dotMac and Apache source files.
+Clean up by removing the dotMac and Apache source files. Alternatively, you may wish to save copies of the patched mod_dav.so and mod_dav_fs.so modules in case an Apple update overwrites them later. 
 {{{
 	$ rm -r ~/httpd-2.2.6
 	$ sudo rm -r ~/dotmac
@@ -211,6 +212,19 @@ Clean up by removing the dotMac and Apache source files.
 
 ==Troubleshooting==
 If you are having issues, try running `sudo apachectl configtest` to find issues with your Apache configuration and modules. Also, check the Apache logs in Console.app. Some issues that the author encountered are listed below. Additional help is available at the [http://code.google.com/p/dotmac/ dotMac website].
+
+*Symptom:*
+Error trying to start/test Apache server because of DAVSATMaxAreaSize.
+
+org.apache.httpd[90519] $parms->add_config() has failed: Invalid command 'DAVSATMaxAreaSize', perhaps misspelled or defined by a module not included in the server configuration at /System/Library/Perl/Extras/5.8.8/darwin-thread-multi-2level/Apache2/PerlSections.pm line 203.\n 
+
+*Problem:*
+The installed Apache DAV module(s) (mod_dav.so and/or mod_dav_fs.so) are not patched to include support for DAVSATMaxAreaSize. This can result from an incomplete installation or an Apple update to the Apache server.
+
+*Solution:*
+Re-patch, re-build and re-install mod_dav.so and mod_dav_fs.so as directed above.
+
+----
 
 *Symptom:*
 Error trying to start/test Apache server because of missing image.
