@@ -56,7 +56,11 @@ install the perl prerequisites with:
 {{{
 emerge HTTPD-User-Manage MD5 XML-DOM HTTP-DAV XML-LibXML
 }}}
-
+At least add
+{{{
+dav dav_fs auth auth_digest authn_file
+}}}
+to APACHE2_MODULES in /etc/make.conf
 Also the .conf went to /etc/apache2/vhosts.d/
 
 = FreeBSD =
