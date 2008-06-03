@@ -50,7 +50,7 @@ sub handler
 
 	
 	my $rmethod = $r->method;
-	my $user = $r->user;
+	my $user = $r->user || '';
 	my $userAgent = $r->headers_in->{'User-Agent'} || '';
 	chomp($userAgent);
 	
