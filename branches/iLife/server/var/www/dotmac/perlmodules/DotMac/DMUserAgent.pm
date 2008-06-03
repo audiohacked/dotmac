@@ -44,7 +44,7 @@ sub handler {
 	my $dotMacIPAddress = $r->dir_config('dotMacIPAddress');
 	my $dbauth = DotMac::DotMacDB->new();
 	$uNameRealmPwHash = $dbauth->fetch_apache_auth($username, $realm);
-	$logging =~ m/Sections/&&$r->log->info("Request href: $href method: $rMethod");
+	$logging =~ m/Sections/&&$r->log->info("Request href: $href method: $rMethod if headers: ".$r->headers_in->{'If'});
 	#set _all_ headers here!!!
 	#fetch 'our' server ip-address here from $r->dir_config
 	my $httpType="http://";
