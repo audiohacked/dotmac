@@ -20,6 +20,7 @@ use DBI;
 use strict;
 use CGI::Carp;
 use Data::Dumper;
+use File::Spec;
 
 sub new {
 	my $invocant = shift;
@@ -255,4 +256,173 @@ sub list_users_idisk{
 
 	return sort @userlist;
 }
+
+sub write_comment_properties{
+	my $self = shift;
+        my $user = shift;
+        my $path = shift;
+        my $properties = shift;
+
+	my $dbh = $self->{dbh};
+
+	my $q = $dbh->prepare("INSERT OR REPLACE INTO commentProperties ('user', 'path', 'properties') SELECT id, ?, ? FROM auth WHERE username=?") or die "Error in write_comment_properties: ".$dbh->errstr;
+	$q->execute($path,$properties,$user) or die "Error in write_comment_properties: ".$q->errstr;
+	$q->finish();
+}
+
+sub fetch_comment_properties{
+        my $self = shift;
+        my $user = shift;
+        my $path = shift;
+
+        my $dbh = $self->{dbh};
+	my $q = $dbh->prepare("SELECT commentProperties.properties FROM commentProperties, auth WHERE auth.username=? AND auth.id=commentProperties.user AND path=?") or die "Error in fetch_comment_properties: ".$dbh->errstr;
+        $q->execute($user,$path) or die "Error in fetch_comment_properties: ".$q->errstr;
+        my($result) = $q->fetchrow_array();
+        $q->finish();
+
+        return $result;
+}
+
+# Fetches the path of the nearest path upwards in the file tree where comment properties has been set
+sub find_nearest_path_with_properties{
+        my $self = shift;
+        my $user = shift;
+        my $path = shift;
+
+        my @dirs = File::Spec->splitdir($path);
+
+        my $dbh = $self->{dbh};
+        my $q = $dbh->prepare("SELECT commentProperties.path FROM commentProperties, auth WHERE auth.username=? AND auth.id=commentProperties.user AND commentProperties.path=?") or die "Error in fetch_commentprop_path_recursive: ".$dbh->errstr;
+
+        my $result;
+        until($result) {
+                warn "find_nearest_path_with_properties: calling sql with params: $user, ".File::Spec->catdir(@dirs)."\n";
+                $q->execute($user, File::Spec->catdir(@dirs)) or die "Error in find_nearest_path_with_properties: ".$dbh->errstr;
+                $result = ($q->fetchrow_array())[0];
+        } continue {
+                pop(@dirs);
+                last if $#dirs <= 0;
+        }
+
+        warn "No result found in find_nearest_path_with_properties\n";
+
+        return $result;
+}
+
+sub write_comment{
+	my $self = shift;
+        my $user = shift;
+        my $path = shift;
+        my $commentID = shift;
+        my $tag = shift;
+        my $comment = shift;
+
+	my $dbh = $self->{dbh};
+
+	my $q = $dbh->prepare("INSERT OR REPLACE INTO comments ('user', 'path', 'commentID', 'tag', 'comment') SELECT auth.id, ? as path, ? as commentID, ? as tag, ? as comment FROM auth WHERE username=? ") or die "Error in write_comment: ".$dbh->errstr;
+	$q->execute($path,$commentID,$tag,$comment,$user) or die "Error in write_comment: ".$q->errstr;
+	$q->finish();
+}
+
+sub delete_comment {
+        my $self = shift;
+        my $user = shift;
+        my $path = shift;
+        my $commentID = shift;
+
+        my $dbh = $self->{dbh};
+
+        my $q = $dbh->prepare("DELETE FROM comments WHERE EXISTS( SELECT 1 FROM auth WHERE comments.user=auth.id AND auth.username=? ) AND path=? AND commentID=?") or die "Error in delete_comment: ".$dbh->errstr;
+        $q->execute($user,$path,$commentID) or die "Error in delete_comment: ".$q->errstr;
+        $q->finish();
+}
+
+sub list_comments_since_tag {
+	my $self = shift;
+        my $user = shift;
+        my $path = shift;
+        my $tag = shift;
+
+	my $dbh = $self->{dbh};
+	
+	my $q = $dbh->prepare("SELECT comments.commentID FROM comments, auth WHERE auth.username=? AND auth.id=comments.user AND comments.path=? AND comments.tag>?") or die "Error in list_comments_since_tag: ".$dbh->errstr;
+	$q->execute($user,$path,$tag);
+
+	my @result = ();
+	while (my ($comment) = $q->fetchrow_array) {
+		push(@result, $comment);
+	}
+
+	$q->finish;
+
+	return @result;
+}
+
+sub list_comments_for_path {
+        my $self = shift;
+        my $user = shift;
+        my $path = shift;
+
+        my $dbh = $self->{dbh};
+        my $q = $dbh->prepare("SELECT comments.commentID FROM comments, auth WHERE auth.username=? AND auth.id=comments.user AND path=?") or die "Error in list_comments_for_path: ".$dbh->errstr;
+        $q->execute($user, $path) or die "Error in list_comments_for_path: ".$q->errstr;
+
+        my @result = ();
+        while( my($comment) = $q->fetchrow_array ){
+                push(@result, $comment);
+        }
+
+        $q->finish;
+
+        return @result;
+}
+
+sub fetch_comment{
+        my $self = shift;
+        my $user = shift;
+        my $path = shift;
+        my $commentID = shift;
+
+        my $dbh = $self->{dbh};
+	my $q = $dbh->prepare("SELECT comments.comment FROM comments, auth WHERE auth.username=? AND auth.id=comments.user AND path=? AND commentID=?") or die "Error in fetch_comment: ".$dbh->errstr;
+        $q->execute($user,$path,$commentID) or die "Error in fetch_comment: ".$q->errstr;
+        my($result) = $q->fetchrow_array();
+        $q->finish();
+
+        return $result;
+}
+
+sub increase_comment_tag{
+	my $self = shift;
+        my $user = shift;
+
+	my $dbh = $self->{dbh};
+
+        # First create the row for the user if it doesn't exist
+        my $q = $dbh->prepare("INSERT OR IGNORE INTO commentTag SELECT auth.id, 0 as tag FROM auth WHERE auth.username=?") or die "Error in increase_comment_tag: ".$dbh->errstr;
+        $q->execute($user) or die "Error in increase_comment_tag: ".$q->errstr;
+        $q->finish();
+
+        # Then increase the tag
+        $q = $dbh->prepare("UPDATE commentTag SET tag=tag+1 WHERE EXISTS( SELECT 1 FROM auth WHERE commentTag.user=auth.id AND auth.username=? )") or die "Error in increase_comment_tag: ".$dbh->errstr;
+        $q->execute($user) or die "Error in increase_comment_tag: ".$q->errstr;
+	$q->finish();
+
+        return $self->fetch_comment_tag($user);
+}
+
+sub fetch_comment_tag{
+        my $self = shift;
+        my $user = shift;
+
+        my $dbh = $self->{dbh};
+	my $q = $dbh->prepare("SELECT commentTag.tag FROM commentTag, auth WHERE auth.username=? AND commentTag.user=auth.id") or die "Error in fetch_comment_tag: ".$dbh->errstr;
+        $q->execute($user) or die "Error in fetch_comment_tag: ".$q->errstr;
+        my($result) = $q->fetchrow_array();
+        $q->finish();
+
+        return $result;
+}
+
 1;

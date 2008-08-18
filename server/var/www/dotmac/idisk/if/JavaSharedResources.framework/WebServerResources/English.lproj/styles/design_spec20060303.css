@@ -1,0 +1,206 @@
+/*  (c) Copyright 2006 Apple Computer, Inc. All rights reserved.  */
+/*********** Global ***********/
+    
+* {
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	height: 100%;
+}
+
+h1 {
+	color: #000000; 
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 18px;
+	line-height: 21px;
+}
+	
+	
+h2 {
+	color: #000000; 
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 15px;
+	line-height: 18px;
+}
+
+
+h3 {
+	color: #000000; 
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 13px;
+	line-height: 16px;
+}
+	
+h4 {
+	color: #000000; 
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+}	
+
+.big_text {
+	color: #434343;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 13px;
+	line-height: 16px;
+	font-weight:bold;
+}
+
+.big_emphasis {
+	color: #000000;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 13px;
+	line-height: 16px;
+	font-weight:bold;
+}
+
+.body_text {
+	color: #434343;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+}
+
+.body_text_dark {
+	color: #000000;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+}
+
+.body_emphasis {
+	color: #000000;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+	font-weight:bold;
+}
+
+.label {
+	color: #434343;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+}
+
+.label_emphasis {
+	color: #000000;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+	font-weight:bold;
+}
+
+.label_small {	
+	color: #000000; 
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	font-size: 10px;
+	line-height: 13px;
+}
+
+.label_ghost {
+	color: #999999;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+}
+
+.caption {	
+	color: #666666; 
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	font-size: 10px;
+	line-height: 13px;
+}	
+
+.caption_light {	
+	color: #999999; 
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	font-size: 10px;
+	line-height: 13px;
+}
+
+.caption_dark {	
+	color: #434343; 
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	font-size: 10px;
+	line-height: 13px;
+}
+
+.button_label {
+	color: #FFFFFF;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+	font-weight:bold;	
+}
+
+.button_label_dim {
+	color: #EDEDED;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+	font-weight:bold;			
+}
+
+.error_data {
+	color: #FF6010;
+	font-weight: bold;
+}
+
+.error_condition {	
+	color: #000000; 
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	font-weight: bold;
+	font-size: 10px;
+	line-height: 13px;
+}
+			
+a:link {
+	color: #3366CC;
+	font-weight: bold;
+	text-decoration: none;
+}
+ 
+a:visited {
+	color: #3366CC;
+	font-weight: bold;
+	text-decoration: none;
+} 
+
+a:hover {
+	color: #3366CC;
+	font-weight: bold;
+	text-decoration: underline;
+} 
+
+a:active {
+	color: #3366CC;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.cal_heading {	
+	color: #3E3E3E; 
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	letter-spacing: -1px;
+}
+
+.mail_captions {	
+	color: #FFFFFF; 
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	line-height: 15px;
+}
+
+.gray {color: #999999;}	
+.blue {color: #84C8F9;}	
+.teal {color: #60CDCD;}	
+.green {color: #66B522;}	
+.yellow {color: #FFCA3B;}	
+.mauve {color: #CE95B8;}
+.orange {color: #FF9900;}	
