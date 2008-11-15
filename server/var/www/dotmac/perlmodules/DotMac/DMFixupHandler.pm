@@ -404,6 +404,13 @@ sub handler
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 			}
 		}
+		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iPho/) {
+			if ($r->headers_in->{'If'}) {
+				my $rUri = $r->uri;
+				$r->headers_in->{'If'} = "<$rUri> $ifHeader";
+				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+			}
+		}
 	} 
 	elsif ($rmethod eq "GET") {
 	#	if (($r->headers_in->{'Host'} eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/)) {

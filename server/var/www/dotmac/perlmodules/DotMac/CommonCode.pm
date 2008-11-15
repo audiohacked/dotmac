@@ -420,6 +420,7 @@ $content =~ s/D:prop/prop/g;
 $content =~ s/\n//g;
 $r->log->info("truthget:".$content);
 $parser = XML::LibXML->new();
+$parser->clean_namespaces(1);
 my $truthget = XML::LibXML::Document->createDocument("1.0","UTF-8");
 my $feed=$truthget->createElement("feed");
 $truthget->setDocumentElement($feed);
@@ -814,4 +815,18 @@ sub XMLDOMgetFirstChildByName
   { my( $node, $tag)= @_;
     return $node->getElementsByTagName($tag)->[0];
   }
+
+sub file_size
+	{ 
+	my $nr = shift;
+	my $i = 0;
+	my @units = qw/B KB MB GB TB/;
+	while ( $nr > 1024 ) {
+		$nr /= 1024 ;
+		$i++ ;
+	}
+	$nr = sprintf("%.2f ", $nr);
+	$nr .= $units[$i] ;
+    return $nr;
+	}
 1;
