@@ -9,12 +9,11 @@
 <html>
   <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<title>.Mac Web Gallery</title>
+	<title>MobileMe Gallery</title>
 	<meta name="description" content="" />
 
-  	<link href="/g/stylesheets/application.css?31726" media="screen" rel="Stylesheet" type="text/css" />
-  	<link href="/g/stylesheets/gallery.css?31726" media="screen" rel="Stylesheet" type="text/css" />
-
+  	<link href="/g/stylesheets/application.css?1224536772" media="screen" rel="Stylesheet" type="text/css" />
+  	<link href="/g/stylesheets/gallery.css?1224536772" media="screen" rel="Stylesheet" type="text/css" />
     
   	<script type="text/javascript">
 	var stylesheetLink = function() {
@@ -32,7 +31,7 @@
 		}
 		
 		if (ext) {
-			return '<link href="/g/stylesheets/application_' + ext + '.css?31726"  media="screen" rel="Stylesheet" type="text/css" />' ;
+			return '<link href="/g/stylesheets/application_' + ext + '.css?34477"  media="screen" rel="Stylesheet" type="text/css" />' ;
 		} else return '' ;
 	}  				
 	document.write(stylesheetLink()) ;
@@ -40,12 +39,12 @@
 
   	<!--[if IE]>
 		<script>try { document.execCommand("BackgroundImageCache", false, true); } catch (e) { }</script>
-  		<link href="/g/stylesheets/gallery_ie7.css?31726" media="screen" rel="Stylesheet" type="text/css" />
-  		<link href="/g/stylesheets/application_ie.css?31726" media="screen" rel="Stylesheet" type="text/css" />
+  		<link href="/g/stylesheets/gallery_ie7.css?1224536772" media="screen" rel="Stylesheet" type="text/css" />
+  		<link href="/g/stylesheets/application_ie.css?1224536772" media="screen" rel="Stylesheet" type="text/css" />
   	<![endif]-->
   	<!--[if lt IE 7]>
-  		<link href="/g/stylesheets/gallery_ie6.css?31726" media="screen" rel="Stylesheet" type="text/css" />
-		<link href="/g/stylesheets/application_ie6.css?31726" media="screen" rel="Stylesheet" type="text/css" />
+  		<link href="/g/stylesheets/gallery_ie6.css?1224536772" media="screen" rel="Stylesheet" type="text/css" />
+		<link href="/g/stylesheets/application_ie6.css?1224536772" media="screen" rel="Stylesheet" type="text/css" />
   	<![endif]-->
 
     
@@ -55,6 +54,8 @@
   	<script type="text/javascript">
   		
 var reject = false;
+var currentDomain                      = (window.location.host.match(/yourdomain.com$/) ? 'walinsky.com' : 'mac.com');
+var hostName													 = 'gallery.' + currentDomain;
 if(document.cookie.indexOf("unsuppportedok=true") == -1 && !isSupported())
 {
 	checkIncompatible();
@@ -99,7 +100,7 @@ function checkIncompatible() // These will go to the incompatible page.
 
 	if(reject)
 	{
-		window.location = "http://gallery.mac.com/g/incompatible.html?url=" + location.href;
+		window.location = "http://" + hostName + "/g/incompatible.html?url=" + location.href;
 	}
 }
 
@@ -120,7 +121,7 @@ function checkNewer()
 
 	if(reject)
 	{
-		window.location = "http://gallery.mac.com/g/newer.html?url=" + location.href;
+	  window.location = "http://" + hostName + "/g/newer.html?url=" + location.href;
 	}
 }
 
@@ -134,7 +135,7 @@ function checkOutOfDate()
 	  if(parseFloat(navigator.appVersion.replace(/^.*?AppleWebKit\/(\d+.\d+).*?$/,'$1'),0) <= 419.0)
 	  {
 		reject = true;
-		window.location = "http://gallery.mac.com/g/outofdate.html?url=" + location.href;
+		window.location = "http://" + hostName + "/g/outofdate.html?url=" + location.href;
 	  }
 	}
 	
@@ -146,7 +147,7 @@ function checkUnsupported()
 	if(!isSupported())
 	{
 		reject = true;
-		window.location = "http://gallery.mac.com/g/unsupported.html?url=" + location.href;
+		window.location = "http://" + hostName + "/g/unsupported.html?url=" + location.href;
 	}
 }
 
@@ -188,7 +189,6 @@ function isSupported()
   </head>
   <body class="light_theme">
     <div id="desktop">
-
 	  
 
 
@@ -202,7 +202,6 @@ function isSupported()
   </div>
   <div id="errorGettingDataFooter">
 		<div class="indexFooter">
-
 			<button id="errorGettingDataButton" class="dotmacGalleryButton"></button>
 		</div>		
 		<div class="loginHelpLinks">
@@ -211,7 +210,6 @@ function isSupported()
 			<span class="helpLinkBtn"><span class="helpLink label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
 		</div>
   </div>
-
 </div>
 
 <div id="stillPublishingView" class="hidden">
@@ -221,7 +219,6 @@ function isSupported()
     <div id="stillPublishinglearnMoreBtn"><span id="stillPublishingLearnMoreText">_VisitorExperience.AlbumUnavailable.Back.Link</span></div>
   </div>
   <div id="stillPublishingFooter">
-
 		<div class="indexFooter">
 			<button id="stillPublishingButton" class="dotmacGalleryButton"></button>
 		</div>		
@@ -230,7 +227,6 @@ function isSupported()
 			<span class="privacyLinkBtn"><span class="privacyLink label">_PrivacyPolicy</span></span> | 
 			<span class="helpLinkBtn"><span class="helpLink label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
 		</div>
-
   </div>
 </div>
 
@@ -240,7 +236,6 @@ function isSupported()
     <div id="emptyGalleryText">_VisitorExperience.IndexPage.GalleryEmpty</div>
     <div id="learnMoreBtn"><span id="learnMoreText">_VisitorExperience.IndexPage.GalleryEmpty.LearnMore.Link</span></div>
   </div>
-
   <div id="emptyGalleryFooter">
 		<div class="indexFooter">
 			<button id="emptyGalleryButton" class="dotmacGalleryButton"></button>
@@ -249,7 +244,6 @@ function isSupported()
 			<span class="tosLinkBtn"><span class="tosLink label">_TermsOfService</span></span> | 
 			<span class="privacyLinkBtn"><span class="privacyLink label">_PrivacyPolicy</span></span> | 
 			<span class="helpLinkBtn"><span class="helpLink label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
-
 		</div>
   </div>
 </div>
@@ -259,7 +253,6 @@ function isSupported()
     <img src="/g/images/gallery/empty_gallery_graphic.png" >
     <div id="noSuchAlbumText">_VisitorExperience.AlbumUnavailable</div>
     <div id="noSuchAlbumlearnMoreBtn"><span id="noSuchAlbumLearnMoreText">_VisitorExperience.AlbumUnavailable.Back.Link</span></div>
-
   </div>
   <div id="noSuchAlbumFooter">
 		<div class="noSuchAlbumIndexFooter">
@@ -269,7 +262,6 @@ function isSupported()
 			<span class="tosLinkBtn"><span class="tosLink label">_TermsOfService</span></span> | 
 			<span class="privacyLinkBtn"><span class="privacyLink label">_PrivacyPolicy</span></span> | 
 			<span class="helpLinkBtn"><span class="helpLink label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
-
 		</div>
   </div>
 </div>
@@ -279,7 +271,6 @@ function isSupported()
     <img src="/g/images/gallery/empty_gallery_graphic.png" >
     <div id="authRequiredText">_VisitorExperience.NoPasswordEntered</div>
     <div id="authRequiredLearnMoreBtn"><span id="authRequiredLearnMoreText">_VisitorExperience.NoPasswordEntered.Back.Link</span></div>
-
   </div>
   <div id="authRequiredFooter">
 		<div class="authRequiredIndexFooter">
@@ -289,7 +280,6 @@ function isSupported()
 			<span class="tosLinkBtn"><span class="tosLink label">_TermsOfService</span></span> | 
 			<span class="privacyLinkBtn"><span class="privacyLink label">_PrivacyPolicy</span></span> | 
 			<span class="helpLinkBtn"><span class="helpLink label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
-
 		</div>
   </div>
 </div>
@@ -301,7 +291,6 @@ function isSupported()
   </div>
 </div>
    
-
 <div id="osCheckFlashView" style="position:absolute; left:-10000px; top:-10000px;"></div>
 <table id="workspace" class="desktop hidden" cellpadding="0" cellspacing="0">
   <tr><td class="header fixed" id="headerBar">
@@ -314,7 +303,6 @@ function isSupported()
 			<div class="headerLeft dark_theme">
 				<div id="homeButton" style="display: none">
 				  <button class="push large">
-
 			        <div class="outer">
 			        	<div class="label"></div>
 			        </div>
@@ -325,7 +313,6 @@ function isSupported()
 					
 			<div class="headerRight dark_theme">
 				<button class="push large" id="albumOptionsButton" style="display: none">
-
 			        <div class="outer">
 				  		<div class="label">_VisitorExperience.AlbumPage.HeaderFooter.HideOptions.Button</div>
 				  	</div>
@@ -337,7 +324,6 @@ function isSupported()
 					<div class="label">_VisitorExperience.GalleryPage.Subscribe.Button</div>
 <span id="galleryLastUpdate" style="display: none">_VisitorExperience.Visited.LastUpdate</span>&nbsp;<span id="lastUpdate" class="date">_VisitorExperience.Visited.Calculating</span>				
 				</div>
-
 			
 			</div>
 			
@@ -349,7 +335,6 @@ function isSupported()
 			<!--a href="javascript:;" class="toolBarDumbAnchor"--><div id="downloadButton" class="toolBarButton">
 				<img src="/g/images/footer/spacer.gif">
 				<div class="toolBarText label">_VisitorExperience.AlbumPage.AlbumOptions.Download.Button</div>
-
 			</div><!--/a-->
 			<!--a href="javascript:;" class="toolBarDumbAnchor"--><div id="subscribeButton" class="toolBarButton">
 				<img src="/g/images/footer/spacer.gif">
@@ -358,7 +343,6 @@ function isSupported()
 			<!--a href="javascript:;" class="toolBarDumbAnchor"--><div id="addButton" class="toolBarButton">
 				<img src="/g/images/footer/spacer.gif">
 				<div class="toolBarText label">_VisitorExperience.AlbumPage.AlbumOptions.AddToAlbum.Button</div>
-
 			</div><!--/a-->
 			<!--a href="javascript:;" class="toolBarDumbAnchor"--><div id="mobileButton" class="toolBarButton">
 				<img src="/g/images/footer/spacer.gif">
@@ -367,7 +351,6 @@ function isSupported()
 			<!--a href="javascript:;" class="toolBarDumbAnchor"--><div id="tellAFriendButton" class="toolBarButton">
 				<img src="/g/images/footer/spacer.gif">
 				<div class="toolBarText label">_VisitorExperience.AlbumPage.AlbumOptions.TellAFriend.Button</div>
-
 			</div><!--/a-->
 			<div class="clear"></div>
 		</div>
@@ -379,7 +362,6 @@ function isSupported()
 	<div id="paginationLabel"></div>
 	<div id="paginationInterface"></div>
 	<div id="pagePrevArrow" class="pagePrevArrow">&nbsp;</div>
-
 	<div id="pageNextArrow" class="pageNextArrow">&nbsp;</div>
 </div>
 </td></tr>
@@ -404,7 +386,6 @@ function isSupported()
 		<div class="smaller" id="resizerSliderSmallerButton"></div>
 		<div class="larger" id="resizerSliderLargerButton"></div>
 		<div class="track">
-
 			<div class="handle" id="resizerSliderHandle">
 			</div>
 		</div>
@@ -416,7 +397,6 @@ function isSupported()
 		<div id="black" class="black swatch">
 			
 		</div>
-
 		<div id="dkgrey" class="dkgrey swatch">
 			
 		</div>
@@ -429,7 +409,6 @@ function isSupported()
 	</div>
 
 	<div id="viewControls">
-
 		<div id="grid" class="grid viewSwitcher"><!--the extra class names, i.e. grid, mosaic, carousel, and slideshow, are for IE6, because it won't do #id.classname sometimes. Flaky. -->
 <!-- <div style="margin-top:-2px;margin-left:-2px;"> -->
 			<div class="label">_VisitorExperience.AlbumPage.HeaderFooter.GridView.Link</div>
@@ -439,7 +418,6 @@ function isSupported()
 			<div class="label">_VisitorExperience.AlbumPage.HeaderFooter.MosaicView.Link</div>
 		</div>
 		<div id="carouseljs" class="carousel viewSwitcher">
-
 <!-- <div style="margin-top:-2px;"> -->
 			<div class="label">_VisitorExperience.AlbumPage.HeaderFooter.CarouselView.Link</div>
 		</div>
@@ -450,7 +428,6 @@ function isSupported()
 	
 	<div class="clear" ></div>
 	</div>
-
 	<button id="logoButton"></button>
 	
 	
@@ -465,7 +442,6 @@ function isSupported()
 	<form id="syndicationPanel" style="width:678px">
 		<div class="content" style="height: 378px;">
 			<h1 class="lTitle">_VisitorExperience.AlbumOptions.Subscribe.Title</h1>
-
 			<div class="instructions instructionalDiv">
 				<span id="syndicationInstructionalText2">_VisitorExperience.AlbumOptions.Subscribe.InstructionalText2</span>
 				<span id="syndicationInstructionalText">_VisitorExperience.AlbumOptions.Subscribe.InstructionalText</span>
@@ -475,7 +451,6 @@ function isSupported()
 				<div id="syndicationRSSOnly">
 					<div id="syndicationRSSOnlyIcon"></div>
 					<div id="syndicationRSSOnlyLabel">_VisitorExperience.AlbumOptions.Subscribe.ViaRSS</div>
-
 				</div>
 				<div id="syndicationRSS" style="display:none">
 					<input type="radio" style="float:left" id="syndicationChoiceRadioRSSId" name="syndicationChoiceRadio"/>
@@ -484,7 +459,6 @@ function isSupported()
 				</div>
 				<div id="syndicationiPhoto" style="display:none">
 					<input type="radio" style="float:left" id="syndicationChoiceRadioiPhotoId" name="syndicationChoiceRadio" />
-
 					<div id="syndicationiPhotoIcon"></div>
 					<div id="syndicationiPhotoLabel">_VisitorExperience.AlbumOptions.Subscribe.IniPhoto</div>
 				</div>
@@ -493,7 +467,6 @@ function isSupported()
 				<div id="syndicationRSSPanel">
 					<div class="mediumTextBold" id="syndicationRSSInstructions1">_VisitorExperience.AlbumOptions.Subscribe.SyndicationRSS.InstructionalText1</div>
 					<div class="mediumText" id="syndicationRSSInstructions2">_VisitorExperience.AlbumOptions.Subscribe.SyndicationRSS.InstructionalText2</div>
-
 					<div class="mediumText" id="syndicationRSSFeed"></div>
 				</div>
 				<div id="syndicationiPhotoPanel" style="display: none">
@@ -502,7 +475,6 @@ function isSupported()
 				</div>
 			</div>
 		</div>
-
 		<div id="syndicationButtons" style="position: relative;">
 			<hr>
 			<div class="bottom"><div class="innerBottomForIE6"></div></div>
@@ -512,7 +484,6 @@ function isSupported()
 			<div class="bottom_right"></div>	
 			<div class="buttons">
 				<button class="push" type="reset">
-
 				        <div class="outer">
 							<div class="label lCancelButton">_VisitorExperience.AlbumOptions.Subscribe.Cancel.Button</div>
 					  	</div>				
@@ -523,7 +494,6 @@ function isSupported()
 				  	</div>
 				</button>	
 			</div>
-
 		</div>
 	</form>
 	<form id="downloadMoviePanel" style="width:678px">
@@ -532,7 +502,6 @@ function isSupported()
 			<div class="instructions lInstructionalText">_VisitorExperience.AlbumOptions.DownloadMovie.InstructionalText</div>
 			<div class="movieDownloadContainer">
 				<div id="mediumMovieDownload">
-
 					<input type="radio" id="mediumMovieCheckboxId" name="movieSize" value="medium" />
 					<div class="movieData">
 						<div><strong><span id="mediumMovieSizeName">_VisitorExperience.AlbumOptions.DownloadMovie.iPodOriPhone</span></strong></div>
@@ -540,14 +509,12 @@ function isSupported()
 					</div>
 				</div>
 				<div id="largeMovieDownload">
-
 					<input type="radio" id="largeMovieCheckboxId" name="movieSize" value="large" />
 					<div class="movieData">
 						<div><strong><span id="largeMovieSizeName">_VisitorExperience.AlbumOptions.DownloadMovie.macPCOrAppleTV</span></strong> <img src="/g/images/gallery/actions_drawer/appletv_14px.gif" id="appleTVIcon"> </div>
 						<div id="largeDim" class="dimensions"><span id="largeMovieDimensions"></span> &ndash; <span id="largeMovieFileSize"></span></div>
 					</div>
 				</div>
-
 			</div>
 				<div class="bottom"><div class="innerBottomForIE6"></div></div>
 				<div class="left"></div>
@@ -557,7 +524,6 @@ function isSupported()
 		</div>
 		<hr>
 		<div class="buttons">
-
 			<button class="push" type="reset">
 			        <div class="outer">
 						<div class="label lCancelButton">_VisitorExperience.AlbumOptions.Download.Cancel.Button</div>
@@ -567,7 +533,6 @@ function isSupported()
 		        <div class="outer">
 					<div class="label lDownloadButton">_VisitorExperience.AlbumOptions.Download.Download.Button</div>				  		
 			  	</div>
-
 			</button>
 		</div>
 	</form>	
@@ -576,7 +541,6 @@ function isSupported()
 			<h1 class="lTitle">_VisitorExperience.AlbumOptions.Download.Title</h1>
 			<div class="downloadPanelRight">
 				<div class="instructions lInstructionalText">_VisitorExperience.AlbumOptions.Download.InstructionalText</div>
-
 				<div class="downloadPanelDiv">
 					<img src="/g/images/gallery/actions_drawer/zip_icon.png" class="icon" alt="Download Album">
 					<div class="downloadTitle">_Filename</div>
@@ -585,7 +549,6 @@ function isSupported()
 				</div>
 			</div>	
 		</div>
-
 		<hr>
 		<div class="buttons">
 			<button class="push" type="reset">
@@ -595,7 +558,6 @@ function isSupported()
 			</button>
 			<button class="ok push submit" type="submit">
 		        <div class="outer">
-
 					<div class="label lDownloadButton">_VisitorExperience.AlbumOptions.Download.Download.Button</div>				  		
 			  	</div>
 			</button>
@@ -607,7 +569,6 @@ function isSupported()
 		<div class="bottom_right"></div>		
 	</form>	
 	<form id="mobilePanel" style="width:678px">
-
 		<div class="content" style="height: 260px">
 			<h1 class="lTitle">_VisitorExperience.AlbumOptions.MobilePosting.Title</h1>
 			<div class="mobilePanelLeft">
@@ -616,7 +577,6 @@ function isSupported()
 			<div class="mobilePanelRight">
 				<div id="mobileInstructions" class="lInstructionalText instructions">_VisitorExperience.AlbumOptions.MobilePosting.InstructionalText</div>
 				<div class="mobileEmailDiv">
-
 					<div class="mobileInfo">
 						<a href="#" class="mobileEmail shared_caption"></a>
 					</div>
@@ -626,7 +586,6 @@ function isSupported()
 		<hr>
 		<div class="buttons">
 			<button class="help ok push" type="help" style="float:left; min-width:0px">
-
 				<div class="outer" style="min-width:0px">
 					<div class="label lHelpButton" style="text-indent:0px; padding-left:0px; padding-right:7px; width:12px">_VisitorExperience.AlbumOptions.Help.Button</div>
 				</div>	
@@ -637,7 +596,6 @@ function isSupported()
 				</div>	
 			</button>						
 		</div>
-
 		<div class="bottom"><div class="innerBottomForIE6"></div></div>
 		<div class="left"></div>
 		<div class="bottom_left"></div>
@@ -647,7 +605,6 @@ function isSupported()
 	<form id="cPanel" autocomplete="off" style="width:678px">
 		<div class="content" style="height: 340px">
 			<h1 class="lTitle">_VisitorExperience.AlbumOptions.AddToAlbum.Title</h1>
-
 			
 			<div class="cPanelLeft">
 				<img src="/g/images/footer/spacer.gif" alt="Add to Album Graphic" id="addGraphic">
@@ -657,7 +614,6 @@ function isSupported()
 				<div class="prompt error-explanation"></div>
 				<table>
 					<tr>
-
 						<td class="tableLabel">
 							<label class="lNameLabel">_VisitorExperience.AlbumOptions.AddToAlbum.Name.Label</label>
 						</td>
@@ -666,7 +622,6 @@ function isSupported()
 						</td>
 					</tr>
 					<tr>
-
 						<td class="tableLabel">
 							<label class="lAddressLabel">_VisitorExperience.AlbumOptions.AddToAlbum.Address.Label</label>
 						</td>
@@ -675,7 +630,6 @@ function isSupported()
 						</td>
 					</tr>
 					<tr>
-
 						<td class="tableLabel"></td>
 						<td class="tableInput">
 							<img id="cPanelCaptchaImage" src="" />
@@ -685,7 +639,6 @@ function isSupported()
 						<td class="tableLabel">
 						</td>
 						<td class="tableInput">
-
 							<input type="text" class="shared_text" label="Captcha" realtimevalidation="true" validate="not-empty-captcha" name="iv" size="30" />
 							<br />
 							<span class="smallText">
@@ -694,7 +647,6 @@ function isSupported()
 							</span>
 						</td>
 					</tr>
-
 				</table>
 			</div>
 		</div>
@@ -703,7 +655,6 @@ function isSupported()
 			<button class="help ok push" type="help" style="float:left; min-width:0px">
 				<div class="outer" style="min-width:0px">
 					<div class="label lHelpButton" style="text-indent:0px; padding-left:0px; padding-right:7px; width:12px">_VisitorExperience.AlbumOptions.Help.Button</div>
-
 				</div>	
 			</button>						
 			<img src="/g/images/shared/spinner_16px_d6d6d7.gif" class="spinner" />
@@ -713,7 +664,6 @@ function isSupported()
 					</div>
 			</button>
 			<button class="submit push" type="submit" id="cPanelSubmit">
-
 			        <div class="outer">
 						<div class="label lChooseFilesButton">_VisitorExperience.AlbumOptions.AddToAlbum.ChooseFiles.Button</div>
 					</div>
@@ -722,7 +672,6 @@ function isSupported()
 		<div class="bottom"><div class="innerBottomForIE6"></div></div>
 		<div class="left"></div>
 		<div class="bottom_left"></div>
-
 		<div class="right"></div>
 		<div class="bottom_right"></div>
 	</form>
@@ -731,7 +680,6 @@ function isSupported()
 			<h1 class="lTitle">_VisitorExperience.AlbumOptions.TellAFriend.Title</h1>
 			<div class="tellAFriendPanelLeft">
 				<div class="imgMask"></div>
-
 				<div class="imgContainer">
 					<img src="" class="photo">
 				</div>
@@ -740,7 +688,6 @@ function isSupported()
 				<div class="instructions lInstructionalText">_VisitorExperience.AlbumOptions.TellAFriend.InstructionalText</div>
 				<div class="prompt error-explanation"></div>
 				<table>
-
 					<tr>
 						<td class="tableLabel">
 							<label class="lFromLabel">_VisitorExperience.AlbumOptions.TellAFriend.From.Label</label>
@@ -749,7 +696,6 @@ function isSupported()
 							<input type="text" name="from" realtimevalidation="true" label="Email"  validate="email" class="shared_text textInput shared_light lFromGhostText" hint="_VisitorExperience.AlbumOptions.TellAFriend.From.GhostText" size="30" />
 						</td>
 					</tr>
-
 					<tr>
 						<td class="tableLabel">
 							<label class="lToLabel">_VisitorExperience.AlbumOptions.TellAFriend.To.Label</label>
@@ -758,7 +704,6 @@ function isSupported()
 							<input type="text" name="to" realtimevalidation="true" class="shared_text textInput shared_light lToGhostText"  validate="email-list" hint="_VisitorExperience.AlbumOptions.TellAFriend.To.GhostText" size="30" />
 							<br/>
 							<span class="smallText lToInstructionalText">_VisitorExperience.AlbumOptions.TellAFriend.To.InstructionalText</span>
-
 						</td>
 					</tr>
 					<tr>
@@ -767,7 +712,6 @@ function isSupported()
 						</td>
 						<td class="tableInput message">
 							<textarea name="body" id="message" realtimevalidation="false"></textarea>
-
 							<div style="height:25px;">
 								<div id="includemobileDiv">
 									<div id="includemobileDiv_ckbox"><input type="checkbox" class="checkBox" name="includemobile">
@@ -776,7 +720,6 @@ function isSupported()
 								</div>
 							</div>
 						</div>
-
 						</td>
 					</tr>
 					<tr>
@@ -786,7 +729,6 @@ function isSupported()
 						</td>
 					</tr>
 					<tr>
-
 						<td class="tableLabel">
 						</td>
 						<td class="tableInput">
@@ -796,7 +738,6 @@ function isSupported()
 								<span class="lCAPTCHAText">_VisitorExperience.AlbumOptions.CAPTCHAText</span> 
 								(<span class="lCAPTCHAHelpLinkBtn"><span class="lCAPTCHAHelpLink">_VisitorExperience.AlbumOptions.CAPTCHAHelp.Link</span></span>)
 							</span>
-
 						</td>
 					</tr>
 				</table>
@@ -806,7 +747,6 @@ function isSupported()
 		<div class="buttons" style="clear: both">
 			<img src="/g/images/shared/spinner_16px_d6d6d7.gif" class="spinner" />
 			<button class="push" type="reset">
-
 			        <div class="outer">
 						<div class="label lCancelButton">_VisitorExperience.AlbumOptions.TellAFriend.Cancel.Button</div>
 					</div>
@@ -816,7 +756,6 @@ function isSupported()
 						<div class="label lSendButton">_VisitorExperience.AlbumOptions.TellAFriend.Send.Button</div>
 					</div>						
 			</button>
-
 		</div>
 		<div class="bottom"><div class="innerBottomForIE6"></div></div>
 		<div class="left"></div>
@@ -828,7 +767,6 @@ function isSupported()
 
 	<div id="gridViewWorkspace">
 		<div class="content">
-
 			<div id="gridView" style="min-height: 375px"></div>
 			<div style="clear:both;"></div>
 				<div class="loginHelpLinks">
@@ -836,7 +774,6 @@ function isSupported()
 					<span class="privacyLinkBtn"><span class="privacyLink label">_PrivacyPolicy</span></span> | 
 					<span class="helpLinkBtn"><span class="helpLink label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
 				</div>
-
 				<div style="clear:both"></div>
 		</div>
 	</div>
@@ -848,7 +785,6 @@ function isSupported()
 			<div id="fullScreenCarouselDiv">
 				<button id="fullScreenCarousel" class="fullScreenCarouselClass" style="visibility:hidden;">					
 				</button>
-
 			</div>
 			
 		</div>
@@ -859,7 +795,6 @@ function isSupported()
 			<div id="carouseljsView">
 				<!-- <iframe id="carouseljsframe" name="cjsif" border=0 frameborder=0 style="border:0px; z-index:10000; position:absolute; width:0px; height:0px; left:0px; top:111px; visibility:hidden;" src="about:blank"></iframe> --> <!-- This iframe is dynamically created in main.js instead.... solves problem where Safari 3 never "finishes" loading, because it's trying to load about:blank -->
 			</div>
-
 		</div>
 	</div>
 	
@@ -869,7 +804,6 @@ function isSupported()
 				<!-- <iframe id="carouseljsframe" name="cjsif" border=0 frameborder=0 style="border:0px; z-index:10000; position:absolute; width:0px; height:0px; left:0px; top:111px; visibility:hidden;" src="about:blank"></iframe> --> <!-- This iframe is dynamically created in main.js instead.... solves problem where Safari 3 never "finishes" loading, because it's trying to load about:blank -->
 			</div>
 		</div>
-
 	</div>	
 	
 	<div id="mosaicWorkspace">
@@ -880,7 +814,6 @@ function isSupported()
 					<div id="mosaicDetail">
 						<div id="mosaicDetailShadowTL" style="background:url(/g/images/gallery/mosaic_view_images/shadowtl.png); position:absolute; left:0px; top:0px; width:31px; height:9px; z-index:1;"></div>
 						<div id="mosaicDetailShadowT" style="background:url(/g/images/gallery/mosaic_view_images/shadowt.png); position:absolute; left:0px; top:0px; width:0px; height:9px; z-index:1;"></div>
-
 						<div id="mosaicDetailShadowTR" style="background:url(/g/images/gallery/mosaic_view_images/shadowtr.png); position:absolute; left:0px; top:0px; width:28px; height:9px; z-index:1;"></div>
 						<div id="mosaicDetailShadowRT" style="background:url(/g/images/gallery/mosaic_view_images/shadowrt.png); position:absolute; left:0px; top:0px; width:14px; height:29px; z-index:1;"></div>
 						<div id="mosaicDetailShadowR" style="background:url(/g/images/gallery/mosaic_view_images/shadowr.png); position:absolute; left:0px; top:0px; width:14px; height:0px; z-index:1;"></div>
@@ -890,7 +823,6 @@ function isSupported()
 						<div id="mosaicDetailShadowBL" style="background:url(/g/images/gallery/mosaic_view_images/shadowbl.png); position:absolute; left:0px; top:0px; width:31px; height:19px; z-index:1;"></div>
 						<div id="mosaicDetailShadowLB" style="background:url(/g/images/gallery/mosaic_view_images/shadowlb.png); position:absolute; left:0px; top:0px; width:14px; height:19px; z-index:1;"></div>
 						<div id="mosaicDetailShadowL" style="background:url(/g/images/gallery/mosaic_view_images/shadowl.png); position:absolute; left:0px; top:0px; width:14px; height:0px; z-index:1;"></div>
-
 						<div id="mosaicDetailShadowLT" style="background:url(/g/images/gallery/mosaic_view_images/shadowlt.png); position:absolute; left:0px; top:0px; width:14px; height:20px; z-index:1;"></div>
 						<img src="/g/images/footer/spacer.gif" id="mosaicDetailImg">
 						<div style="clear:both;"></div>
@@ -900,7 +832,6 @@ function isSupported()
 					</div>
 				</td>
 				<td class="right">
-
 					<div id="mosaicGridContainer">
 						<div id="mosaicGrid"></div>
 					</div>
@@ -910,7 +841,6 @@ function isSupported()
 	  </div>
 	</div>
 	<div id="slideshowWorkspace">
-
 		<div class="content">
 			<div id="slideshowView">
 				<div class="content">
@@ -920,7 +850,6 @@ function isSupported()
 							<img id="slideshow_img_detailTemp" src="/g/images/footer/spacer.gif" style="visibility:hidden;">							
 							<div class="reflectionContainer">
 								<img id="slideshow_img_reflection" class="reflection" src="/g/images/footer/spacer.gif">
-
 								<div class="reflectionMask"></div>
 							</div>
 						</div>
@@ -930,7 +859,6 @@ function isSupported()
 							<div id="download_slideshow"></div>
 							<div id="left_slideshow"></div>
 							<div id="prev_slideshow" class="prev_slideshow_class"></div>
-
 							<div id="playpause_slideshow" class="pause_slideshow"></div>
 							<div id="next_slideshow" class="next_slideshow_class"></div>
 							<div id="right_slideshow"></div>
@@ -940,7 +868,6 @@ function isSupported()
 				</div>
 			</div>
 		</div>
-
 	</div>
 	<div id="indexWorkspace">
 		<div class="content">
@@ -949,7 +876,6 @@ function isSupported()
 				<button id="galleryButton" class="dotmacGalleryButton"></button>
 			</div>
 			<div class="loginHelpLinks" style="visibility:hidden;"> <!-- Will make visible using doIndexLayout() -->
-
 				<span class="tosLinkBtn"><span class="tosLink label">_TermsOfService</span></span> | 
 				<span class="privacyLinkBtn"><span class="privacyLink label">_PrivacyPolicy</span></span> | 
 				<span class="helpLinkBtn"><span class="helpLink label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
@@ -968,7 +894,6 @@ function isSupported()
 		</div>
 		<div class="content">
 			<div class="imageContainer">
-
 			    <div class="dark_theme" id="backToAlbumLink">
 				    <button class="push large" id="backToAlbumButton">
 			            <div class="outer">
@@ -977,7 +902,6 @@ function isSupported()
 				    </button>
 			    </div>
 				<div id="detailImageView">
-
 					<div>
 						<img id="img_detail" src="" style="">
 					</div>
@@ -988,7 +912,6 @@ function isSupported()
 			<div class="videoContainer" id="video">
 				<div id="detailMovieView">
 				</div>
-
 				<div id="controller"></div>
 				<div id="iMovieLinks">
 					<div id="movieSizes">
@@ -996,7 +919,6 @@ function isSupported()
 						<span id="leftseperator" >|</span>
 						<span id="smallMovieButton" class="sizeLink"><span class="label">_VisitorExperience.AlbumPage.SplashVideoView.DownloadSmall.Link</span></span>
 						<span id="middleseperator" >|</span>
-
 						<span id="mediumMovieButton" class="sizeLink"><span class="label">_VisitorExperience.AlbumPage.SplashVideoView.DownloadMedium.Link</span></span>
 						<span id="rightseperator" >|</span>
 						<span id="largeMovieButton" class="sizeLink"><span class="label">_VisitorExperience.AlbumPage.SplashVideoView.DownloadLarge.Link</span></span>
@@ -1004,7 +926,6 @@ function isSupported()
 					<div id="movieDescriptionLabel" style="display: none">_VisitorExperience.AlbumPage.SplashVideoView.Description.Label</div>
 					<div id="movieDescription" style="display: none"></div>
 				</div>
-
                 <div id="iMovieGalleryFooter">
  			        <div class="indexFooter">
 				        <button id="iMovieGalleryButton" class="dotmacGalleryButton"></button>
@@ -1013,7 +934,6 @@ function isSupported()
 						<span class="tosLinkBtn"><span class="label tosLink">_TermsOfService</span></span> | 
 						<span id="privacyLinkBtn" class="privacyLinkBtn"><span class="label privacyLink">_PrivacyPolicy</span></span> | 
 						<span id="iMovieHelpLinkBtn" class="helpLink"><span class="label">_VisitorExperience.AlbumPage.HeaderFooter.Help</span></span>
-
 					</div>
                 </div>
 			</div>
@@ -1023,7 +943,6 @@ function isSupported()
 					<div id="infosmallImgView">
 						<img src="" class="smallImg">
 					</div>
-
 					<div id="infometadataView">
 						<div style='display: table; height: 176px; _position: relative; overflow: hidden;'>
 							<div style='_position: absolute; _top: 50%;display: table-cell; vertical-align: middle;'>
@@ -1033,7 +952,6 @@ function isSupported()
 				               		    <div class="contributor"></div>
 				               		    <div id="infocommentCount" class="commentCount">
 							                <span id="count_1"></span>
-
 				               		    </div>
 				               		    <div class="description"></div>
 						            </div>
@@ -1042,7 +960,6 @@ function isSupported()
 			        			            <div class="outer">
 				               		            <div class="label">_VisitorExperience.DetailPage.InfoDisplay.BackToPhoto.Button</div>
 			        			            </div>
-
 			                            </button>
 				               		</div>
 				               		<div class="flipBackButtonMovie buttons">
@@ -1052,7 +969,6 @@ function isSupported()
 			        			            </div>	
 			                            </button>
 				               		</div>
-
 			        			</div>
 							</div>
 						</div>
@@ -1062,7 +978,6 @@ function isSupported()
 					<div id="infoListView">
 						<div class="infoTableTitleBg">	</div>
 						<div class="infoTableTitle" id="infoTableImageTitle">_VisitorExperience.DetailPage.InfoDisplay.InfoTableImageTitle.Title</div>
-
 						<div style="clear:both"></div>
 						<table id="infoImageTable" class="infoTable" cellpadding="0" cellspacing="0">
 							<tr id="infoWidthRow">
@@ -1071,7 +986,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoWidth">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoHeightRow">
@@ -1080,7 +994,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoHeight">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoOriginalDateRow">
@@ -1089,7 +1002,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoOriginalDate">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoDigitizedDateRow">
@@ -1098,7 +1010,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoDigitizedDate">--</div>
-
 								</td>
 							</tr>
 						</table>
@@ -1107,7 +1018,6 @@ function isSupported()
 						<div style="clear:both"></div>
 						<table id="infoFileTable" class="infoTable" cellpadding="0" cellspacing="0">
 							<tr id="infoNameRow">
-
 								<td class="label">
 									<label id="infoNameLabel">_VisitorExperience.DetailPage.InfoDisplay.InfoNameLabel.Label</label>
 								</td>
@@ -1116,7 +1026,6 @@ function isSupported()
 								</td>
 							</tr>
 							<tr id="infoSizeRow">
-
 								<td class="label">
 									<label id="infoSizeLabel">_VisitorExperience.DetailPage.InfoDisplay.InfoSizeLabel.Label</label>
 								</td>
@@ -1125,7 +1034,6 @@ function isSupported()
 								</td>
 							</tr>
 							<tr id="infoModifiedRow">
-
 								<td class="label">
 									<label id="infoModifiedLabel">_VisitorExperience.DetailPage.InfoDisplay.InfoModifiedLabel.Label</label>
 								</td>
@@ -1134,7 +1042,6 @@ function isSupported()
 								</td>
 							</tr>
 							<tr id="infoImportedRow">
-
 								<td class="label">
 									<label id="infoImportedLabel">_VisitorExperience.DetailPage.InfoDisplay.InfoImportedLabel.Label</label>
 								</td>
@@ -1143,7 +1050,6 @@ function isSupported()
 								</td>
 							</tr>
 						</table>
-
 						<div class="infoTableTitleBg">	</div>
 						<div class="infoTableTitle" id="infoTableCameraTitle">_VisitorExperience.DetailPage.InfoDisplay.InfoTableCameraTitle.Title</div>
 						<div style="clear:both"></div>
@@ -1151,7 +1057,6 @@ function isSupported()
 							<tr id="infoCameraMakeRow">
 								<td class="label">
 									<label id="infoCameraMakeLabel">_VisitorExperience.DetailPage.InfoDisplay.InfoCameraMakeLabel.Label</label>
-
 								</td>
 								<td class="value">
 									<div id="infoCameraMake">--</div>
@@ -1160,7 +1065,6 @@ function isSupported()
 							<tr id="infoCameraModelRow">
 								<td class="label">
 									<label id="infoCameraModelLabel">_VisitorExperience.DetailPage.InfoDisplay.InfoCameraModelLabel.Label</label>
-
 								</td>
 								<td class="value">
 									<div id="infoCameraModel">--</div>
@@ -1169,7 +1073,6 @@ function isSupported()
 							<tr id="infoSoftwareRow">
 								<td class="label">
 									<label id="infoSoftwareLabel">_VisitorExperience.DetailPage.InfoDisplay.InfoSoftwareLabel.Label</label>
-
 								</td>
 								<td class="value">
 									<div id="infoSoftware">--</div>
@@ -1178,7 +1081,6 @@ function isSupported()
 						</table>
 						<div class="infoTableTitleBg"></div>
 						<div class="infoTableTitle" id="infoTableExposureTitle">_VisitorExperience.DetailPage.InfoDisplay.InfoTableExposureTitle.Title</div>
-
 						<div style="clear:both"></div>
 						<table id="infoExposureTable" class="infoTable" cellpadding="0" cellspacing="0">
 							<tr id="infoShutterRow">
@@ -1187,7 +1089,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoShutter">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoApertureRow">
@@ -1196,7 +1097,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoAperture">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoMaxApertureRow">
@@ -1205,7 +1105,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoMaxAperture">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoExposureBiasRow">
@@ -1214,7 +1113,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoExposureBias">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoExposureRow">
@@ -1223,7 +1121,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoExposure">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoExposureIndexRow">
@@ -1232,7 +1129,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoExposureIndex">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoFocalLengthRow">
@@ -1241,7 +1137,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoFocalLength">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoDistanceRow">
@@ -1250,7 +1145,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoDistance">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoSensingRow">
@@ -1259,7 +1153,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoSensing">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoLightSourceRow">
@@ -1268,7 +1161,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoLightSource">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoFlashRow">
@@ -1277,7 +1169,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoFlash">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoMeteringRow">
@@ -1286,7 +1177,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoMetering">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoBrightnessRow">
@@ -1295,7 +1185,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoBrightness">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoISOSpeedRow">
@@ -1304,7 +1193,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoISOSpeed">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoGPSLatitudeRow">
@@ -1313,7 +1201,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoGPSLatitude">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoGPSLongitudeRow">
@@ -1322,7 +1209,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoGPSLongitude">--</div>
-
 								</td>
 							</tr>
 							<tr id="infoGPSAltitudeRow">
@@ -1331,7 +1217,6 @@ function isSupported()
 								</td>
 								<td class="value">
 									<div id="infoGPSAltitude">--</div>
-
 								</td>
 							</tr>
 						</table>
@@ -1341,7 +1226,6 @@ function isSupported()
 			<div id="imageTitleLabel" class="titleLabel"></div>
 			<div id="videoTitleLabel" class="titleLabel"></div>
 			<div id="hoverView">
-
 				<div id="hoverViewMenu">
 					<div id="download_detail">
 					</div>
@@ -1351,7 +1235,6 @@ function isSupported()
 					</div>
 					<div id="info_detail">
 					</div>
-
 				</div>
 			</div>
 		</div>
@@ -1360,12 +1243,11 @@ function isSupported()
 
     </div>
 	
-  	<script src="/g/javascripts/prototype.js" type="text/javascript"></script>
-  	<script type="text/javascript" src="/g/javascripts/scriptaculous.js?1209765145"></script>
-
-  	<script type="text/javascript" src="/g/javascripts/sproutcore.js?1209765145"></script>
-  	<script type="text/javascript" src="/g/javascripts/dotmac.js?1209765145"></script>
-  	<script type="text/javascript" src="/g/javascripts/gallery.js?1209765145"></script>
+  	<script src="/g/javascripts/prototype.js?1224536713" type="text/javascript"></script>
+  	<script type="text/javascript" src="/g/javascripts/scriptaculous.js?1224744955"></script>
+  	<script type="text/javascript" src="/g/javascripts/sproutcore.js?1224744955"></script>
+  	<script type="text/javascript" src="/g/javascripts/dotmac.js?1224744955"></script>
+  	<script type="text/javascript" src="/g/javascripts/gallery.js?1224744955"></script>
     
   	<script type="text/javascript">
 		if(typeof $ != 'function')
