@@ -15,7 +15,6 @@ Setup a basic Linux/Unix server; configure hostname and ip-address. Install Perl
 Either install a build environment, or fetch precompiled packages for Apache httpd here (available shortly).
 In case you decided to compile your own Apache httpd server, fetch the source code and the (Patches) quota patch (from this site), patch, configure, compile.
 Install Apache httpd.
-_(*note - basically this could also be done on a Mac (OS 10.4) (not verified yet).)_
 
 Any OS specific notes can be found [http://code.google.com/p/dotmac/wiki/OS_specific_notes here]
 ==Step 2==
