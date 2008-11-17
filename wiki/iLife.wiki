@@ -14,7 +14,7 @@ Install is globally the same as from trunk.
 The first thing you'll notice when migrating is that your current setup will be broken; this is because we moved to a user db backend - which needs to be in sync with the .htdigest database.
 The easiest way out (now) is re-creating your users with idiskAdmin (you won't lose any files (we hope) on idisk).
 
-idiskAdmin features a new button 'Generate HTDigest Files' which you'll want to hit when changing/adding users. It syncs the user db with the .htdigest file.
+idiskAdmin features a new button 'Generate HTDigest Files' which you'll want to hit after changing/adding users. It syncs the user db with the .htdigest file.
 Restarting Apache reflects your user changes.
 
 Besides the perl modules needed for trunk we need a few more (available from CPAN):
