@@ -28,4 +28,3 @@ Before installing Imager, *you'll need to make sure to have jpeg headers install
 
 
 We've opened a [http://code.google.com/p/dotmac/issues/detail?id=88 new issue] where we hope to gather your experiences/issues. Please help us out making this page complete.
-dotmac.conf features a 
