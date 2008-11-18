@@ -203,7 +203,7 @@ $albumGuid = $albumProps->findvalue('./ns3:useritemguid'); # GAH!!!!
 			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumProps->findvalue('./ns3:scrubSpritePath');
 			#$resultdatarecordnum++;
 		}
-		elsif ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z_0-9]+)\/$/) { # !!! need to verify this match - this should be an Photo (and the same match as above)
+		elsif ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) { # !!! need to verify this match - this should be an Photo (and the same match as above)
 			my $albumUrl = $1;
 			my $imageName = $2;
 			$resultdatarecordnum = defined($resultdata->{records}) ? scalar( @{ $resultdata->{records} } ) : 0;
