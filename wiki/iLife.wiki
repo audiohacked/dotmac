@@ -21,6 +21,7 @@ Besides the perl modules needed for trunk we need a few more (available from CPA
  * LWP::UserAgent
  * JSON
  * POSIX
+ * Compress::Zlib
  * Imager
 Before installing Imager, *you'll need to make sure to have jpeg headers installed*. On common linux distibutions these are packaged as libjpeg-devel. On Mac OS Leopard google is your friend.
 
