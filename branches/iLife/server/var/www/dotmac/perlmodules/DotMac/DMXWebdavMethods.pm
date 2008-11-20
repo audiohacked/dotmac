@@ -217,7 +217,13 @@ sub truthget {
 	}
 	my $depth = $params{'depth'}?$params{'depth'}:0;
 	my $xml = DotMac::CommonCode::subrequest($r,"PROPFIND",$r->uri,"",{'Depth'=>$depth});
+	$logging =~ /Sections/&&$rlog->info(Dumper($xml));
+        if ($xml->[0] == 404) {
+                $r->status(Apache2::Const::NOT_FOUND);
+                return Apache2::Const::OK;
+        }
 	#$r->print($xml->[1]);
+	$r->content_type("application/atom+xml");
 	$r->print(DotMac::CommonCode::truthget_generate($r,$xml->[1],$r->user));
 	
 	return Apache2::Const::OK;
