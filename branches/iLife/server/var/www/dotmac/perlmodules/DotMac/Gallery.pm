@@ -32,6 +32,7 @@ use JSON;
 use POSIX qw(strftime);
 use Time::HiRes qw(gettimeofday);
 use DotMac::CommonCode;
+use Compress::Zlib;
 
 # $DotMac::Gallery::VERSION = '0.1';
 
@@ -120,8 +121,13 @@ sub truthgetHandler {
 	$r->header_out("X-Apple-Cache-Type" => "disk");
 	$r->header_out("X-Dmuser" => "walinsky");
 	$r->header_out("X-Responding-Server" => "truthng666");
-	$r->header_out("Content-Length" => length($jsonData));
-	$r->print($jsonData);
+	#$r->header_out("Content-Length" => length($jsonData));
+	#$r->print($jsonData);
+	
+	$r->content_encoding("gzip");
+	my $gzjsonData = Compress::Zlib::memGzip($jsonData); 
+	$r->header_out('Content-Length', length( $gzjsonData ));
+	$r->print( $gzjsonData );
 	return Apache2::Const::OK;
 	}
 
@@ -185,13 +191,13 @@ $albumGuid = $albumProps->findvalue('./ns3:useritemguid'); # GAH!!!!
 			$$resultdata{records}[$resultdatarecordnum]{albumWidget} = $albumProps->findvalue('./ns3:albumWidget')? 'true' : 'false';
 			$$resultdata{records}[$resultdatarecordnum]{showCaptions} = int($albumProps->findvalue('./ns3:showCaptions'));
 			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumProps->findvalue('./ns3:scrubSpritePath');
-			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{content} = '8';# WTF ???
-			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{props} = '3'; # WTF ???
-			$$resultdata{records}[$resultdatarecordnum]{numMovies} = '0'; # WTF ???
+			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{content} = 8;# WTF ???
+			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{props} = 3; # WTF ???
+			$$resultdata{records}[$resultdatarecordnum]{numMovies} = 0; # WTF ???
 			$$resultdata{records}[$resultdatarecordnum]{spriteGuids} = $albumProps->findvalue('./ns3:spriteGuids');
 			$$resultdata{records}[$resultdatarecordnum]{userItemGuid} = $albumProps->findvalue('./ns3:useritemguid');
 #TODO - we should prolly set a counter on (both) albums and album images.
-			$$resultdata{records}[$resultdatarecordnum]{userOrderIndex} = '0';
+			$$resultdata{records}[$resultdatarecordnum]{userOrderIndex} = 0;
 			
 			$$resultdata{records}[$resultdatarecordnum]{userHidden} = $albumProps->findvalue('./ns3:userHidden')? 'true' : 'false';
 			$$resultdata{records}[$resultdatarecordnum]{accessLogin} = $albumProps->findvalue('./ns3:accessLogin');
@@ -214,7 +220,7 @@ $albumGuid = $albumProps->findvalue('./ns3:useritemguid'); # GAH!!!!
 			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = $resultdatarecordnum; # WTF ???
 			$$resultdata{records}[$resultdatarecordnum]{fileExtension} = $albumProps->findvalue('./ns3:fileExtension');
 			$$resultdata{records}[$resultdatarecordnum]{webImageWidth} = $albumProps->findvalue('./ns3:webImageWidth');
-			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = '3'; # WTF ???
+			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 3; # WTF ???
 #TODO - find out where on earth we can find the real guid
 # guid should be reproducable - it is _not_ specified in properties
 			$$resultdata{records}[$resultdatarecordnum]{guid} = $albumProps->findvalue('./ns3:useritemguid');
