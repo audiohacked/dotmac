@@ -31,6 +31,7 @@ use DotMac::Gallery;
 use DotMac::GalleryImager;
 use DotMac::CachingProxy;
 use DotMac::DMXWebdavMethods;
+use DotMac::NullStorageHandler;
 
 $DotMac::GalleryTransHandler::VERSION = '0.1';
 
@@ -182,6 +183,7 @@ sub TransHandler {
 				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
 			}
 			else {
+			        $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
 				$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
 				$r->filename($r->document_root.$r->uri);
 				$r->handler('perl-script');
@@ -193,7 +195,7 @@ sub TransHandler {
 # actually we should check if we're called by hostname 'gallery.mac.com'
 # if not - we should prolly just throw a 404 (we don't want to be anyone's proxy)
     	# set up a proxy to apple servers
-    	
+        $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
     	$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
 # we should first set up pnotes
 # we can have the CachingProxy really cache things, when we tell it what to
