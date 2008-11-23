@@ -30,7 +30,9 @@ use JSON;
 use Imager;
 use DotMac::CommonCode;
 use File::stat;
+use Image::ExifTool;
 
+  
 # $DotMac::GalleryImager::VERSION = '0.1';
 
 sub handler {
@@ -51,21 +53,25 @@ sub handler {
 	my $destpath = $r->filename;# this is set in GalleryTransHandler
 	my $newimg;
 	my $tmpimg;
-	$logging =~ m/Sections/&&$rlog->info("GalleryImager::handler derivative: $derivative from $sourcepath");
+	$logging =~ m/Sections/&&$rlog->debug("GalleryImager::handler derivative: $derivative from $sourcepath");
 	if (!(-f $destpath)) {
-		$logging =~ m/Sections/&&$rlog->info("$destpath does not exist; creating from $source...");
+		$logging =~ m/Sections/&&$rlog->debug("$destpath does not exist; creating from $source...");
 		if (-f $sourcepath) {
-			$logging =~ m/Sections/&&$rlog->info("$sourcepath exists");
-			my $img = Imager->new();
-			$img->read(file=>$sourcepath) or $logging =~ m/Sections/&&$rlog->error($img->errstr());
+			$logging =~ m/Sections/&&$rlog->debug("$sourcepath exists");
+			
+			
 			if ($type eq 'medium')
 				{
+				my $img = Imager->new();
+				$img->read(file=>$sourcepath) or $logging =~ m/Sections/&&$rlog->error($img->errstr());
 				$newimg = $img->scale(xpixels=>320,ypixels=>320, type=>'min');
 				$newimg->write(file=>$destpath) or $logging =~ m/Sections/&&$rlog->error($newimg->errstr());
 				$r->content_type('image/jpeg');
 				}
 			elsif ($type eq 'square')
 				{
+				my $img = Imager->new();
+				$img->read(file=>$sourcepath) or $logging =~ m/Sections/&&$rlog->error($img->errstr());
 				$tmpimg = $img->scale(xpixels=>160,ypixels=>160);
 				$newimg = $tmpimg->crop(width=>160, height=>160);
 				$newimg->write(file=>$destpath) or $logging =~ m/Sections/&&$rlog->error($newimg->errstr());
@@ -73,40 +79,55 @@ sub handler {
 				}
 			elsif ($type eq 'exif')
 				{
-				
+				my $exifTool = new Image::ExifTool;
+				$exifTool->ImageInfo($sourcepath);
+
 				my %resultdata = ( status => 1 ); # Warning: magic constant, no idea what it means...
-				$resultdata{data}{infoSensing} = $img->tags(name => "exif_sensing_method");
-				$resultdata{data}{infoExposure} = $img->tags(name => "exif_exposure_index");
-				$resultdata{data}{infoFNumber} = $img->tags(name => "exif_f_number");
-				$resultdata{data}{infoDistance} = $img->tags(name => "exif_subject_distance");
-				$resultdata{data}{infoGPSLongitude} = "--";
-				$resultdata{data}{infoWidth} = $img->getwidth();
+				
 				my @dirtree = split (/\//,$uri);
 				my $numdir = @dirtree;
 				my $filename = @dirtree[$numdir - 1 ];
 				$resultdata{data}{infoName} = $filename;
-				$resultdata{data}{infoDigitizedDate} = $img->tags(name => "exif_date_time_digitized");
-				$resultdata{data}{infoGPSLongitudeRef} = "--";
-				$resultdata{data}{infoFocalLength} = $img->tags(name => "exif_focal_length");
-				$resultdata{data}{infoHeight} = $img->getheight();
-				$resultdata{data}{infoExposureTime} = $img->tags(name => "exif_exposure_time");
-				$resultdata{data}{infoGPSLatitude} = "--";
-				$resultdata{data}{infoAperture} = $img->tags(name => "exif_aperture");
-				$resultdata{data}{infoMetering} = $img->tags(name => "exif_metering_mode_name");
-				$resultdata{data}{infoShutter} = $img->tags(name => "exif_shutter_speed");
+				$resultdata{data}{infoDigitizedDate} = $exifTool->GetValue('CreateDate') || "--";
+				$resultdata{data}{infoFocalLength} = $exifTool->GetValue('FocalLength') || "--";
+				$resultdata{data}{infoHeight} = $exifTool->GetValue('ImageHeight') || "--";
+				$resultdata{data}{infoWidth} = $exifTool->GetValue('ImageWidth') || "--";
+				$resultdata{data}{infoCameraMake} = $exifTool->GetValue('Make') || "--";
+				$resultdata{data}{infoCameraModel} = $exifTool->GetValue('Model') || "--";
+				$resultdata{data}{infoSoftware} = $exifTool->GetValue('Software') || "--";
+				$resultdata{data}{infoGPSLatitude} = $exifTool->GetValue('GPSLatitude') || "--";
+				$resultdata{data}{infoGPSLatitudeRef} = $exifTool->GetValue('GPSLatitudeRef') || "--";
+				$resultdata{data}{infoGPSLongitude} = $exifTool->GetValue('GPSLongitude') || "--";
+				$resultdata{data}{infoGPSLongitudeRef} = $exifTool->GetValue('GPSLongitudeRef') || "--";
+				$resultdata{data}{infoGPSAltitude} = $exifTool->GetValue('GPSAltitude') || "--";
+				$resultdata{data}{infoAperture} = $exifTool->GetValue('ApertureValue') || "--";
+				$resultdata{data}{infoMetering} = $exifTool->GetValue('MeteringMode') || "--";
+=begin METERINGMODETXT
+0 = Unknown 
+1 = Average 
+2 = Center-weighted average 
+3 = Spot 
+4 = Multi-spot 
+5 = Multi-segment 
+6 = Partial 
+255 = Other
+=end METERINGMODETXT
+=cut
+				$resultdata{data}{infoShutter} = $exifTool->GetValue('ShutterSpeedValue') || "--";
 				$resultdata{data}{infoSize} = DotMac::CommonCode::file_size(stat($sourcepath)->size);
-				$resultdata{data}{infoBrightness} = $img->tags(name => "exif_brightness");
-				$resultdata{data}{infoCameraModel} = "--";
-				$resultdata{data}{infoMaxAperture} = $img->tags(name => "exif_max_aperture");
-				$resultdata{data}{infoCameraMake} = $img->tags(name => "exif_make");
-				$resultdata{data}{infoExposureBias} = $img->tags(name => "exif_exposure_bias");
-				$resultdata{data}{infoFlash} = $img->tags(name => "exif_flash");
-				$resultdata{data}{infoOriginalDate} = $img->tags(name => "exif_date_time_original");
-				$resultdata{data}{infoGPSAltitude} = "--";
-				$resultdata{data}{infoISOSpeed} = $img->tags(name => "exif_iso_speed_rating");
-				$resultdata{data}{infoLightSource} = $img->tags(name => "exif_tag_light_source");
-				$resultdata{data}{infoSoftware} = $img->tags(name => "exif_software");
-				$resultdata{data}{infoGPSLatitudeRef} = "--";
+				$resultdata{data}{infoBrightness} = $exifTool->GetValue('Brightness') || "--";
+				$resultdata{data}{infoSensing} = $exifTool->GetValue('SensingMethod') || "--";
+				$resultdata{data}{infoFNumber} = $exifTool->GetValue('FNumber') || "--";
+				$resultdata{data}{infoDistance} = $exifTool->GetValue('SubjectDistance') || "--";
+				$resultdata{data}{infoMaxAperture} = $exifTool->GetValue('MaxApertureValue') || "--";
+				$resultdata{data}{infoExposure} = $exifTool->GetValue('ExposureProgram') || "--";
+				$resultdata{data}{infoExposureIndex} = $exifTool->GetValue('ExposureIndex') || "--";
+				$resultdata{data}{infoExposureBias} = $exifTool->GetValue('ExposureCompensation') || "--"; # what the heck should this be ??
+				$resultdata{data}{infoExposureTime} = $exifTool->GetValue('ExposureTime') || "--";
+				$resultdata{data}{infoFlash} = $exifTool->GetValue('Flash') || "--";
+				$resultdata{data}{infoOriginalDate} = $exifTool->GetValue('DateTimeOriginal') || "--";
+				$resultdata{data}{infoISOSpeed} = $exifTool->GetValue('ISO') || "--";
+				$resultdata{data}{infoLightSource} = $exifTool->GetValue('LightSource') || "--";
 
 				open (JSON, ">$destpath");
 				print JSON to_json(\%resultdata, {pretty => 1});
