@@ -17,6 +17,11 @@ The easiest way out (now) is re-creating your users with idiskAdmin (you won't l
 idiskAdmin features a new button 'Generate HTDigest Files' which you'll want to hit after changing/adding users. It syncs the user db with the .htdigest file.
 Restarting Apache reflects your user changes.
 
+SVN >= r274: 	
+`Converted authentication to use mod_dbd (on RH distributions you will need to install apr-util-sqlite)`
+This means your apache needs to sport `mod_dbd.so` and `mod_authn_dbd.so` - and get's rid of the htdigest files. If your httpd version is too old, you can grab a dotmac.conf from an older SVN release for now. We might make this a configurable option.
+
+
 Besides the perl modules needed for trunk we need a few more (available from CPAN):
  * LWP::UserAgent
  * JSON
@@ -29,9 +34,17 @@ Before installing Imager, *you'll need to make sure to have jpeg headers install
 (the list might not be complete - please let us know when you find missing modules)
 
 
+==Gallery==
+Getting gallery.yourdomain.com working requires you (besides configuring it in dotmac.conf) to replace the hardcoded 'yourdomain.com' some times.
+ * ../cache/gallery.html (1x)
+ * ../cache/g/javascripts/gallery.js (3x)
+ * when yourdomain is not a `.com` domain - you also have to fix the extension in gallery.js. To do this, search for `.com` in gallery.js; it should be your 4th hit (at line #162 - saying: `return path.replace(/http:\/\/.+?\.com\/.+?\//,'');)`; replace `.com` with your extension. _we're looking for a more permanent solution - open for suggestions here_
+
+
 We've opened a [http://code.google.com/p/dotmac/issues/detail?id=88 new issue] where we hope to gather your experiences/issues. Please help us out making this page complete.
 
 
 = Notes =
 
-iPhoto and iWeb publishing have only been tested with iLife '08 with latest updates. We won't support earlier versions/revisions.
+ * iPhoto and iWeb publishing have only been tested with iLife '08 with latest updates. We won't support earlier versions/revisions.
+ * 
