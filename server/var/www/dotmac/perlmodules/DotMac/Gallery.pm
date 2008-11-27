@@ -119,7 +119,7 @@ sub truthgetHandler {
 	$r->header_out("Server" => "AppleIDiskServer-666");
 	$r->header_out("Vary" => "Accept-Encoding");
 	$r->header_out("X-Apple-Cache-Type" => "disk");
-	$r->header_out("X-Dmuser" => "walinsky");
+	$r->header_out("X-Dmuser" => $username);
 	$r->header_out("X-Responding-Server" => "truthng666");
 	#$r->header_out("Content-Length" => length($jsonData));
 	#$r->print($jsonData);
@@ -135,6 +135,10 @@ sub truthgetAlbum {
 	my ($r, $username, $href, $resultdata) = @_;
 	my $logging = $r->dir_config('LoggingTypes');
 	my $albumGuid;
+	
+	my $albumRecordNum;
+	my $numPhotos = 0;
+	
 	my $resultdatarecordnum;
 	my $hostname = $r->hostname();
 	my $propfindAlbumResponse = DotMac::CommonCode::subrequest($r, 'PROPFIND', $href, '<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>', {'Depth'=> '1'});
@@ -150,6 +154,7 @@ sub truthgetAlbum {
 			my $albumUrl = $1;
 			$resultdatarecordnum = defined($resultdata->{records}) ? scalar( @{ $resultdata->{records} } ) : 0;
 			$logging =~ m/SubreqDebug/&&$r->log->info("album: $albumUrl record# $resultdatarecordnum");
+			$albumRecordNum = $resultdatarecordnum;
 			$$resultdata{records}[$resultdatarecordnum]{type} = 'Album';
 			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = int($albumProps->findvalue('./ns1:sortOrder'));
 			$$resultdata{records}[$resultdatarecordnum]{allowMobile} = $albumProps->findvalue('./ns3:allowMobile')? 'true' : 'false';
@@ -162,7 +167,7 @@ sub truthgetAlbum {
 
 			my $userOrder = $albumProps->findvalue('./ns3:userorder');
 			my @userOrderList = split(/,/, $userOrder);
-			$$resultdata{records}[$resultdatarecordnum]{numPhotos} = scalar(@userOrderList);
+			#$$resultdata{records}[$resultdatarecordnum]{numPhotos} = scalar(@userOrderList);
 
 #TODO - change hardcoded url to $r->uri thingies					
 			$$resultdata{records}[$resultdatarecordnum]{url} = "http://$hostname/$username/$albumUrl";
@@ -214,6 +219,7 @@ $albumGuid = $albumProps->findvalue('./ns3:useritemguid'); # GAH!!!!
 			my $imageName = $2;
 			$resultdatarecordnum = defined($resultdata->{records}) ? scalar( @{ $resultdata->{records} } ) : 0;
 			$logging =~ m/SubreqDebug/&&$r->log->info("album: $albumUrl image $imageName record# $resultdatarecordnum");
+			$numPhotos++;
 			$$resultdata{records}[$resultdatarecordnum]{userHidden} = $albumProps->findvalue('./ns3:userHidden')? 'true' : 'false';
 			$$resultdata{records}[$resultdatarecordnum]{userItemGuid} = $albumProps->findvalue('./ns3:useritemguid');
 			$$resultdata{records}[$resultdatarecordnum]{webImagePath} = $albumProps->findvalue('./ns3:webImagePath');
@@ -249,6 +255,7 @@ $albumGuid = $albumProps->findvalue('./ns3:useritemguid'); # GAH!!!!
 		}
 	#return $resultdata;
 	}
+	$$resultdata{records}[$albumRecordNum]{numPhotos} = $numPhotos;
 }
 
 1;
