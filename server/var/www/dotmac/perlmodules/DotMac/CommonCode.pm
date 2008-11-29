@@ -198,6 +198,13 @@ sub dmoverlay {
 			}
 			closedir($dirhandle);
 			#$r->print(Dumper(@arr));
+### don't forget to fetch props from sourcedir - and proppatch them onto target dir
+			##make sure we have a trailing slash
+			if ( $sourceuri !~ m[/$] ) {
+				$sourceuri = $sourceuri.'/';
+			}
+			copyDavProps ( $r,$sourceuri, $targeturi );
+### patched target dir with source props ?!? should be done here
 		}
 	} elsif (!(-d $source)) {
 		if (!(-e $target) && checkparent($r,$target)) {
@@ -226,6 +233,61 @@ sub dmoverlay {
 	
 	}
 	return Apache2::Const::OK;
+}
+
+sub copyDavProps {
+	my ( $r,$sourceuri, $targeturi ) = @_;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $propfindResponse = subrequest($r, 'PROPFIND', $sourceuri, '<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>', {'Depth'=> '0'});
+	$logging =~ m/Sections/&&$r->log->info("fetching props for existing dir $sourceuri ". $propfindResponse->[0]. " - " . $propfindResponse->[1]);
+	
+	my $DAVns = 'NSDAV';
+	my $DAVnsURI = 'DAV:';
+	my $iphotons = 'iphoto';
+	my $iphotonsURI = 'urn:iphoto:property';
+	my $idiskns = 'idisk';
+	my $idisknsURI = 'http://idisk.mac.com/_namespace/set/';
+	my $dotmacns = 'dotmac';
+	my $dotmacnsURI = 'urn:dotmac:property';
+	
+	
+	#setup a new proppatch xml doc
+	my $proppatch = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
+	my $propertyupdate = $proppatch->createElement('propertyupdate');
+	$propertyupdate->setNamespace( $DAVnsURI , $DAVns );
+	$proppatch->setDocumentElement($propertyupdate);
+	
+	my $parser = XML::LibXML->new();
+	my $data = $parser->parse_string($propfindResponse->[1]);
+	my $xc = XML::LibXML::XPathContext->new($data);
+	$xc->registerNs( $DAVns => $DAVnsURI );
+	$xc->registerNs( $iphotons => $iphotonsURI );
+	$xc->registerNs( $idiskns => $idisknsURI );
+	$xc->registerNs( $dotmacns => $dotmacnsURI );
+	
+	foreach my $ccc ($xc->findnodes('//NSDAV:multistatus//NSDAV:response//NSDAV:propstat//NSDAV:prop')) {
+		print "Found a NSDAV\n";
+		foreach my $iphoto ( $xc->findnodes('./iphoto:*', $ccc) ) {
+			my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
+			my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
+			my $newn = $iphoto->cloneNode(1);
+			$prop->appendChild($newn);
+		}
+		 foreach my $idisk ( $xc->findnodes('./idisk:*', $ccc) ) {
+			my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
+			my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
+			my $newn = $idisk->cloneNode(1);
+			$prop->appendChild($newn);
+		}
+		 foreach my $dotmac ( $xc->findnodes('./dotmac:*', $ccc) ) {
+			my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
+			my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
+			my $newn = $dotmac->cloneNode(1);
+			$prop->appendChild($newn);
+		}
+	}
+	$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH : ". $proppatch->toString() );
+	my $proppatchResponse = subrequest($r, 'PROPPATCH', $targeturi,  $proppatch->toString());
 }
 
 sub dmoverlay_response{
