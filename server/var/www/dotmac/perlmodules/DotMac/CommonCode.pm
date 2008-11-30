@@ -288,6 +288,8 @@ sub copyDavProps {
 	}
 	$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH : ". $proppatch->toString() );
 	my $proppatchResponse = subrequest($r, 'PROPPATCH', $targeturi,  $proppatch->toString());
+	#$propfindAlbumResponse->[1]
+	$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH returned : ". $proppatchResponse->[0] .' - '. $proppatchResponse->[1] );
 }
 
 sub dmoverlay_response{
@@ -361,52 +363,47 @@ sub dmpatchpaths_response {
 sub dmpatchpaths_request {
 	my ($r, $inXML) = @_;
 	my $logging = $r->dir_config('LoggingTypes');
-	my $xp = new XML::DOM::Parser(ErrorContext => 2);
-	my $requestxml = $xp->parse($inXML);
-	my $requestrootnode = $requestxml->getElementsByTagName('x0:request-instructions-set')->[0];
-	my $rootattributes = $requestrootnode->getAttributes;
-	my $rootattributescount = $requestrootnode->getAttributes->getLength;
-	my %nshash;
+	my $DAVns = 'NSDAV';
+	my $DAVnsURI = 'DAV:';
+	my $iphotons = 'iphoto';
+	my $iphotonsURI = 'urn:iphoto:property';
+	my $idiskns = 'idisk';
+	my $idisknsURI = 'http://idisk.mac.com/_namespace/set/';
+	my $dotmacns = 'dotmac';
+	my $dotmacnsURI = 'urn:dotmac:property';
 	my @retarr;
-	for (my $i = 0; $i < $rootattributescount; $i++) {
-		$nshash{$rootattributes->item($i)->getName()}=$rootattributes->item($i)->getValue();
+	my $parser = XML::LibXML->new();
+	my $doc    = $parser->parse_string($inXML);
+	my $xc     = XML::LibXML::XPathContext->new( $doc->documentElement() );
+	$xc->registerNs( $DAVns => $DAVnsURI );
+	$xc->registerNs( $iphotons => $iphotonsURI );
+	$xc->registerNs( $idiskns => $idisknsURI );
+	$xc->registerNs( $dotmacns => $dotmacnsURI );
+	
+	foreach my $ccc ($xc->findnodes('//idisk:request-instructions-set//idisk:request-instructions')) {
+		my $action = $xc->findnodes('./idisk:action', $ccc)->[0]->textContent();
+		print "Found idisk:request-instruction: $action\n";
+		if ($action eq 'PROPPATCH') {
+			my $href = $xc->findnodes('./idisk:href', $ccc)->[0]->textContent();
+			print "href: $href\n";
+			my $proppatchrequest = $xc->findnodes('./NSDAV:propertyupdate', $ccc)->[0];
+			#setup a new proppatch xml doc
+			my $proppatchxml = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
+			my $newn = $proppatchrequest->cloneNode(1);
+			$proppatchxml->setDocumentElement($newn);
+			my $xc     = XML::LibXML::XPathContext->new( $proppatchxml->documentElement() );
+			$xc->registerNs( $DAVns => $DAVnsURI );
+			$xc->registerNs( $iphotons => $iphotonsURI );
+			$xc->registerNs( $idiskns => $idisknsURI );
+			$xc->registerNs( $dotmacns => $dotmacnsURI );
+			$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH: ".$proppatchxml->toString());
+			my $proppatchResponse = subrequest($r, 'PROPPATCH', $href,  $proppatchxml->toString());
+			#my $proppatchResult = DotMac::DMUserAgent::handler($r, "PROPPATCH", $href, $proppatchxml->toString() );
+			$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH result: ".$proppatchResponse->[1]);
+			push(@retarr,$proppatchResponse);
+		}
 	}
-
-	my $requestxml_root = $requestxml->getDocumentElement;
-	my $requestInstructions = $requestrootnode->getElementsByTagName('x0:request-instructions'); # gather all 'transaction' child nodes
-	my $requestInstructionsCount = $requestInstructions->getLength();
-	my $resulturi;
-	$r->log->info("In dmpatchpaths");
-	
-	
-	for (my $j = 0; $j < $requestInstructionsCount; $j++){
-		my $action = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:action')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
-		my $href = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:href')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
-		my $successcodes = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:success-codes')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
-    	my $subreq;
-    	#print ("action: $action, href: $href, success-codes: $successcodes\n");
-		if ($action eq 'PROPPATCH')
-        {
-        	my $propblock = XMLDOMgetFirstChildByName($requestInstructions->[$j],'x1:propertyupdate')->cloneNode(1);
-			my $newXML = XML::DOM::Document->new();
-			my $decl=new XML::DOM::XMLDecl;
-			$decl->setVersion("1.0");
-			$decl->setEncoding("UTF-8"); 
-			$newXML->setXMLDecl($decl);
-			$propblock->setOwnerDocument($newXML);
-			foreach my $key (keys %nshash) {
-				$propblock->setAttribute($key,$nshash{$key});
-			}
-			$newXML->appendChild($propblock);
-			$logging =~ m/Sections/&&$r->log->info("Found a PROPPATCH buried in DMPATCHPATHS, uri: ".$href);
-			my $newXMLstring = $newXML->toString();
-			my $proppatchResult = DotMac::DMUserAgent::handler($r, "PROPPATCH", $href, $newXMLstring);
-			$logging =~ m/Sections/&&$r->log->info("PROPPATCH result: ".$proppatchResult->[1]);
-			push(@retarr,$proppatchResult);
-			}
-     }
 	return @retarr;
-
 }
 
 sub subrequest {
