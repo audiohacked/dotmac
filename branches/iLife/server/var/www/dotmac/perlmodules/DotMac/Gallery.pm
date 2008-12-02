@@ -87,16 +87,16 @@ sub truthgetHandler {
 	my $resultdatarecordnum = 0;
 	
 	foreach my $responsenode ($xc->findnodes("//$DAVns:multistatus/$DAVns:response")) {
-		my $href = $xc->findnodes("./$DAVns:href", $responsenode)->[0]->textContent();
+		my $href = $xc->findvalue("./$DAVns:href", $responsenode);
 		$logging =~ m/Gallery/&&$r->log->info("href: ########### $href ##########");
-		my $prop = $xc->findnodes("./$DAVns:propstat/$DAVns:prop", $responsenode)->[0];
+		my $prop = $xc->findvalue("./$DAVns:propstat/$DAVns:prop", $responsenode);
 		
 		if ($href =~ m/Web\/Sites\/_gallery\/$/) {
 			$logging =~ m/Gallery/&&$r->log->info("wooH00 $href matches _gallery/");
 			## fetch updated, title, and userOrder
-			$resultdata{data}{updated} = $xc->findnodes("./$dotmacns:updated", $prop)->[0]->textContent();
-			$resultdata{data}{title} = $xc->findnodes("./$dotmacns:title", $prop)->[0]->textContent();
-			$resultdata{data}{userOrder} = $xc->findnodes("./$dotmacns:userorder", $prop)->[0]->textContent();
+			$resultdata{data}{updated} = $xc->findvalue("./$dotmacns:updated", $prop);
+			$resultdata{data}{title} = $xc->findvalue("./$dotmacns:title", $prop);
+			$resultdata{data}{userOrder} = $xc->findvalue("./$dotmacns:userorder", $prop);
 		}
 		elsif ($href =~ m/([a-zA-Z_0-9]+)\/Web\/Sites\/_gallery\/[0-9]+\/$/) { # !!! need to verify this match - it should match -only- the 1st level subdirs
 			$username = $1;
@@ -167,7 +167,7 @@ sub truthgetAlbum {
 	$logging =~ m/Gallery/&&$r->log->info("parsed xml");
 
 	foreach my $albumResponsenode ($albumXc->findnodes("//$DAVns:multistatus/$DAVns:response")) {
-		my $albumHref = $albumXc->findnodes("./$DAVns:href", $albumResponsenode)->[0]->textContent();
+		my $albumHref = $albumXc->findvalue("./$DAVns:href", $albumResponsenode);
 		$logging =~ m/Gallery/&&$r->log->info("href: ########### $href ##########");
 		my $albumProps = $albumXc->findnodes("./$DAVns:propstat/$DAVns:prop", $albumResponsenode)->[0];
 		if ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/$/) { # !!! need to verify this match - this should be an album (and the same match as above)
@@ -176,30 +176,30 @@ sub truthgetAlbum {
 			$logging =~ m/Gallery/&&$r->log->info("album: $albumUrl record# $resultdatarecordnum");
 			$albumRecordNum = $resultdatarecordnum;
 			$$resultdata{records}[$resultdatarecordnum]{type} = 'Album';
-			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = int($albumXc->findnodes("./$iphotons:sortOrder", $albumProps)->[0]->textContent());
-			$$resultdata{records}[$resultdatarecordnum]{allowMobile} = $albumXc->findnodes("./$dotmacns:allowMobile", $albumProps)->[0]->textContent()? 'true' : 'false';
-			$$resultdata{records}[$resultdatarecordnum]{showMobile} = $albumXc->findnodes("./$dotmacns:showMobile", $albumProps)->[0]->textContent()? 'true' : 'false';
-			$$resultdata{records}[$resultdatarecordnum]{title} = $albumXc->findnodes("./$dotmacns:title", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{keyImagePath} = "http://$hostname/$username/$albumUrl/" . $albumXc->findnodes("./$dotmacns:keyImagePath", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{updated} = $albumXc->findnodes("./$dotmacns:updated", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{download} = $albumXc->findnodes("./$dotmacns:download", $albumProps)->[0]->textContent()? 'true' : 'false';
-			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteFrameCount} = $albumXc->findnodes("./$dotmacns:scrubSpriteFrameCount", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = int($albumXc->findvalue("./$iphotons:sortOrder", $albumProps));
+			$$resultdata{records}[$resultdatarecordnum]{allowMobile} = $albumXc->findvalue("./$dotmacns:allowMobile", $albumProps) ? 'true' : 'false';
+			$$resultdata{records}[$resultdatarecordnum]{showMobile} = $albumXc->findvalue("./$dotmacns:showMobile", $albumProps) ? 'true' : 'false';
+			$$resultdata{records}[$resultdatarecordnum]{title} = $albumXc->findvalue("./$dotmacns:title", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{keyImagePath} = "http://$hostname/$username/$albumUrl/" . $albumXc->findvalue("./$dotmacns:keyImagePath", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{updated} = $albumXc->findvalue("./$dotmacns:updated", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{download} = $albumXc->findvalue("./$dotmacns:download", $albumProps) ? 'true' : 'false';
+			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteFrameCount} = $albumXc->findvalue("./$dotmacns:scrubSpriteFrameCount", $albumProps);
 
-			my $userOrder = $albumXc->findnodes("./$dotmacns:userorder", $albumProps)->[0]->textContent();
+			my $userOrder = $albumXc->findvalue("./$dotmacns:userorder", $albumProps);
 			my @userOrderList = split(/,/, $userOrder);
 			#$$resultdata{records}[$resultdatarecordnum]{numPhotos} = scalar(@userOrderList);
 
 #TODO - change hardcoded url to $r->uri thingies					
 			$$resultdata{records}[$resultdatarecordnum]{url} = "http://$hostname/$username/$albumUrl";
-			$$resultdata{records}[$resultdatarecordnum]{addPhoto} = $albumXc->findnodes("./$dotmacns:addPhoto", $albumProps)->[0]->textContent()? 'true' : 'false';
-			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteFrameWidth} = int($albumXc->findnodes("./$dotmacns:scrubSpriteFrameWidth", $albumProps)->[0]->textContent());
-			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteFrameHeight} = int($albumXc->findnodes("./$dotmacns:scrubSpriteFrameHeight", $albumProps)->[0]->textContent());
+			$$resultdata{records}[$resultdatarecordnum]{addPhoto} = $albumXc->findvalue("./$dotmacns:addPhoto", $albumProps) ? 'true' : 'false';
+			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteFrameWidth} = int($albumXc->findvalue("./$dotmacns:scrubSpriteFrameWidth", $albumProps));
+			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteFrameHeight} = int($albumXc->findvalue("./$dotmacns:scrubSpriteFrameHeight", $albumProps));
 
 #TODO - find out where on earth we can find the real guid
 # guid should be reproducable - it is _not_ specified in properties
-			$$resultdata{records}[$resultdatarecordnum]{guid} = $albumXc->findnodes("./$dotmacns:useritemguid", $albumProps)->[0]->textContent(); # GAH!!!!
+			$$resultdata{records}[$resultdatarecordnum]{guid} = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH!!!!
 #Could it get worse??? Yes it can!!! XML is not linearized - anyway:
-$albumGuid = $albumXc->findnodes("./$dotmacns:useritemguid", $albumProps)->[0]->textContent(); # GAH!!!!
+$albumGuid = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH!!!!
 
 			#$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = $albumProps->findnodes('./ns3:viewIdentifier');
 			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 2; # is it ???
@@ -212,26 +212,26 @@ $albumGuid = $albumXc->findnodes("./$dotmacns:useritemguid", $albumProps)->[0]->
 			$$resultdata{records}[$resultdatarecordnum]{userOrder} = $userOrder;
 			$$resultdata{records}[$resultdatarecordnum]{keyImageGuid} = uc($userOrderList[0]);
 
-			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteKeyFrameIndex} = $albumXc->findnodes("./$iphotons:keyImageGuid", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{albumWidget} = $albumXc->findnodes("./$dotmacns:albumWidget", $albumProps)->[0]->textContent()? 'true' : 'false';
-			$$resultdata{records}[$resultdatarecordnum]{showCaptions} = int($albumXc->findnodes("./$dotmacns:showCaptions", $albumProps)->[0]->textContent());
-			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumXc->findnodes("./$dotmacns:scrubSpritePath", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{scrubSpriteKeyFrameIndex} = $albumXc->findvalue("./$iphotons:keyImageGuid", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{albumWidget} = $albumXc->findvalue("./$dotmacns:albumWidget", $albumProps) ? 'true' : 'false';
+			$$resultdata{records}[$resultdatarecordnum]{showCaptions} = int($albumXc->findvalue("./$dotmacns:showCaptions", $albumProps));
+			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumXc->findvalue("./$dotmacns:scrubSpritePath", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{content} = 8;# WTF ???
 			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{props} = 3; # WTF ???
 			$$resultdata{records}[$resultdatarecordnum]{numMovies} = 0; # WTF ???
-			$$resultdata{records}[$resultdatarecordnum]{spriteGuids} = $albumXc->findnodes("./$dotmacns:spriteGuids", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{userItemGuid} = $albumXc->findnodes("./$dotmacns:useritemguid", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{spriteGuids} = $albumXc->findvalue("./$dotmacns:spriteGuids", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{userItemGuid} = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps);
 #TODO - we should prolly set a counter on (both) albums and album images.
 			$$resultdata{records}[$resultdatarecordnum]{userOrderIndex} = 0;
 			
-			$$resultdata{records}[$resultdatarecordnum]{userHidden} = $albumXc->findnodes("./$dotmacns:userHidden", $albumProps)->[0]->textContent()? 'true' : 'false';
-			$$resultdata{records}[$resultdatarecordnum]{accessLogin} = $albumXc->findnodes("./$dotmacns:accessLogin", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{userHidden} = $albumXc->findvalue("./$dotmacns:userHidden", $albumProps) ? 'true' : 'false';
+			$$resultdata{records}[$resultdatarecordnum]{accessLogin} = $albumXc->findvalue("./$dotmacns:accessLogin", $albumProps);
 
 			#gah! http://gallery.mac.com/$username/$albumUrl/
-			$$resultdata{records}[$resultdatarecordnum]{title} = $albumXc->findnodes("./$dotmacns:title", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{title} = $albumXc->findvalue("./$dotmacns:title", $albumProps);
 			
 			
-			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumXc->findnodes("./$dotmacns:scrubSpritePath", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumXc->findvalue("./$dotmacns:scrubSpritePath", $albumProps);
 			$logging =~ m/Gallery/&&$r->log->info("album: done");
 		}
 		elsif ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) { # !!! need to verify this match - this should be an Photo (and the same match as above)
@@ -240,35 +240,35 @@ $albumGuid = $albumXc->findnodes("./$dotmacns:useritemguid", $albumProps)->[0]->
 			$resultdatarecordnum = defined($resultdata->{records}) ? scalar( @{ $resultdata->{records} } ) : 0;
 			$logging =~ m/Gallery/&&$r->log->info("album: $albumUrl image $imageName record# $resultdatarecordnum");
 			$numPhotos++;
-			$$resultdata{records}[$resultdatarecordnum]{userHidden} = $albumXc->findnodes("./$dotmacns:userHidden", $albumProps)->[0]->textContent()? 'true' : 'false';
-			$$resultdata{records}[$resultdatarecordnum]{userItemGuid} = $albumXc->findnodes("./$dotmacns:useritemguid", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{webImagePath} = $albumXc->findnodes("./$dotmacns:webImagePath", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{userHidden} = $albumXc->findvalue("./$dotmacns:userHidden", $albumProps) ? 'true' : 'false';
+			$$resultdata{records}[$resultdatarecordnum]{userItemGuid} = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{webImagePath} = $albumXc->findvalue("./$dotmacns:webImagePath", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = $resultdatarecordnum; # WTF ???
-			$$resultdata{records}[$resultdatarecordnum]{fileExtension} = $albumXc->findnodes("./$dotmacns:fileExtension", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{webImageWidth} = $albumXc->findnodes("./$dotmacns:webImageWidth", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{fileExtension} = $albumXc->findvalue("./$dotmacns:fileExtension", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{webImageWidth} = $albumXc->findvalue("./$dotmacns:webImageWidth", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 3; # WTF ???
 #TODO - find out where on earth we can find the real guid
 # guid should be reproducable - it is _not_ specified in properties
-			$$resultdata{records}[$resultdatarecordnum]{guid} = $albumXc->findnodes("./$dotmacns:useritemguid", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{guid} = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{type} = 'Photo';
 #TODO - change hardcoded url to $r->uri thingies					
 			$$resultdata{records}[$resultdatarecordnum]{url} = "http://$hostname/$username/$albumUrl/$imageName";
-			$$resultdata{records}[$resultdatarecordnum]{title} = $albumXc->findnodes("./$dotmacns:title", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{title} = $albumXc->findvalue("./$dotmacns:title", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{userOrderIndex} = $resultdatarecordnum; # "sortOrder" : 136,"userOrderIndex" : 136
 			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = $resultdatarecordnum; # "sortOrder" : 136,"userOrderIndex" : 136
-			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{content} = $albumXc->findnodes("./$iphotons:ContentVersion", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{props} = $albumXc->findnodes("./$iphotons:PropertiesVersion", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{content} = $albumXc->findnodes("./$dotmacns:content", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{modDate} = $albumXc->findnodes("./$dotmacns:modDate", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{updated} = $albumXc->findnodes("./$dotmacns:updated", $albumProps)->[0]->textContent();
-			$$resultdata{records}[$resultdatarecordnum]{webImageHeight} = $albumXc->findnodes("./$dotmacns:webImageHeight", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{content} = $albumXc->findvalue("./$iphotons:ContentVersion", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{versionInfo}{props} = $albumXc->findvalue("./$iphotons:PropertiesVersion", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{content} = $albumXc->findvalue("./$dotmacns:content", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{modDate} = $albumXc->findvalue("./$dotmacns:modDate", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{updated} = $albumXc->findvalue("./$dotmacns:updated", $albumProps);
+			$$resultdata{records}[$resultdatarecordnum]{webImageHeight} = $albumXc->findvalue("./$dotmacns:webImageHeight", $albumProps);
 			my $largeImagePath = $albumXc->findnodes("./$dotmacns:largeImagePath", $albumProps)->[0];
-			if (defined($largeImagePath)) {
+			if ($largeImagePath) {
 				$$resultdata{records}[$resultdatarecordnum]{largeImagePath} = $largeImagePath->textContent();
 			}
-			$$resultdata{records}[$resultdatarecordnum]{photoDate} = $albumXc->findnodes("./$iphotons:photoDate", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{photoDate} = $albumXc->findvalue("./$iphotons:photoDate", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{album} = $albumGuid;
-			$$resultdata{records}[$resultdatarecordnum]{archiveDate} = $albumXc->findnodes("./$dotmacns:archiveDate", $albumProps)->[0]->textContent();
+			$$resultdata{records}[$resultdatarecordnum]{archiveDate} = $albumXc->findvalue("./$dotmacns:archiveDate", $albumProps);
 
 			
 			#$resultdatarecordnum++;
