@@ -72,7 +72,7 @@ or by setting up your own DNS server.
 ==Step 5==
 ====Create your first user(s)====
 
-A skeleton is provided for new users; create /var/www/dotmac/username, and copy everything in /var/www/dotmac/skel/ to /var/www/idisk/username/
+A skeleton is provided for new users; create /var/www/dotmac/username, and copy everything in /var/www/dotmac/skel/ to /var/www/dotmac/idisk/username/
 
 for testing purposes, a test user has been provided: l/p testuser/dotmac
 
