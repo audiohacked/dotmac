@@ -201,7 +201,7 @@ sub handler
 		}
 	} 
 	elsif ($rmethod eq "POST") {
-		if ($userAgent =~m/^DotMacKit-like, File-Sync-Direct/) {
+		if (($userAgent =~m/^DotMacKit-like, File-Sync-Direct/) && $r->uri !~ m/^\/status\/.*/) {
 			# *sigh*
 			# X-Webdav-Method: DMMKPATH
 			# X-Webdav-Method: DMPUTFROM
