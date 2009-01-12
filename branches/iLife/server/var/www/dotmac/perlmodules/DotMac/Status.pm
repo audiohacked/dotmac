@@ -87,275 +87,89 @@ use Apache2::RequestRec ();
 use Apache2::RequestIO ();
 use Apache2::Const -compile => qw(OK);
 
-$DotMac::Status::VERSION = '0.1';
+use CGI::Carp;
 
-use XML::DOM;
-use CGI::Carp; # for neat logging to the error log
 use DotMac::CommonCode;
+use Time::HiRes;
+use Data::Dumper;
+$DotMac::Status::VERSION = '0.1';
 
 sub handler {
 	my $r = shift;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $rlog = $r->log;
 	
-	my $TimeStamp = time();
-	my $paddedTimestamp = $TimeStamp * 1000;
-	my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
-	
-	use Time::HiRes;
 	my $start = [ Time::HiRes::gettimeofday( ) ];
 	my $answer = "";
 	my $my_data = "";
 	# we should check if it's a post message
-	if ($r->method eq 'POST')
+	my $length=$r->headers_in->{'Content-Length'};
+	if ($r->method() eq 'POST')
 		{
 		my $buf;
-		while ($r->read($buf, $r->header_in('Content-Length'))) {
+		while ($r->read($buf, $length)) {
 			$my_data .= $buf;
 			}
 		}
-	open(OUT, ">>/tmp/status");
-	print OUT $my_data;
-	close(OUT);
-	# instantiate parser
-	my $xp = new XML::DOM::Parser();
-	# parse and create tree
-	my $doc = $xp->parse($my_data);
-	# get root node
-	my $root = $doc->getDocumentElement();
-	my $strings = $root->getElementsByTagName("methodName");
-	my $n = $strings->getLength;
-	for (my $i = 0; $i < $n; $i++)
-	 {
-		my $string = $strings->item ($i)->getFirstChild()->getData;
-		if ($string eq "status.rootFolders") {
-			$answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
-			<methodResponse>
-			<params><param>
-				<value><struct>
-					<member><name>resultCode</name><value>Success</value></member>
-					<member><name>rootDirectory</name><value><array><data>
-						<value><struct>
-							<member><name>folderName</name><value>/Documents</value></member>
-							<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Movies</value></member>
-							<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Music</value></member>
-							<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Pictures</value></member>
-							<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Public</value></member>
-							<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Sites</value></member>
-							<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Backup</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Library</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Software</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Shared</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Groups</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/.Groups</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/.FileSync</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/.fseventsd</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Calendars</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-						<value><struct>
-							<member><name>folderName</name><value>/Web</value></member>
-							<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-						</struct></value>
-					</data></array></value></member>
-				<member><name>rootFolders</name><value><array><data>
-					<value><struct>
-						<member><name>folderName</name><value>/Documents</value></member>
-						<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Movies</value></member>
-						<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Music</value></member>
-						<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Pictures</value></member>
-						<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Public</value></member>
-						<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member><
-					/struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Sites</value></member>
-						<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Backup</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Library</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Software</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Shared</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Groups</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/.Groups</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/.FileSync</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/.fseventsd</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Calendars</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-					<value><struct>
-						<member><name>folderName</name><value>/Web</value></member>
-						<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
-					</struct></value>
-				</data></array></value></member>
-				<member><name>timestamp</name><value>$HexTimeStamp</value></member>
-				<member><name>resultType</name><value>rootFolders</value></member>
-			</struct></value>
-		</param></params>
-		</methodResponse>";
-			}
-		elsif ($string eq "status.timestamp") {
-			$answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse><params><param><value><struct><member><name>resultCode</name><value>Success</value></member><member><name>timestamp</name><value>$HexTimeStamp</value></member><member><name>resultType</name><value>Timestamp</value></member></struct></value></param></params></methodResponse>";
-			}
-		elsif ($string eq "status.options") {
-			$answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
-	<methodResponse>
-		<params>
-			<param>
-				<value>
-					<struct>
-						<member>
-							<name>presumeStaleAfterDays</name>
-							<value><int>30</int></value>
-						</member>
-						<member>
-							<name>minimumQueryInterval</name>
-							<value><int>36000</int></value>
-						</member>
-						<member>
-							<name>optionsValidityPeriod</name>
-							<value><int>600</int></value>
-						</member>
-						<member>
-							<name>resultCode</name>
-							<value>Success</value>
-						</member>
-						<member>
-							<name>fullScanMinimum</name>
-							<value><int>86400</int></value>
-						</member>
-						<member>
-							<name>Options</name>
-							<value>
-								<struct>
-									<member>
-										<name>presumeStaleAfterDays</name>
-										<value><int>30</int></value>
-									</member>
-									<member>
-										<name>minimumQueryInterval</name>
-										<value><int>36000</int></value>
-									</member>
-									<member>
-										<name>optionsValidityPeriod</name>
-										<value><int>600</int></value>
-									</member>
-									<member>
-										<name>fullScanMinimum</name>
-										<value><int>86400</int></value>
-									</member>
-									<member>
-										<name>firstWait</name>
-										<value><int>5</int></value>
-									</member>
-									<member>
-										<name>refreshWait</name>
-										<value><int>2</int></value>
-									</member>
-								</struct>
-							</value>
-						</member>
-						<member>
-							<name>timestamp</name>
-							<value>$HexTimeStamp</value>
-						</member>
-						<member>
-							<name>firstWait</name>
-							<value><int>5</int></value>
-						</member>
-						<member>
-							<name>refreshWait</name>
-							<value><int>2</int></value>
-						</member>
-						<member>
-							<name>resultType</name>
-							<value>Options</value>
-						</member>
-					</struct>
-				</value>
-			</param>
-		</params>
-	</methodResponse>";
-			}
-		elsif ($string eq "status.query") {
+	$logging =~ m/StatusPost/&&$rlog->info("Content from Status POST: $my_data");
+
+	my $parser = XML::LibXML->new();
+	
+	my $xmldata = $parser->parse_string($my_data);
+	my $xc = XML::LibXML::XPathContext->new($xmldata);
+### Figure out what we need to do
+	my $methodNameNode=$xc->findnodes("//methodCall/methodName");
+
+	my $methodName=$methodNameNode->string_value();
+### Parse the parameters into an array.
+	my $userNameNode=$xc->findnodes("//methodCall/params/param/value/string");
+	
+	my @valarr;
+	while (my $nodehold = $userNameNode->shift()) {
+	        push(@valarr,$nodehold->string_value());
+	}
+### Verify the username (1st parameter) against what was passed in 
+	if ($valarr[0] ne $r->user ){
+		$answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>";
+		$rlog->info("Username passed in method doesn't match authenticated user: ".$r->user);
+	} elsif ($methodName eq "status.rootFolders") {
+		$answer = rootfolders($r,\@valarr);
+	} elsif ($methodName eq "status.timestamp") {
+		$answer = timestamp($r,\@valarr);
+	} elsif ($methodName eq "status.options") {
+		$answer = options($r,\@valarr);
+	} elsif ($methodName eq "status.query") {
+		$answer = statquery($r,\@valarr);			
 			#$answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse><params><param><value><struct><member><name>resultCode</name><value>clientIsCurrent</value></member><member><name>timestamp</name><value>$HexTimeStamp</value></member><member><name>resultType</name><value>Query</value></member></struct></value></param></params></methodResponse>";
-			$answer = "  <?xml
+	} else {
+			## string we don't know what to do with
+			$answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>";
+			$rlog->info("don't know how to handle string: $my_data");
+	}
+	
+	# set up HTML page
+	# print "Content-Type: text/xml\n\n";
+	$r->content_type('text/xml');
+	$r->headers_out->{'Content-Length'}=length $answer;
+	$r->headers_out->{'X-dmUser'}="status";
+	$r->headers_out->{'Server'}="AppleDotMacServer-1B5608";
+	$r->headers_out->{'x-responding-server'}="idiskng017";
+	$r->print($answer);
+
+	return Apache2::Const::OK;
+}
+
+sub statquery {
+	my($r, $valarr)=@_;
+	carp Dumper($valarr);
+#	$r->log("blah1".dumper($valarr));
+	my $queryts=hex($valarr->[2])/1000;
+	carp $queryts;
+	my $datarecords=DotMac::CommonCode::returnDeltaRecords($r, $queryts);
+	my $str="Blah : ".Dumper($datarecords);
+	#$r->log->info($str);
+	carp Dumper($datarecords);
+	my $answer = "  <?xml
         version=\"1.0\"
         encoding=\"ISO-8859-1\"
         ?>
@@ -700,30 +514,248 @@ sub handler {
                 </param>
             </params>
         </methodResponse>";
-			}
-		else {
-			## string we don't know what to do with
-			$answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>";
-			carp "don't know how to handle string: $string";
-			}
-	 }
-	# set up HTML page
-	# print "Content-Type: text/xml\n\n";
-	$r->content_type('text/xml');
-	$r->headers_out->{'Content-Length'}=length $answer;
-	$r->headers_out->{'X-dmUser'}="status";
-	$r->headers_out->{'Server'}="AppleDotMacServer-1B5608";
-	$r->headers_out->{'x-responding-server'}="idiskng017";
-	$r->print($answer);
-
-##	debug level logging
-#	carp $r->as_string(); # the http request
-#	carp $my_data; # the post data
-#	carp $answer; # the answer we sent to the client
-
-	return Apache2::Const::OK;
+		return "blah";
 }
 
+sub timestamp {
+	my $TimeStamp = time();
+	my $paddedTimestamp = $TimeStamp * 1000;
+	my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
+	my $answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse><params><param><value><struct><member><name>resultCode</name><value>Success</value></member><member><name>timestamp</name><value>$HexTimeStamp</value></member><member><name>resultType</name><value>Timestamp</value></member></struct></value></param></params></methodResponse>";
+	return $answer;
+}
 
+sub rootfolders {
+	my $TimeStamp = time();
+	my $paddedTimestamp = $TimeStamp * 1000;
+	my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
+	my $answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
+	<methodResponse>
+	<params><param>
+		<value><struct>
+			<member><name>resultCode</name><value>Success</value></member>
+			<member><name>rootDirectory</name><value><array><data>
+				<value><struct>
+					<member><name>folderName</name><value>/Documents</value></member>
+					<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Movies</value></member>
+					<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Music</value></member>
+					<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Pictures</value></member>
+					<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Public</value></member>
+					<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Sites</value></member>
+					<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Backup</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Library</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Software</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Shared</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Groups</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/.Groups</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/.FileSync</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/.fseventsd</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Calendars</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+				<value><struct>
+					<member><name>folderName</name><value>/Web</value></member>
+					<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+				</struct></value>
+			</data></array></value></member>
+		<member><name>rootFolders</name><value><array><data>
+			<value><struct>
+				<member><name>folderName</name><value>/Documents</value></member>
+				<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Movies</value></member>
+				<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Music</value></member>
+				<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Pictures</value></member>
+				<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Public</value></member>
+				<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+				</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Sites</value></member>
+				<member><name>ignoreChildren</name><value><boolean>0</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Backup</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Library</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Software</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Shared</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Groups</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/.Groups</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/.FileSync</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/.fseventsd</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Calendars</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+			<value><struct>
+				<member><name>folderName</name><value>/Web</value></member>
+				<member><name>ignoreChildren</name><value><boolean>1</boolean></value></member>
+			</struct></value>
+		</data></array></value></member>
+		<member><name>timestamp</name><value>$HexTimeStamp</value></member>
+		<member><name>resultType</name><value>rootFolders</value></member>
+	</struct></value>
+</param></params>
+</methodResponse>";
+	return $answer;
+}
+sub options {
+		my $TimeStamp = time();
+		my $paddedTimestamp = $TimeStamp * 1000;
+		my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
+		my $answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
+	<methodResponse>
+		<params>
+			<param>
+				<value>
+					<struct>
+						<member>
+							<name>presumeStaleAfterDays</name>
+							<value><int>30</int></value>
+						</member>
+						<member>
+							<name>minimumQueryInterval</name>
+							<value><int>36000</int></value>
+						</member>
+						<member>
+							<name>optionsValidityPeriod</name>
+							<value><int>600</int></value>
+						</member>
+						<member>
+							<name>resultCode</name>
+							<value>Success</value>
+						</member>
+						<member>
+							<name>fullScanMinimum</name>
+							<value><int>86400</int></value>
+						</member>
+						<member>
+							<name>Options</name>
+							<value>
+								<struct>
+									<member>
+										<name>presumeStaleAfterDays</name>
+										<value><int>30</int></value>
+									</member>
+									<member>
+										<name>minimumQueryInterval</name>
+										<value><int>36000</int></value>
+									</member>
+									<member>
+										<name>optionsValidityPeriod</name>
+										<value><int>600</int></value>
+									</member>
+									<member>
+										<name>fullScanMinimum</name>
+										<value><int>86400</int></value>
+									</member>
+									<member>
+										<name>firstWait</name>
+										<value><int>5</int></value>
+									</member>
+									<member>
+										<name>refreshWait</name>
+										<value><int>2</int></value>
+									</member>
+								</struct>
+							</value>
+						</member>
+						<member>
+							<name>timestamp</name>
+							<value>$HexTimeStamp</value>
+						</member>
+						<member>
+							<name>firstWait</name>
+							<value><int>5</int></value>
+						</member>
+						<member>
+							<name>refreshWait</name>
+							<value><int>2</int></value>
+						</member>
+						<member>
+							<name>resultType</name>
+							<value>Options</value>
+						</member>
+					</struct>
+				</value>
+			</param>
+		</params>
+	</methodResponse>";
+	return $answer;
+}
 
 1;
