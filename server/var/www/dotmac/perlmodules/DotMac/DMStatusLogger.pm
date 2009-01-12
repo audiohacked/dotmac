@@ -36,7 +36,7 @@ sub handler {
 	my $r = shift;
 	my $logging = $r->dir_config('LoggingTypes');
 	my $rlog = $r->log;
-	carp $r->as_string();
+	#carp $r->as_string();
 	writeDeltaRecord($r) if (($r->method() eq "PUT") && ($r->header_in('Content-Length') > 0));
 		
 	if (($r->method() eq "DELETE") || ($r->method() eq "MOVE") || ($r->method() eq "MKCOL")) {

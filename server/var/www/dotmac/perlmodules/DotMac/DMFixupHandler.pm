@@ -114,7 +114,7 @@ sub handler
 			}
 		}
 		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iWeb/){
-			carp $r->as_string();
+			#carp $r->as_string();
 			# LOCK /walinsky/Web/Sites
 			$r->headers_in->{'If'} = "<$sitesfolder> $ifHeader";
 		} 
@@ -221,7 +221,7 @@ sub handler
 				$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpath);
 			}
 			elsif (($XWebdavMethod) && ($XWebdavMethod eq 'DMPUTFROM')) {
-				carp "setting perlresponsehandler to DMPUTFROM_handler";
+				#carp "setting perlresponsehandler to DMPUTFROM_handler";
 				$r->handler('perl-script');
 				$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmputfrom);
 			}
@@ -230,7 +230,7 @@ sub handler
 			# *sigh*
 			# X-Webdav-Method: DMMKPATH
 			# X-Webdav-Method: DMPUTFROM
-			carp $r->as_string();
+			#carp $r->as_string();
 			my $XWebdavMethod = $r->header_in('X-Webdav-Method');
 			if ($XWebdavMethod) {
 				if ($ifHeader) {
@@ -247,18 +247,18 @@ sub handler
 					#		}
 					#	carp $content;
 					#	}
-					carp "setting perlresponsehandler to ACL_handler";
+					#carp "setting perlresponsehandler to ACL_handler";
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::acl);
 				}
 				elsif ($XWebdavMethod eq 'DMMKPATHS') {
-					carp "setting perlresponsehandler to DMMKPATHS_handler";
+					#carp "setting perlresponsehandler to DMMKPATHS_handler";
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpaths);
 				}
 				elsif ($XWebdavMethod eq 'DMOVERLAY') {
-					carp $r->as_string();
-					#carp "setting perlresponsehandler to DMOVERLAY_handler";
+					#carp $r->as_string();
+					# "setting perlresponsehandler to DMOVERLAY_handler";
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmoverlay);
 				}
@@ -278,12 +278,12 @@ sub handler
 							}
 						$logging =~ m/Body/&&$rlog->info("Content from POST: $content");			
 						}
-					carp "setting perlresponsehandler to SETREDIRECT_handler";
+					#carp "setting perlresponsehandler to SETREDIRECT_handler";
 					#$r->handler('perl-script');
 					#$r->set_handlers(PerlResponseHandler => \&acl_handler);
 				}
 				elsif ($XWebdavMethod eq 'SETPROCESS') {
-					carp "setting perlresponsehandler to SETPROCESS_handler";
+					#carp "setting perlresponsehandler to SETPROCESS_handler";
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::setprocess);
 				}
@@ -312,7 +312,7 @@ sub handler
 			# X-Webdav-Method: DMMKPATH
 			# X-Webdav-Method: DMPUTFROM
 			$logging =~ m/Sections/&&$rlog->info("Matched DotMacKit iPho");
-			carp $r->as_string();
+			#carp $r->as_string();
 			my $XWebdavMethod = $r->header_in('X-Webdav-Method');
 			if ($XWebdavMethod) {
 				if ($XWebdavMethod eq 'ACL') {

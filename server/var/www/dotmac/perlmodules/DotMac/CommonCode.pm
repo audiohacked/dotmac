@@ -47,6 +47,13 @@ use HTTP::Request;
 use HTTP::Request::Common;
 use HTTP::Response;
 
+
+sub returnDeltaRecords{
+	my $dmdb = DotMac::DotMacDB->new();
+	my ($r,$queryts) = @_;
+	return $dmdb->return_delta_records($r->user,$queryts);
+}
+
 sub writeDeltaRecord{
 	my ($r) = @_;
 	my ($dbh);
@@ -200,7 +207,7 @@ sub dmoverlay {
 			#$r->print(Dumper(@arr));
 ### don't forget to fetch props from sourcedir - and proppatch them onto target dir
 			##make sure we have a trailing slash
-			if ( $sourceuri !~ m[/$] ) {
+			if ( $sourceuri !~ m/\/$/ ) {
 				$sourceuri = $sourceuri.'/';
 			}
 			copyDavProps ( $r,$sourceuri, $targeturi );

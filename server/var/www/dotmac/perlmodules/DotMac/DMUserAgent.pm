@@ -20,7 +20,7 @@ package DotMac::DMUserAgent;
  
 use strict;
 use vars qw(@ISA $VERSION);
-use Apache::Constants qw(:common);
+use Apache2::Const qw(:common);
 use LWP::UserAgent ();
 use DotMac::DotMacDB;
 # use DotMac::Authen::Digest;

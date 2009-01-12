@@ -168,6 +168,26 @@ sub write_delta_record{
 	$q->finish();
 }
 
+sub return_delta_records{
+	my $self = shift;
+	my ($username, $queryts)=@_;
+	my $dbh = $self->{dbh};
+	my $sql="select * from delta where user = '$username' and timestamp >= $queryts";
+	carp $sql;
+	my $sth=$dbh->prepare($sql);
+	$sth->execute();
+	my @retarr;
+	my $count=0;
+	while (my @arrayref = $sth->fetchrow_array()) {
+
+			push(@retarr,\@arrayref);
+			$count++;
+	}
+	$sth->finish();
+	carp "Count: ".$count;
+	return \@retarr;
+}
+
 sub list_users{
 	my $self = shift;
 	my ($realm) = @_;
