@@ -85,7 +85,8 @@ use warnings;
 
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
-use Apache2::Const -compile => qw(OK);
+use Apache2::Const -compile => qw(:methods DECLINED :conn_keepalive);
+use Apache2::Connection ();
 
 use CGI::Carp;
 
@@ -98,7 +99,9 @@ sub handler {
 	my $r = shift;
 	my $logging = $r->dir_config('LoggingTypes');
 	my $rlog = $r->log;
-	
+   # $r->assbackwards(1);
+#	$r->connection->keepalives($r->connection->keepalives + 1);
+#	$r->connection->keepalive(Apache2::Const::CONN_KEEPALIVE);
 	my $start = [ Time::HiRes::gettimeofday( ) ];
 	my $answer = "";
 	my $my_data = "";
@@ -154,6 +157,14 @@ sub handler {
 	$r->headers_out->{'X-dmUser'}="status";
 	$r->headers_out->{'Server'}="AppleDotMacServer-1B5608";
 	$r->headers_out->{'x-responding-server'}="idiskng017";
+	#$r->print("HTTP/1.1 200 OK\n");
+	#$r->print("Server: AppleIDiskServer-1D5609\n");
+	#$r->print("x-responding-server: filesng013\n");
+	#$r->print("X-dmUser: status\n" );
+	#$r->print("Content-Type: text/xml\n");
+	#$r->print("Connection: Keep-Alive\n");
+	#my $len=length $answer;
+	#$r->print("Content-Length: $len\n\n");
 	$r->print($answer);
 
 	return Apache2::Const::OK;
@@ -166,7 +177,7 @@ sub statquery {
 	my $queryts=hex($valarr->[2])/1000;
 	carp $queryts;
 	my $TimeStamp = time();
-	my $paddedTimestamp = $TimeStamp * 1000;
+	my $paddedTimestamp = $TimeStamp * 1000-1000;
 	my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
 	my $datarecords=DotMac::CommonCode::returnDeltaRecords($r, $queryts);
 	my $str="Blah : ".Dumper($datarecords);
@@ -177,20 +188,20 @@ sub statquery {
 my $middle;
 my @array=@$datarecords;
 while (my $record = shift(@array)) {
-	$middle=$middle."<struct>";
-	my $ts=$$record[4]*1000;
+	$middle=$middle."<value><struct>";
+	my $ts=$$record[4]*1000-1000;
 	my $username = $$record[0];
 	$$record[2] =~ m/^\/$username(.*)/;
 	my $source = $1;
-	$middle=$middle."<member><name>timestamp</name><value>".$ts."</value></member>";
+	$middle=$middle."<member><name>timestamp</name><value>".$paddedTimestamp."</value></member>";
 	$middle=$middle."<member><name>source</name><value>".$source."</value></member>";
-	$middle=$middle."<member><name>opcode</name><value>".$$record[1]."</value></member>";
+	$middle=$middle."<member><name>opCode</name><value>".$$record[1]."</value></member>";
 	if ($$record[1] eq "MOV") {
 		$$record[3] =~ m/^\/$username(.*)/;
 		my $dest = $1;
 		$middle=$middle."<member><name>target</name><value>".$dest."</value></member>";
 	}
-	$middle=$middle."</struct>";
+	$middle=$middle."</struct></value>";
 }
 
                                         
@@ -359,84 +370,7 @@ sub options {
 		my $TimeStamp = time();
 		my $paddedTimestamp = $TimeStamp * 1000;
 		my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
-		my $answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
-	<methodResponse>
-		<params>
-			<param>
-				<value>
-					<struct>
-						<member>
-							<name>presumeStaleAfterDays</name>
-							<value><int>30</int></value>
-						</member>
-						<member>
-							<name>minimumQueryInterval</name>
-							<value><int>36000</int></value>
-						</member>
-						<member>
-							<name>optionsValidityPeriod</name>
-							<value><int>600</int></value>
-						</member>
-						<member>
-							<name>resultCode</name>
-							<value>Success</value>
-						</member>
-						<member>
-							<name>fullScanMinimum</name>
-							<value><int>86400</int></value>
-						</member>
-						<member>
-							<name>Options</name>
-							<value>
-								<struct>
-									<member>
-										<name>presumeStaleAfterDays</name>
-										<value><int>30</int></value>
-									</member>
-									<member>
-										<name>minimumQueryInterval</name>
-										<value><int>36000</int></value>
-									</member>
-									<member>
-										<name>optionsValidityPeriod</name>
-										<value><int>600</int></value>
-									</member>
-									<member>
-										<name>fullScanMinimum</name>
-										<value><int>86400</int></value>
-									</member>
-									<member>
-										<name>firstWait</name>
-										<value><int>5</int></value>
-									</member>
-									<member>
-										<name>refreshWait</name>
-										<value><int>2</int></value>
-									</member>
-								</struct>
-							</value>
-						</member>
-						<member>
-							<name>timestamp</name>
-							<value>$HexTimeStamp</value>
-						</member>
-						<member>
-							<name>firstWait</name>
-							<value><int>5</int></value>
-						</member>
-						<member>
-							<name>refreshWait</name>
-							<value><int>2</int></value>
-						</member>
-						<member>
-							<name>resultType</name>
-							<value>Options</value>
-						</member>
-					</struct>
-				</value>
-			</param>
-		</params>
-	</methodResponse>";
+		my $answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse> <params> <param> <value> <struct> <member> <name>presumeStaleAfterDays</name> <value><int>30</int></value> </member> <member> <name>minimumQueryInterval</name> <value><int>36000</int></value> </member> <member> <name>optionsValidityPeriod</name> <value><int>600</int></value> </member> <member> <name>resultCode</name> <value>Success</value> </member> <member> <name>fullScanMinimum</name> <value><int>86400</int></value> </member> <member> <name>Options</name> <value> <struct> <member> <name>presumeStaleAfterDays</name> <value><int>30</int></value> </member> <member> <name>minimumQueryInterval</name> <value><int>36000</int></value> </member> <member> <name>optionsValidityPeriod</name> <value><int>600</int></value> </member> <member> <name>fullScanMinimum</name> <value><int>86400</int></value> </member> <member> <name>firstWait</name> <value><int>5</int></value> </member> <member> <name>refreshWait</name> <value><int>2</int></value> </member> </struct> </value> </member> <member> <name>timestamp</name> <value>$HexTimeStamp</value> </member> <member> <name>firstWait</name> <value><int>5</int></value> </member> <member> <name>refreshWait</name> <value><int>2</int></value> </member> <member> <name>resultType</name> <value>Options</value> </member> </struct> </value> </param> </params> </methodResponse>";
 	return $answer;
 }
 
