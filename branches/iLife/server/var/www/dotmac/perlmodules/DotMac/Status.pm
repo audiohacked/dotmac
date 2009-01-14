@@ -165,14 +165,13 @@ sub statquery {
 #	$r->log("blah1".dumper($valarr));
 	my $queryts=hex($valarr->[2])/1000;
 	carp $queryts;
+	my $TimeStamp = time();
+	my $paddedTimestamp = $TimeStamp * 1000;
+	my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
 	my $datarecords=DotMac::CommonCode::returnDeltaRecords($r, $queryts);
 	my $str="Blah : ".Dumper($datarecords);
 	#$r->log->info($str);
-	carp Dumper($datarecords);
-	my $answer = "  <?xml
-        version=\"1.0\"
-        encoding=\"ISO-8859-1\"
-        ?>
+	my $begin = "  <?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
     <methodResponse>
         <params>
             <param>
@@ -184,305 +183,26 @@ sub statquery {
                                 </name>
                             <value>
                                 <array>
-                                    <data>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199501784000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2BsoLs2VK4vl3.noindex
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        MKD
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199501784000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2BsoLs2VK4vl3.noindex/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        PUT
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199501784000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /.FileSync/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        DEL
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199501784000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2BsoLs2VK4vl3.noindex/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        MOV
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        target
-                                                        </name>
-                                                    <value>
-                                                        /.FileSync/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199501784000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2BsoLs2VK4vl3.noindex
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        DEL
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199502035000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2Bjd_pYblI.-1.noindex
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        MKD
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199502036000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2Bjd_pYblI.-1.noindex/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        PUT
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199502036000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /.FileSync/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        DEL
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199502036000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2Bjd_pYblI.-1.noindex/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        MOV
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        target
-                                                        </name>
-                                                    <value>
-                                                        /.FileSync/store-iDisk-remote.filesyncstatetree.bz2
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        <value>
-                                            <struct>
-                                                <member>
-                                                    <name>
-                                                        timestamp
-                                                        </name>
-                                                    <value>
-                                                        1199502036000
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        source
-                                                        </name>
-                                                    <value>
-                                                        /Web/.Temporary%20Web%20Resources/.fstemp.%2BiDisk-R-it067GaTXk-rob%2Bjd_pYblI.-1.noindex
-                                                        </value>
-                                                    </member>
-                                                <member>
-                                                    <name>
-                                                        opCode
-                                                        </name>
-                                                    <value>
-                                                        DEL
-                                                        </value>
-                                                    </member>
-                                                </struct>
-                                            </value>
-                                        </data>
-                                    </array>
+                                    <data>";
+
+
+my $middle;
+my @array=@$datarecords;
+while (my $record = shift(@array)) {
+	$middle=$middle." <struct>";
+	my $ts=$$record[4]*1000;
+	$middle=$middle."<member><name>timestamp</name><value>".$ts."</value></member>\n";
+	$middle=$middle."<member><name>source</name><value>".$$record[2]."</value></member>\n";
+	$middle=$middle."<member><name>opcode</name><value>".$$record[1]."</value></member>\n";
+	if ($$record[1] eq "MOV") {
+		$middle=$middle."<member><name>target</name><value>".$$record[3]."</value></member>\n";
+	}
+	$middle=$middle."</struct>\n";
+}
+
+                                        
+my $end= "                                   </data>
+                                 </array>
                                 </value>
                             </member>
                         <member>
@@ -498,7 +218,7 @@ sub statquery {
                                 timestamp
                                 </name>
                             <value>
-                                11747e48c20
+                                $HexTimeStamp
                                 </value>
                             </member>
                         <member>
@@ -514,12 +234,13 @@ sub statquery {
                 </param>
             </params>
         </methodResponse>";
-		return "blah";
+
+		return $begin.$middle.$end;
 }
 
 sub timestamp {
 	my $TimeStamp = time();
-	my $paddedTimestamp = $TimeStamp * 1000;
+	my $paddedTimestamp = $TimeStamp * 1000 - 1000;
 	my $HexTimeStamp = DotMac::CommonCode::dec2hex($paddedTimestamp);
 	my $answer = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse><params><param><value><struct><member><name>resultCode</name><value>Success</value></member><member><name>timestamp</name><value>$HexTimeStamp</value></member><member><name>resultType</name><value>Timestamp</value></member></struct></value></param></params></methodResponse>";
 	return $answer;
