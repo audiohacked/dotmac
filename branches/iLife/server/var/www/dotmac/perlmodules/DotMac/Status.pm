@@ -171,69 +171,30 @@ sub statquery {
 	my $datarecords=DotMac::CommonCode::returnDeltaRecords($r, $queryts);
 	my $str="Blah : ".Dumper($datarecords);
 	#$r->log->info($str);
-	my $begin = "  <?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
-    <methodResponse>
-        <params>
-            <param>
-                <value>
-                    <struct>
-                        <member>
-                            <name>
-                                changeInformation
-                                </name>
-                            <value>
-                                <array>
-                                    <data>";
+	my $begin = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse><params><param><value><struct><member><name>changeInformation</name><value><array><data>";
 
 
 my $middle;
 my @array=@$datarecords;
 while (my $record = shift(@array)) {
-	$middle=$middle." <struct>";
+	$middle=$middle."<struct>";
 	my $ts=$$record[4]*1000;
-	$middle=$middle."<member><name>timestamp</name><value>".$ts."</value></member>\n";
-	$middle=$middle."<member><name>source</name><value>".$$record[2]."</value></member>\n";
-	$middle=$middle."<member><name>opcode</name><value>".$$record[1]."</value></member>\n";
+	my $username = $$record[0];
+	$$record[2] =~ m/^\/$username(.*)/;
+	my $source = $1;
+	$middle=$middle."<member><name>timestamp</name><value>".$ts."</value></member>";
+	$middle=$middle."<member><name>source</name><value>".$source."</value></member>";
+	$middle=$middle."<member><name>opcode</name><value>".$$record[1]."</value></member>";
 	if ($$record[1] eq "MOV") {
-		$middle=$middle."<member><name>target</name><value>".$$record[3]."</value></member>\n";
+		$$record[3] =~ m/^\/$username(.*)/;
+		my $dest = $1;
+		$middle=$middle."<member><name>target</name><value>".$dest."</value></member>";
 	}
-	$middle=$middle."</struct>\n";
+	$middle=$middle."</struct>";
 }
 
                                         
-my $end= "                                   </data>
-                                 </array>
-                                </value>
-                            </member>
-                        <member>
-                            <name>
-                                resultCode
-                                </name>
-                            <value>
-                                changeInformation
-                                </value>
-                            </member>
-                        <member>
-                            <name>
-                                timestamp
-                                </name>
-                            <value>
-                                $HexTimeStamp
-                                </value>
-                            </member>
-                        <member>
-                            <name>
-                                resultType
-                                </name>
-                            <value>
-                                Query
-                                </value>
-                            </member>
-                        </struct>
-                    </value>
-                </param>
-            </params>
-        </methodResponse>";
+ my $end= "</data></array></value></member><member><name>resultCode</name><value>changeInformation</value></member><member><name>timestamp</name><value>$HexTimeStamp</value></member><member><name>resultType</name><value>Query</value></member></struct></value></param></params></methodResponse>";
 
 		return $begin.$middle.$end;
 }
