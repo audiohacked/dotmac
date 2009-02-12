@@ -26,13 +26,18 @@ Make sure the 'private' folder is writable by Apache.  If your httpd version is 
 Besides the perl modules needed for trunk we need a few more (available from CPAN):
  * LWP::UserAgent
  * JSON
+ * Apache::Session::File
+ * DateTime
+ * DateTime::Format::HTTP
  * POSIX
  * Compress::Zlib
- * Imager
- * Image::ExifTool
-Before installing Imager, *you'll need to make sure to have jpeg headers installed*. On common linux distibutions these are packaged as libjpeg-devel. On Mac OS Leopard google is your friend.
  * DBI
  * DBD::SQLite
+ * Image::ExifTool
+ * Imager
+
+Before installing Imager, *you'll need to make sure to have jpeg headers installed*. On common linux distibutions these are packaged as libjpeg-devel. On Mac OS Leopard google is your friend.
+ 
 (the list might not be complete - please let us know when you find missing modules)
 
 Also make sure you enable mod_rewrite in your Apache config
