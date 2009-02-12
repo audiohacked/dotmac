@@ -497,12 +497,12 @@ $feed->setNamespace("http://www.itunes.com/dtds/podcast-1.0.dtd","itunes",0);
 $feed->setNamespace("http://www.w3.org/2005/Atom","",0);
 $feed->setNamespace("urn:dotmac:property","dotmac",0);
 $feed->setNamespace("DAV:","D",0);
-my $newworkingnode = $truthget->createElement("Generator");
-$newworkingnode->appendText("dotMac Truth Maker");
+my $newworkingnode = $truthget->createElement("generator");
+$newworkingnode->appendText("dotmobile.us");
 $feed->appendChild($newworkingnode);
 
 $newworkingnode = $truthget->createElement("title");
-$newworkingnode->appendText("Apple .Mac user iDisk");
+$newworkingnode->appendText("dotMobile.us Atom Feed");
 $feed->appendChild($newworkingnode);
 
 $newworkingnode = $truthget->createElement("updated");
@@ -511,6 +511,7 @@ $feed->appendChild($newworkingnode);
 
 $newworkingnode = $truthget->createElement("author");
 $newworkingnode->appendChild($truthget->createElement("name"));
+$newworkingnode->appendText($user);
 $feed->appendChild($newworkingnode);
 
 $newworkingnode = $truthget->createElement("id");
@@ -547,10 +548,73 @@ for (my $lcv=0; $lcv < $rootsubnodescount; $lcv++) {
 	$currentnode->setNodeName("entry");
 	$currentnode->setOwnerDocument($truthget);
 	$feed->addChild($currentnode);
+	my $id=@{$currentnode->getElementsByLocalName("getetag")}[0]->textContent;
+	$id =~ s/^"(.*)"$/$1/;  # strip enclosing quotes
+	$id = 'urn:uuid:' . $id;
+	my $idnode=$truthget->createElement("id"); #<D:getetag>
+	$idnode->appendText($id);
+	$currentnode->addChild($idnode);
+	my $titlenode=$truthget->createElement("title");
+	$titlenode->appendText(basename $href);
+	$currentnode->addChild($titlenode);
 	my $hrefnode=$truthget->createElement("link");
 	$hrefnode->setAttribute("rel","alternate");
-	$hrefnode->setAttribute("href","http://publish.mac.com".$href);
+	$hrefnode->setAttribute("href","http://idisk.me.com".$href);
 	$currentnode->addChild($hrefnode);
+	
+	#sort out the viewIdentifier <dotmac:viewIdentifier />
+	#from com.apple.iPhoto.plist:
+	# index			:	1
+	# album			:	2
+	# asset			:	3
+	# iphoto.video	:	4
+	# movie			:	5
+	# aperture.album:	6
+	my $viewIdentifier;
+	my $viewIdentifierNode = @{$currentnode->getElementsByLocalName("viewIdentifier")}[0];
+	if ($viewIdentifierNode) {
+		$viewIdentifier = @{$currentnode->getElementsByLocalName("viewIdentifier")}[0]->textContent;
+		$viewIdentifierNode->parentNode->removeChild($viewIdentifierNode); #just pull the bastard out - we'll create a node anyway
+	}
+	if ( !$viewIdentifier) {
+		if ($href =~ m/^\/$user\/Web\/Sites\/_gallery\/$/) {
+			$viewIdentifier = '1';
+		}
+		elsif ($href =~ m/^\/$user\/Web\/Sites\/_gallery\/([0-9]+)\/$/) {
+			$viewIdentifier = '2';
+		}
+		elsif ($href =~ m/^\/$user\/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) {
+			$viewIdentifier = '3'; # this should never happen - this deep things are already set
+		}
+	}
+
+
+	if ($viewIdentifier) {
+		$viewIdentifierNode = $truthget->createElement("viewIdentifier");
+		$viewIdentifierNode->appendText($viewIdentifier);
+		$viewIdentifierNode->setNamespace("urn:dotmac:property","dotmac",1);
+		$currentnode->addChild($viewIdentifierNode);
+	}
+	
+	#<dotmac:version content="1" props="1" />
+	my $versionnode=$truthget->createElement("version");
+	$versionnode->setNamespace("urn:dotmac:property","dotmac",1);
+	$versionnode->setAttribute("content","1"); # !!! replace these hardcoded values !!!!
+	$versionnode->setAttribute("props","1"); # !!! replace these hardcoded values !!!!
+	$currentnode->addChild($versionnode);
+	#<dotmac:clientid>7ee6b535b01c25163183d6cc28ea315a4acae197</dotmac:clientid>
+	my $clientidNode = $truthget->createElement("clientid");
+	$clientidNode->appendText('7ee6b535b01c25163183d6cc28ea315a4acae197');
+	$clientidNode->setNamespace("urn:dotmac:property","dotmac",1);
+	$currentnode->addChild($clientidNode);
+	#<dotmac:iscollection>0</dotmac:iscollection>
+	my $resourcetypeNode = @{$currentnode->getElementsByLocalName("resourcetype")}[0];
+	my $iscollection = (scalar @{$resourcetypeNode->getElementsByLocalName("collection")});
+	my $iscollectionNode = $truthget->createElement("iscollection");
+	$iscollectionNode->appendText($iscollection);
+	$iscollectionNode->setNamespace("urn:dotmac:property","dotmac",1);
+	$currentnode->addChild($iscollectionNode);
+	
 	for (my $lcv1=0; $lcv1 < scalar @{$currentnode->childNodes}; $lcv1++ ) {
 		my $currentnode1=@{$currentnode->childNodes}[$lcv1];
 					
@@ -574,7 +638,7 @@ $feed->insertBefore($newworkingnode,@{$feed->childNodes}[4]);
 
 
 
-my $str= $truthget->toString(1);
+my $str= $truthget->toString();
 #$str=~ s/>/>\n/g;
 return $str;
 }
@@ -590,10 +654,9 @@ sub dmmkpath_response
 	$responsexml->setXMLDecl($decl);
 	my $responserootnode = $responsexml->createElement('INS:response-status-set'); # this is the root node
 	$responserootnode->setAttribute('xmlns:INS', 'http://idisk.mac.com/_namespace/set/');
-
+	my $responsemultistatus = $responsexml->createElement('multistatus');
+	$responsemultistatus->setAttribute('xmlns', 'DAV:');
 	foreach $innerarr (@arr) {
-		my $responsemultistatus = $responsexml->createElement('multistatus');
-		$responsemultistatus->setAttribute('xmlns', 'DAV:');
 		my $responsemultistatusresponse = $responsexml->createElement('response');
 		$responsemultistatusresponse->setAttribute('xmlns', 'DAV:');
 		my $hrefelement = $responsexml->createElement('href');
@@ -609,9 +672,9 @@ sub dmmkpath_response
 		$statuselement->appendChild($statustextnode);
 		$responsemultistatusresponse->appendChild($statuselement);
 		$responsemultistatus->appendChild($responsemultistatusresponse); # append the 'multistatus' childnode;
-		$responserootnode->appendChild($responsemultistatus);
 		}
-		$responsexml->appendChild($responserootnode);
+	$responserootnode->appendChild($responsemultistatus);
+	$responsexml->appendChild($responserootnode);
 	return ($responsexml->toString());
 	}
 

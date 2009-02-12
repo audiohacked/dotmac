@@ -223,8 +223,22 @@ sub truthget {
                 return Apache2::Const::OK;
         }
 	#$r->print($xml->[1]);
+	#$r->content_type("application/atom+xml");
+	#$r->print(DotMac::CommonCode::truthget_generate($r,$xml->[1],$r->user));
+	
 	$r->content_type("application/atom+xml");
-	$r->print(DotMac::CommonCode::truthget_generate($r,$xml->[1],$r->user));
+	$r->header_out("Expires" => "Mon, 26 Jul 1997 05:00:00 GMT");
+	$r->header_out("Cache-Control" => "no-store, no-cache, must-revalidate, max-age=0");
+	$r->headers_out->add('Cache-Control' => "post-check=0, pre-check=0");
+	$r->header_out("Connection" => "keep-alive");
+	$r->header_out("Pragma" => "no-cache");
+	$r->header_out("content-encoding" => "gzip");
+
+	my $gzAnswer = Compress::Zlib::memGzip(DotMac::CommonCode::truthget_generate($r,$xml->[1],$r->user)); 
+	$r->header_out('Content-Length', length( $gzAnswer ));
+	#Date: Wed, 11 Feb 2009 17:03:56 GMT
+	$r->print( $gzAnswer );
+	
 	
 	return Apache2::Const::OK;
 }
