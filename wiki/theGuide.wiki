@@ -128,11 +128,13 @@ _(*note - currently there's no interoperability between 10.4 and 10.5 sync clien
 
 Users reported the following Operating Systems Working:
   * CentOS 5
-  * Fedora Core 5, 6
+  * Fedora Core 5, 6, ..., 10
   * Debian 'etch'
-  * Ubuntu 'Edgy Eft' (6.x), 'Feisty Fawn' (7.x)
+  * Ubuntu 'Edgy Eft' (6.x), 'Feisty Fawn' (7.x), 'Hardy Heron' (8.x)
   * freeBSD
   * Solaris 10
+  * Leopard Server
+  * NSLU2 (with some tweaks)
 
 please continue reporting!
 
