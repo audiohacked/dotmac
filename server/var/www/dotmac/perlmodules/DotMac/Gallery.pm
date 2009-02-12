@@ -202,6 +202,14 @@ sub truthgetAlbum {
 $albumGuid = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH!!!!
 
 			#$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = $albumProps->findnodes('./ns3:viewIdentifier');
+			
+			#from com.apple.iPhoto.plist:
+			# index			:	1
+			# album			:	2
+			# asset			:	3
+			# iphoto.video	:	4
+			# movie			:	5
+			# aperture.album:	6
 			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 2; # is it ???
 			$$resultdata{records}[$resultdatarecordnum]{path} = "http://$hostname/$username/$albumUrl"; # is it ???
 			
@@ -234,7 +242,7 @@ $albumGuid = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH
 			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumXc->findvalue("./$dotmacns:scrubSpritePath", $albumProps);
 			$logging =~ m/Gallery/&&$r->log->info("album: done");
 		}
-		elsif ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) { # !!! need to verify this match - this should be an Photo (and the same match as above)
+		elsif ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) { # !!! need to verify this match - this should be a Photo (and the same match as above)
 			my $albumUrl = $1;
 			my $imageName = $2;
 			$resultdatarecordnum = defined($resultdata->{records}) ? scalar( @{ $resultdata->{records} } ) : 0;
@@ -246,7 +254,7 @@ $albumGuid = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH
 			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = $resultdatarecordnum; # WTF ???
 			$$resultdata{records}[$resultdatarecordnum]{fileExtension} = $albumXc->findvalue("./$dotmacns:fileExtension", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{webImageWidth} = $albumXc->findvalue("./$dotmacns:webImageWidth", $albumProps);
-			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 3; # WTF ???
+			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 3; # according to our match; it is - isn't it ?!
 #TODO - find out where on earth we can find the real guid
 # guid should be reproducable - it is _not_ specified in properties
 			$$resultdata{records}[$resultdatarecordnum]{guid} = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps);

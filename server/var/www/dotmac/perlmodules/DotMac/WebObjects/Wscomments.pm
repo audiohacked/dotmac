@@ -58,7 +58,7 @@ sub handler {
 		LockDirectory => $r->dir_config('dotMacPrivatePath') . '/sessionlocks'
 	};
 
-	if( $method ne 'comment.authenticate' && !defined($session{user}) ){
+	if( ($method ne 'comment.authenticate' && $method ne 'comments.userDetails') && !defined($session{user})  ){
 		$r->log->error("WSComments: Unauthorized, denying access");
                 $r->log->debug("WSComments: wosid=$wosid woinst=$woinst");
 		return Apache2::Const::HTTP_UNAUTHORIZED;
@@ -91,6 +91,43 @@ sub handler {
 		}
 	}
 
+	# comments.userDetails
+	# Parameters: username, password
+	# Returns: XMLRPC response with User's Firstname and Lastname
+	#
+	# Authenticates user and sets up a session which is then tracked by cookie
+	elsif( $method eq 'comments.userDetails' ){
+		my $username = $rootnode->findvalue('/methodCall/params/param[1]/value/string');
+		my $password = $rootnode->findvalue('/methodCall/params/param[2]/value/string');
+
+		my $dmdb = DotMac::DotMacDB->new();
+		if( $dmdb->authen_user($username, $password) ){
+			my $realm = $r->dir_config('dotMacRealm');
+			my $userValues = $dmdb->fetch_user_info($username, $realm);
+			
+			$answer = XML::LibXML::Document->new();
+
+			my $rootElem = $answer->createElement('methodResponse');
+			$answer->setDocumentElement($rootElem);
+		
+			my $params = $rootElem->appendChild( $answer->createElement('params') );
+			my $param = $params->appendChild( $answer->createElement('param') );
+			my $value = $param->appendChild( $answer->createElement('value') );
+			my $struct = $value->appendChild( $answer->createElement('struct') );
+			my $lastnameMember = $struct->appendChild( $answer->createElement('member') );
+			my $lastnameName = $lastnameMember->appendChild( $answer->createElement('name') );
+			$lastnameName->appendChild( XML::LibXML::Text->new($userValues->{'lastname'}) );
+			my $firstnameMember = $struct->appendChild( $answer->createElement('member') );
+			my $firstnameName = $firstnameMember->appendChild( $answer->createElement('name') );
+			$firstnameName->appendChild( XML::LibXML::Text->new($userValues->{'firstname'}) );
+
+			$r->log->info("WSComments: comment.userDetails: Successfully returned Firstname and Lastname for $username");
+		} else {
+			$r->log->error("WSComments: comment.userDetails: Invalid credentials supplied, denying access.");
+			return Apache2::Const::HTTP_UNAUTHORIZED;
+		}
+	}
+	
 	# comment.setCommentProperties
 	# Parameters: properties, path, metalocktoken
 	# Returns: Generic XMLRPC success

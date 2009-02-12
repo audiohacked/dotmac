@@ -306,8 +306,9 @@ sub handler
 				$r->set_handlers(PerlResponseHandler => \&DotMac::SecondaryAcct);
 			}
 		}
-		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iPho/) {
+		elsif (($userAgent =~m/^DotMacKit(.*)iPho/) || ($userAgent =~m/^iPhoto(.*)CFNetwork(.*)Darwin/)) { #DotMacKit-E-MM5-I (10.5.6; iPho)
 			# iWeb Publishing #DotMacKit-E-3Lite46 (10.4.9; iweb) iWeb-local-build-20071223
+			# User-Agent: iPhoto8.0 CFNetwork/422.11 Darwin/9.6.0 (i386) (MacBookPro4%2C1) (iLife 09)
 			# *sigh*
 			# X-Webdav-Method: DMMKPATH
 			# X-Webdav-Method: DMPUTFROM
@@ -404,7 +405,7 @@ sub handler
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 			}
 		}
-		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iPho/) {
+		elsif ($userAgent =~m/^DotMacKit(.*)iPho/) {
 			if ($r->headers_in->{'If'}) {
 				my $rUri = $r->uri;
 				$r->headers_in->{'If'} = "<$rUri> $ifHeader";
@@ -429,6 +430,24 @@ sub handler
 					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::truthget);
 				}
 			}
+		}
+		elsif ( ( ($r->headers_in->{'Host'} eq 'idisk.mac.com') || ($r->headers_in->{'Host'} eq 'idisk.me.com') ) && ($r->uri =~ m/^(.*)\/Web\/Sites\/_gallery/)) {
+			
+			if($r->args()) {
+				my @args = split '&', $r->args();
+				my %params;
+				foreach my $a (@args) {
+					(my $att,my $val) = split '=', $a;
+					$params{$att} = $val ;
+				}
+				if ($params{'webdav-method'} eq 'TRUTHGET') {
+					#carp $r->as_string();
+					$r->handler('perl-script');
+					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::truthget);
+				}
+			}
+			
+			
 		}
 	}
 #	elsif ($rmethod eq "UNLOCK") {
