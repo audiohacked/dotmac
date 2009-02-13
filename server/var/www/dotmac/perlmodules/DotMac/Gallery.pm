@@ -104,13 +104,9 @@ sub truthgetHandler {
 		}
 	}
 	
-	
-	$logging =~ m/Gallery/&&$r->log->info("json: ".to_json(\%resultdata, {pretty => 1, utf8 => 1})."\n");
-	
-	
-	
 	#my $data = '{"records" : [{}],"data" : {},"status" : 1}';
-	my $jsonData = to_json(\%resultdata, {pretty => 1, utf8 => 1});
+	#my $jsonData = to_json(\%resultdata, {pretty => 1, utf8 => 1});
+	my $jsonData = to_json(\%resultdata, {utf8 => 1});
 	$logging =~ m/Gallery/&&$r->log->info("truthgetHandler sent data $jsonData");
 	#$r->content_type("application/json");
 	
@@ -131,10 +127,13 @@ sub truthgetHandler {
 	#$r->header_out("Content-Length" => length($jsonData));
 	#$r->print($jsonData);
 	
+	#$r->content_encoding("gzip");
+	#my $gzjsonData = Compress::Zlib::memGzip($jsonData); 
+	#$r->header_out('Content-Length', length( $gzjsonData ));
+	#$r->print( $gzjsonData );
+	
 	$r->content_encoding("gzip");
-	my $gzjsonData = Compress::Zlib::memGzip($jsonData); 
-	$r->header_out('Content-Length', length( $gzjsonData ));
-	$r->print( $gzjsonData );
+	$r->print(Compress::Zlib::memGzip($jsonData));
 	return Apache2::Const::OK;
 	}
 
@@ -152,7 +151,7 @@ sub truthgetAlbum {
 	my $dotmacnsURI = 'urn:dotmac:property';
 	my $albumRecordNum;
 	my $numPhotos = 0;
-	
+	my $numMovies = 0;
 	my $resultdatarecordnum;
 	my $hostname = $r->hostname();
 	my $propfindAlbumResponse = DotMac::CommonCode::subrequest($r, 'PROPFIND', $href, '<?xml version="1.0" encoding="utf-8"?><D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>', {'Depth'=> '1'});
@@ -242,23 +241,41 @@ $albumGuid = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH
 			$$resultdata{records}[$resultdatarecordnum]{scrubSpritePath} = $albumXc->findvalue("./$dotmacns:scrubSpritePath", $albumProps);
 			$logging =~ m/Gallery/&&$r->log->info("album: done");
 		}
-		elsif ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) { # !!! need to verify this match - this should be a Photo (and the same match as above)
+		elsif ($albumHref =~ m/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) { # !!! need to verify this match - this should be a Photo or a Movie
 			my $albumUrl = $1;
 			my $imageName = $2;
 			$resultdatarecordnum = defined($resultdata->{records}) ? scalar( @{ $resultdata->{records} } ) : 0;
 			$logging =~ m/Gallery/&&$r->log->info("album: $albumUrl image $imageName record# $resultdatarecordnum");
-			$numPhotos++;
+
+			#$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 3; # according to our match; it is - isn't it ?!
+			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = $albumXc->findvalue("./$dotmacns:viewIdentifier", $albumProps) || 3;
+			if ($$resultdata{records}[$resultdatarecordnum]{viewIdentifier} eq 3) {
+				$$resultdata{records}[$resultdatarecordnum]{type} = 'Photo';
+				my $largeImagePath = $albumXc->findnodes("./$dotmacns:largeImagePath", $albumProps)->[0];
+				if ($largeImagePath) {
+					$$resultdata{records}[$resultdatarecordnum]{largeImagePath} = $largeImagePath->textContent();
+				}
+				$numPhotos++;
+			}
+			elsif ($$resultdata{records}[$resultdatarecordnum]{viewIdentifier} eq 4) {
+				$$resultdata{records}[$resultdatarecordnum]{type} = 'Video';
+				$$resultdata{records}[$resultdatarecordnum]{videoDuration} = $albumXc->findvalue("./$dotmacns:videoDuration", $albumProps);
+				$$resultdata{records}[$resultdatarecordnum]{videoDuration} = $albumXc->findvalue("./$dotmacns:videoDuration", $albumProps);
+				$$resultdata{records}[$resultdatarecordnum]{videoPath} = $albumXc->findvalue("./$dotmacns:moviePath", $albumProps);
+				$$resultdata{records}[$resultdatarecordnum]{videoHeight} = $albumXc->findvalue("./$dotmacns:videoHeight", $albumProps);
+				$$resultdata{records}[$resultdatarecordnum]{videoWidth} = $albumXc->findvalue("./$dotmacns:videoWidth", $albumProps);
+				$$resultdata{records}[$resultdatarecordnum]{mimetype} = $albumXc->findvalue("./$dotmacns:mimetype", $albumProps);
+				$numMovies++;
+			}
 			$$resultdata{records}[$resultdatarecordnum]{userHidden} = $albumXc->findvalue("./$dotmacns:userHidden", $albumProps) ? 'true' : 'false';
 			$$resultdata{records}[$resultdatarecordnum]{userItemGuid} = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{webImagePath} = $albumXc->findvalue("./$dotmacns:webImagePath", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{sortOrder} = $resultdatarecordnum; # WTF ???
 			$$resultdata{records}[$resultdatarecordnum]{fileExtension} = $albumXc->findvalue("./$dotmacns:fileExtension", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{webImageWidth} = $albumXc->findvalue("./$dotmacns:webImageWidth", $albumProps);
-			$$resultdata{records}[$resultdatarecordnum]{viewIdentifier} = 3; # according to our match; it is - isn't it ?!
 #TODO - find out where on earth we can find the real guid
 # guid should be reproducable - it is _not_ specified in properties
 			$$resultdata{records}[$resultdatarecordnum]{guid} = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps);
-			$$resultdata{records}[$resultdatarecordnum]{type} = 'Photo';
 #TODO - change hardcoded url to $r->uri thingies					
 			$$resultdata{records}[$resultdatarecordnum]{url} = "http://$hostname/$username/$albumUrl/$imageName";
 			$$resultdata{records}[$resultdatarecordnum]{title} = $albumXc->findvalue("./$dotmacns:title", $albumProps);
@@ -270,10 +287,7 @@ $albumGuid = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH
 			$$resultdata{records}[$resultdatarecordnum]{modDate} = $albumXc->findvalue("./$dotmacns:modDate", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{updated} = $albumXc->findvalue("./$dotmacns:updated", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{webImageHeight} = $albumXc->findvalue("./$dotmacns:webImageHeight", $albumProps);
-			my $largeImagePath = $albumXc->findnodes("./$dotmacns:largeImagePath", $albumProps)->[0];
-			if ($largeImagePath) {
-				$$resultdata{records}[$resultdatarecordnum]{largeImagePath} = $largeImagePath->textContent();
-			}
+			
 			$$resultdata{records}[$resultdatarecordnum]{photoDate} = $albumXc->findvalue("./$iphotons:photoDate", $albumProps);
 			$$resultdata{records}[$resultdatarecordnum]{album} = $albumGuid;
 			$$resultdata{records}[$resultdatarecordnum]{archiveDate} = $albumXc->findvalue("./$dotmacns:archiveDate", $albumProps);
@@ -287,6 +301,7 @@ $albumGuid = $albumXc->findvalue("./$dotmacns:useritemguid", $albumProps); # GAH
 	#return $resultdata;
 	}
 	$$resultdata{records}[$albumRecordNum]{numPhotos} = $numPhotos;
+	$$resultdata{records}[$albumRecordNum]{numMovies} = $numMovies;
 }
 
 1;
