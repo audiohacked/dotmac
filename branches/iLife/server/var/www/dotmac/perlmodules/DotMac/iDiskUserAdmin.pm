@@ -38,7 +38,6 @@ sub handler
 	my $dbadmin = DotMac::DotMacDB->new();
 
 	my @users = $dbadmin->list_users($realm);
-	
 	if (param('ApacheRes') eq "Restart Apache") {
 		print header;
 		print "<meta http-equiv=\"refresh\" content=\"10\">";
@@ -50,22 +49,22 @@ sub handler
 		$dbadmin->generate_htdigest_files($r->dir_config('dotMacUserDB'),$r->dir_config('dotMacAdminDB'));
 	} 
 	my @idiskuserstat=stat($r->dir_config('dotMacUserDB'));
-	print $r->dir_config('dotMacUserDB')." last modified on:". scalar localtime($idiskuserstat[9]);	
-	print "<BR />";
+	#print $r->dir_config('dotMacUserDB')." last modified on:". scalar localtime($idiskuserstat[9]);	
+	#print "<BR />";
 	@idiskuserstat=stat($r->dir_config('dotMacAdminDB'));
-	print $r->dir_config('dotMacAdminDB')." last modified on:". scalar localtime($idiskuserstat[9]);		
+	#print $r->dir_config('dotMacAdminDB')." last modified on:". scalar localtime($idiskuserstat[9]);		
 	@idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
-	print "<br />";
+	#print "<br />";
 	print "Apache last restarted on:". scalar localtime($idiskuserstat[9]);
 	
-	my $apacheRestartButton;
-	my $htdigestGenerateButton;
+	my $apacheRestartButton = '';
+	my $htdigestGenerateButton = '';
 	
 	if($r->dir_config('dotMacApacheRestart') ne "none"){
 		$apacheRestartButton=submit(-name=>"ApacheRes", -value=>'Restart Apache');
 	}
 
-	$htdigestGenerateButton=submit(-name=>"htdigestGen", -value=>'Generate HTDigest Files');
+	#$htdigestGenerateButton=submit(-name=>"htdigestGen", -value=>'Generate HTDigest Files');
 	print 	header,
 			start_html('User management'),
 			h1('User management'),
@@ -213,6 +212,14 @@ sub get_user {
 				th({valign=>'TOP',align=>'RIGHT'},"email"),
 				td(textfield(-name=>'email', -default=>$userValues->{'email_addr'}, -size=>40)) #-maxlength=>number
 				),
+			TR      (
+                                th({valign=>'TOP',align=>'RIGHT'},"firstname"),
+                                td(textfield(-name=>'firstname', -default=>$userValues->{'firstname'}, -size=>40)) #-maxlength=>number
+                                ),
+			TR      (
+                                th({valign=>'TOP',align=>'RIGHT'},"lastname"),
+                                td(textfield(-name=>'lastname', -default=>$userValues->{'lastname'}, -size=>40)) #-maxlength=>number
+                                ),
 			TR (
 				th({valign=>'TOP',align=>'RIGHT'},"Administrator"),
 				td(radio_group(-name=>'is_admin',-default=>$userValues->{'is_admin'}?$userValues->{'is_admin'}:0, -values=>[1,0] ,-labels=>{1=>'yes',0=>'no'}))
@@ -231,6 +238,8 @@ sub set_user {
 	my ($r, $user) = @_;
 	my $quota = param('quota');
 	my $email = param('email');
+	my $firstname = param('firstname');
+	my $lastname = param('lastname');
 	my $realm = $r->dir_config('dotMacRealm');
 	my @paramNames=param();
 	my $storageHash;

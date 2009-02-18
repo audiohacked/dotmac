@@ -23,6 +23,7 @@ $DotMac::WebObjects::Infowoa::wa::VERSION = '0.9';
 
 sub handler {
 	my $r = shift;
+	my $logging = $r->dir_config('LoggingTypes');
 	my $answer;
 	my $content;
 
@@ -34,15 +35,15 @@ sub handler {
 	# Setup parser and find what method is being called
 
 	my $parser = XML::LibXML->new();
+	$parser->keep_blanks(0);
 	my $dom = $parser->parse_string($content);
 	my $rootnode = $dom->documentElement;
 
 	my $method = $rootnode->findvalue('/methodCall/methodName');
 
-	$r->log->info("WSComments: method=$method");
-	$r->log->debug("WSComments: Request: ".$r->as_string());
-	$r->log->debug("WSComments: Content: ".$content);
-
+	$logging =~ m/Comments/&&$r->log->info("WSComments: method=$method");
+	$logging =~ m/Comments/&&$r->log->info("WSComments: Request: ".$r->as_string());
+	$logging =~ m/Comments/&&$r->log->info("WSComments: Content: ".$content);
 	# Get session ID and find out if user has authenticated
 
         #TODO: replace these regexps with Apache2::Cookie
@@ -59,8 +60,8 @@ sub handler {
 	};
 
 	if( ($method ne 'comment.authenticate' && $method ne 'comments.userDetails') && !defined($session{user})  ){
-		$r->log->error("WSComments: Unauthorized, denying access");
-                $r->log->debug("WSComments: wosid=$wosid woinst=$woinst");
+		$logging =~ m/Comments/&&$r->log->info("WSComments: Unauthorized, denying access");
+		$logging =~ m/Comments/&&$r->log->info("WSComments: wosid=$wosid woinst=$woinst");
 		return Apache2::Const::HTTP_UNAUTHORIZED;
 	}
 
@@ -84,9 +85,10 @@ sub handler {
                         $wosid = $session{_session_id};
                         $woinst = int(rand(100));
 
-			$r->log->info("WSComments: comment.authenticate: Successfully logged in as $username");
+			$logging =~ m/Comments/&&$r->log->info("WSComments: comment.authenticate: Successfully logged in as $username");
+
 		} else {
-			$r->log->error("WSComments: comment.authenticate: Invalid credentials supplied, denying access.");
+			$logging =~ m/Comments/&&$r->log->info("WSComments: comment.authenticate: Invalid credentials supplied, denying access.");
 			return Apache2::Const::HTTP_UNAUTHORIZED;
 		}
 	}
@@ -120,10 +122,9 @@ sub handler {
 			my $firstnameMember = $struct->appendChild( $answer->createElement('member') );
 			my $firstnameName = $firstnameMember->appendChild( $answer->createElement('name') );
 			$firstnameName->appendChild( XML::LibXML::Text->new($userValues->{'firstname'}) );
-
-			$r->log->info("WSComments: comment.userDetails: Successfully returned Firstname and Lastname for $username");
+			$logging =~ m/Comments/&&$r->log->info("WSComments: comment.userDetails: Successfully returned Firstname and Lastname for $username");
 		} else {
-			$r->log->error("WSComments: comment.userDetails: Invalid credentials supplied, denying access.");
+			$logging =~ m/Comments/&&$r->log->info("WSComments: comment.userDetails: Invalid credentials supplied, denying access.");
 			return Apache2::Const::HTTP_UNAUTHORIZED;
 		}
 	}
@@ -262,11 +263,12 @@ sub handler {
 	# Send response
 	#
 
-	$r->headers_out->add('Content-Type' => "text/xml; charset=utf-8");
-        $r->headers_out->add('set-cookie' => "wosid=$wosid; version=\"1\"; path=/WebObjects/WSComments.woa") if $wosid;
+	#$r->headers_out->add('Content-Type' => "text/xml; charset=utf-8");
+	$r->content_type('text/xml; charset=utf-8');
+    $r->headers_out->add('set-cookie' => "wosid=$wosid; version=\"1\"; path=/WebObjects/WSComments.woa") if $wosid;
 	$r->headers_out->add('set-cookie' => "woinst=$woinst; version=\"1\"; path=/WebObjects/WSComments.woa") if $woinst;
-
-	$r->print( $answer->toString() );
+	$logging =~ m/Comments/&&$r->log->info("WSComments: answer: " . $answer->toString(0) );
+	$r->print( $answer->toString(0) );
 	
 	return Apache2::Const::OK;
 }
@@ -316,7 +318,7 @@ sub setCommentProperties( $$$ ) {
 	my $tag = $dmdb->fetch_comment_tag($user);
 	$value->appendChild( XML::LibXML::Text->new($tag) );
 
-	$dmdb->write_comment_properties($user, $path, $parameters->toString());
+	$dmdb->write_comment_properties($user, $path, $parameters->toString(0));
 
 	return;
 }
@@ -333,8 +335,11 @@ sub getCommentProperties( $$ ) {
 	# TODO: find out if some value in commentProperties would also mean not enabled
 	my $dmdb = DotMac::DotMacDB->new();
 	if( my $properties = $dmdb->fetch_comment_properties($user, $path) ){
-		$properties = XML::LibXML->new()->parse_balanced_chunk($properties);
-
+		#$properties = XML::LibXML->new()->parse_balanced_chunk($properties);
+		# trying to keep out those (pretty printing) whitespaces
+		my $parser = XML::LibXML->new();
+		$parser->keep_blanks(0);
+		$properties = $parser->parse_balanced_chunk($properties);
 		my $params = $rootElem->appendChild( $answer->createElement('params') );
 		my $param = $params->appendChild( $answer->createElement('param') );
 

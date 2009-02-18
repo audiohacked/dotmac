@@ -248,16 +248,21 @@ sub copyDavProps {
 	my $propfindResponse = subrequest($r, 'PROPFIND', $sourceuri, '<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>', {'Depth'=> '0'});
 	$logging =~ m/Sections/&&$r->log->info("fetching props for existing dir $sourceuri ". $propfindResponse->[0]. " - " . $propfindResponse->[1]);
 	
-	my $DAVns = 'NSDAV';
-	my $DAVnsURI = 'DAV:';
-	my $iphotons = 'iphoto';
-	my $iphotonsURI = 'urn:iphoto:property';
-	my $idiskns = 'idisk';
-	my $idisknsURI = 'http://idisk.mac.com/_namespace/set/';
-	my $dotmacns = 'dotmac';
-	my $dotmacnsURI = 'urn:dotmac:property';
-	
-	
+
+my $DAVns = 'NSDAV';
+my $DAVnsURI = 'DAV:';
+my $iphotons = 'iphoto';
+my $iphotonsURI = 'urn:iphoto:property';
+my $idiskns = 'idisk';
+my $idisknsURI = 'http://idisk.mac.com/_namespace/set/';
+my $dotmacns = 'dotmac';
+my $dotmacnsURI = 'urn:dotmac:property';
+my $dotmacacl = 'dotmacacl';
+my $dotmacaclURI = 'http://mobile.us/_namespace/set/';
+
+
+
+
 	#setup a new proppatch xml doc
 	my $proppatch = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
 	my $propertyupdate = $proppatch->createElement('propertyupdate');
@@ -265,34 +270,30 @@ sub copyDavProps {
 	$proppatch->setDocumentElement($propertyupdate);
 	
 	my $parser = XML::LibXML->new();
+	$parser->keep_blanks(0);
 	my $data = $parser->parse_string($propfindResponse->[1]);
 	my $xc = XML::LibXML::XPathContext->new($data);
+
 	$xc->registerNs( $DAVns => $DAVnsURI );
 	$xc->registerNs( $iphotons => $iphotonsURI );
 	$xc->registerNs( $idiskns => $idisknsURI );
 	$xc->registerNs( $dotmacns => $dotmacnsURI );
+
 	
-	foreach my $ccc ($xc->findnodes('//NSDAV:multistatus//NSDAV:response//NSDAV:propstat//NSDAV:prop')) {
-		print "Found a NSDAV\n";
-		foreach my $iphoto ( $xc->findnodes('./iphoto:*', $ccc) ) {
-			my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
-			my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
-			my $newn = $iphoto->cloneNode(1);
-			$prop->appendChild($newn);
+	foreach my $propset ( $xc->findnodes("/NSDAV:multistatus/NSDAV:response/NSDAV:propstat/NSDAV:prop/*") ){	
+		if ( $propset->namespaceURI eq $DAVnsURI) {
+			# do we want to copy dav props ???
+			$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH : not patching dav props: ". $propset->toString() );
 		}
-		 foreach my $idisk ( $xc->findnodes('./idisk:*', $ccc) ) {
+		else {
+			# do we want to copy all _non_ dav props ???
 			my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
 			my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
-			my $newn = $idisk->cloneNode(1);
-			$prop->appendChild($newn);
-		}
-		 foreach my $dotmac ( $xc->findnodes('./dotmac:*', $ccc) ) {
-			my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
-			my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
-			my $newn = $dotmac->cloneNode(1);
+			my $newn = $propset->cloneNode(1);
 			$prop->appendChild($newn);
 		}
 	}
+
 	$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH : ". $proppatch->toString() );
 	my $proppatchResponse = subrequest($r, 'PROPPATCH', $targeturi,  $proppatch->toString());
 	#$propfindAlbumResponse->[1]

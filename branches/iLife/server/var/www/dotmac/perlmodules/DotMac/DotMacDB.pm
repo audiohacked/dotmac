@@ -18,7 +18,7 @@
 package DotMac::DotMacDB;
 
 use strict;
-use CGI::Carp;
+#use CGI::Carp;
 use Data::Dumper;
 use Apache2::ServerUtil ();
 use Apache2::RequestIO ();
@@ -27,7 +27,7 @@ use Apache2::RequestUtil ();
 use Apache2::Log;
 
 sub new {
-	carp "new DotMacDB";
+	#carp "new DotMacDB";
 	my $self = shift;
 
     

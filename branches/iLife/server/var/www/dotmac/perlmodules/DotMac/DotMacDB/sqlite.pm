@@ -18,7 +18,7 @@ package DotMac::DotMacDB::sqlite;
 
 use DBI;
 use strict;
-use CGI::Carp;
+#use CGI::Carp;
 use Data::Dumper;
 use File::Spec;
 
@@ -26,7 +26,7 @@ sub new {
 	my $invocant = shift;
 	my $class = ref($invocant) || $invocant;
 
-	carp "new DotMacDB-sqlite";
+	#carp "new DotMacDB-sqlite";
 
     my ($var_hash)=@_;
     
@@ -36,7 +36,7 @@ sub new {
 	my $dbistring= 'dbi:SQLite:dbname='.$privatePath.'/'.$dbname;
 
 	my $dotmacDBconn = DBI->connect($dbistring, "", "");
-	carp $dbistring;
+	#carp $dbistring;
 	$dotmacDBconn->do("	PRAGMA default_synchronous = OFF");
 	my $self = {
 		dbh => $dotmacDBconn,
@@ -46,7 +46,7 @@ sub new {
 }
 
 sub fetch_apache_auth{
-	carp "DotMacDB-sqlite: fetch_apache_auth";
+	#carp "DotMacDB-sqlite: fetch_apache_auth";
 	my $self = shift;
 	my ($user, $realm) = @_;
 
@@ -70,7 +70,7 @@ sub DESTROY {
 }
 
 sub authen_user{
-	carp "DotMacDB-sqlite: authen_user";
+	#carp "DotMacDB-sqlite: authen_user";
 	my $self = shift;
 	my ($user, $sent_pw, $realm) = @_;
 
@@ -82,10 +82,6 @@ sub authen_user{
 	my $passwd = $QueryPW->fetchrow_array;
 	
 	$QueryPW->finish;
-
-	carp $user;
-	carp $realm;
-	carp $sent_pw;
 
 	my $md5 = Digest::MD5->new();
 	$md5->add("$user:$realm:$sent_pw");
@@ -123,7 +119,7 @@ sub add_user{
 	$md5->add("$user:$realm:$newpass");
 	my $genPassWd = $md5->hexdigest;
 
-	my $insertQuery = "INSERT INTO auth (username, passwd,realm) VALUES (?,?,?)";
+	my $insertQuery = "INSERT INTO auth (username, passwd, realm, created) VALUES (?,?,?, DATE('NOW'))";
 	
 	my $q = $dbh->prepare($insertQuery);
 	$q->execute($user,$genPassWd,$realm);
@@ -135,8 +131,8 @@ sub update_user_info{
 	my ($storageHash, $realm) = @_;
 	my $dbh = $self->{dbh};
 	$realm ||= $self->{realm};
-	my $q = $dbh->prepare(qq{UPDATE auth SET idisk_quota_limit=?, is_admin=?, is_idisk=?, email_addr=? WHERE username=? AND realm=?});
-	$q->execute($storageHash->{'quota'},$storageHash->{'is_admin'},$storageHash->{'is_idisk'}, $storageHash->{'email'}, $storageHash->{'user'}, $realm);
+	my $q = $dbh->prepare(qq{UPDATE auth SET idisk_quota_limit=?, is_admin=?, is_idisk=?, email_addr=?, firstname=?, lastname=? WHERE username=? AND realm=?});
+	$q->execute($storageHash->{'quota'},$storageHash->{'is_admin'},$storageHash->{'is_idisk'}, $storageHash->{'email'}, $storageHash->{'firstname'}, $storageHash->{'lastname'}, $storageHash->{'user'}, $realm);
 	$q->finish;
 }
 
@@ -173,7 +169,7 @@ sub return_delta_records{
 	my ($username, $queryts)=@_;
 	my $dbh = $self->{dbh};
 	my $sql="select * from delta where user = '$username' and timestamp >= $queryts";
-	carp $sql;
+	#carp $sql;
 	my $sth=$dbh->prepare($sql);
 	$sth->execute();
 	my @retarr;
@@ -184,7 +180,7 @@ sub return_delta_records{
 			$count++;
 	}
 	$sth->finish();
-	carp "Count: ".$count;
+	#carp "Count: ".$count;
 	return \@retarr;
 }
 

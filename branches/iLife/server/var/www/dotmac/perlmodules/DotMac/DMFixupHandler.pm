@@ -113,7 +113,7 @@ sub handler
 				$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 			}
 		}
-		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iWeb/){
+		elsif ($userAgent =~m/^DotMacKit(.*)iWeb/){
 			#carp $r->as_string();
 			# LOCK /walinsky/Web/Sites
 			$r->headers_in->{'If'} = "<$sitesfolder> $ifHeader";
@@ -226,7 +226,7 @@ sub handler
 				$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmputfrom);
 			}
 		}
-		elsif ($userAgent =~m/^DotMacKit(.*)Lite(.*)iWeb/) {
+		elsif ($userAgent =~m/^DotMacKit(.*)iWeb/) {
 			# *sigh*
 			# X-Webdav-Method: DMMKPATH
 			# X-Webdav-Method: DMPUTFROM
@@ -250,6 +250,10 @@ sub handler
 					#carp "setting perlresponsehandler to ACL_handler";
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::acl);
+				}
+				elsif ($XWebdavMethod eq 'DMMKPATH') {
+					$r->handler('perl-script');
+					$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpath);
 				}
 				elsif ($XWebdavMethod eq 'DMMKPATHS') {
 					#carp "setting perlresponsehandler to DMMKPATHS_handler";
@@ -431,7 +435,7 @@ sub handler
 				}
 			}
 		}
-		elsif ( ( ($r->headers_in->{'Host'} eq 'idisk.mac.com') || ($r->headers_in->{'Host'} eq 'idisk.me.com') ) && ($r->uri =~ m/^(.*)\/Web\/Sites\/_gallery/)) {
+		elsif ( ( ($r->headers_in->{'Host'} eq 'idisk.mac.com') || ($r->headers_in->{'Host'} eq 'idisk.me.com') ) && ($r->uri =~ m/^(.*)\/Web\/Sites/)) {
 			
 			if($r->args()) {
 				my @args = split '&', $r->args();
