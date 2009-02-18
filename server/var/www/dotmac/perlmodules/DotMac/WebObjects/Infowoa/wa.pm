@@ -146,7 +146,7 @@ sub dotMacPreferencesPaneMessage {
 			$content .= $buf;
 			}
 		}
-#	carp $content;
+	my $realm = $r->dir_config('dotMacRealm');
 	my $username = "";
 	my $password = "";
 	my $service = "";
@@ -170,7 +170,6 @@ sub dotMacPreferencesPaneMessage {
 
 	if ($dmdb->authen_user($username, $password))
 		{
-		warn "user $username is ok to me";
 		if ($dotmacversion eq '1')
 			{
 			$answer = 	"{
@@ -183,18 +182,32 @@ version = 1;
 			}
 		else # Leopard version# = 2
 			{
-			my $iDiskStorageInMB = $dmdb->get_user_quota($username);
+			my $userValues = $dmdb->fetch_user_info($username, $realm);
+			my $iDiskUserCreated = $userValues->{'created'} || "2009-01-01";
+			my $iDiskStorageInMB = $userValues->{'idisk_quota_limit'} || '0';
 			$iDiskStorageInMB /= 1024;#we set quota in 1k blocks and  report them in MB
-			my $messageHTML = "<html><head><title></title></head><body><table cellspacing='0' cellpadding='0' border='0'><tr><td><table cellspacing='0' cellpadding='0' border='0'><tr><td>Account Type:</td><td width='8'></td><td><b>Regular</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Member Since:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Mail Storage:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>iDisk Storage:</td><td width='8'></td><td><b>%@</b></td></tr></table></td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td>Your account will expire when our server dies, but you'll be probably dead by then.</td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Account Details&nbsp;' onclick='document.location.href=\\\"https://www.mac.com/WebObjects/Account.woa\\\"'></td><td width='20'></td></tr><tr><td height='10' colspan='2'></td></tr><tr><td>To change your password and manage your billing information, view your account details.</td><td width='20'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Donate&nbsp;' onclick='document.location.href=\\\"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=walinskydotcom\@hotmail.com&item_name=walinskydotcom&item_number=dotmac&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8\\\"'></td><td width='20'></td></tr></table><div style='position:absolute; right:0px; bottom:0px;'><IMG src='http://www.walinsky.com/dotwalinskysmall.png' alt='dotwalinsky' width='50' height='61' /></div></body></html>";
+			my $emailStorageInMB = $userValues->{'mail_quota_limit'} || '0'; # this is already set in MB
+			my $accountType = 'regular';
+			if ($userValues->{'is_admin'} eq 1) {$accountType = 'admin'};
+			my $messageHTML = "<html><head><title></title></head><body><table cellspacing='0' cellpadding='0' border='0'><tr><td><table cellspacing='0' cellpadding='0' border='0'><tr><td>Account Type:</td><td width='8'></td><td><b>$accountType</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Member Since:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>Mail Storage:</td><td width='8'></td><td><b>%@</b></td></tr><tr><td height='8' colspan='3'></td></tr><tr><td>iDisk Storage:</td><td width='8'></td><td><b>%@</b></td></tr></table></td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td>Your account will expire when our server dies, but you'll be probably dead by then.</td><td width='20'></td></tr><tr><td height='16' colspan='2'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Account Details&nbsp;' onclick='document.location.href=\\\"https://www.mac.com/WebObjects/Account.woa\\\"'></td><td width='20'></td></tr><tr><td height='10' colspan='2'></td></tr><tr><td>To change your password and manage your billing information, view your account details.</td><td width='20'></td></tr><tr><td><input type=submit style='font-size:18px' value='&nbsp;Donate&nbsp;' onclick='document.location.href=\\\"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=walinskydotcom\@hotmail.com&item_name=walinskydotcom&item_number=dotmac&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8\\\"'></td><td width='20'></td></tr></table><div style='position:absolute; right:0px; bottom:0px;'><IMG src='http://www.walinsky.com/dotwalinskysmall.png' alt='dotwalinsky' width='50' height='61' /></div></body></html>";
 			$answer = 	qq±{
 canBuyMore = N; 
-createDateString = "2007-10-05"; 
+createDateString = $iDiskUserCreated; 
 iDiskStorageInMB = $iDiskStorageInMB; 
-mailStorageInMB = 0; 
+mailStorageInMB = $emailStorageInMB; 
 messageHTML = "$messageHTML"; 
 publicFolder = "http://idisk.mac.com/$username-Public"; 
 service = dotMacPreferencesPaneMessageVersion2; 
-servicesAvailable = (iDisk, iSync, SharingCertificate, Email, WebHosting, BTMM); 
+servicesAvailable = (
+		iDisk, 
+        iSync, 
+        Backup, 
+        iChatEncryption, 
+        SharingCertificate, 
+        BTMM, 
+        Email, 
+        DotMacMail, 
+        WebHosting); 
 statusCode = success; 
 substitutionOrder = (createDateString, mailStorageInMB, iDiskStorageInMB); 
 upgradeURL = "http://www.mac.com/"; 

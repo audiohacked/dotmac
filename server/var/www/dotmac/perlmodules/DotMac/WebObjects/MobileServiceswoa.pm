@@ -12,7 +12,7 @@ use Apache2::RequestIO ();
 use Apache2::Const -compile => qw(OK);
 use DotMac::CommonCode;
 use DotMac::DotMacDB;
-
+use DateTime::Format::HTTP;
 use Data::Dumper; # just for testing
 
 use XML::DOM;
@@ -111,12 +111,15 @@ sub handler {
 	$r->header_out("Connection" => "keep-alive");
 	$r->header_out("Pragma" => "no-cache");
 	$r->header_out("content-encoding" => "gzip");
+	my $datetimeclass = 'DateTime::Format::HTTP';
+	$r->header_out("Date" => $datetimeclass->format_datetime());
 
-	my $gzAnswer = Compress::Zlib::memGzip($answer); 
-	$r->header_out('Content-Length', length( $gzAnswer ));
-	#Date: Wed, 11 Feb 2009 17:03:56 GMT
-	$r->print( $gzAnswer );
+	#my $gzAnswer = Compress::Zlib::memGzip($answer); 
+	#$r->header_out('Content-Length', length( $gzAnswer ));
+	#$r->print( $gzAnswer );
 
+	$r->content_encoding("gzip");
+	$r->print(Compress::Zlib::memGzip($answer));
 	return Apache2::Const::OK;
 	}
 

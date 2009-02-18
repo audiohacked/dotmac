@@ -29,7 +29,11 @@ $DotMac::WebObjects::Wscomments::JSON::VERSION = '0.1';
 sub handler {
 	my $r = shift;
 
-	my $uri = $r->uri;
+my $path_info = $r->path_info;
+my $fullfilename = $r->filename();
+my $uri = $r->uri();
+my $location = $r->location();
+warn("Kicking in uri [$uri] fullfilename [$fullfilename] path info [$path_info] location [$location]");
 	$uri =~ s|/(\w+)\.js||; # Remove the (apache-rewritten) query-part of the url
 	my $method = $1;
 
@@ -48,18 +52,18 @@ sub handler {
 	$uri = File::Spec->catfile('', $user, @uriparts, $filename);
 	$dirname = File::Spec->catdir('', $user, @uriparts);
 
-	$r->log->debug("user = $user\nuriparts = ".File::Spec->catfile(@uriparts)."\nfilename=$filename\ndirname=$dirname");
+	$r->log->info("user = $user\nuriparts = ".File::Spec->catfile(@uriparts)."\nfilename=$filename\ndirname=$dirname");
 
 	# Get the data
-	$r->log->debug("Fetching properties for first path above $dirname");
+	$r->log->info("Fetching properties for first path above $dirname");
 	my $dirproperties = DotMac::WebObjects::Wscomments::getCommentPropertiesAbove($user, $dirname);
-	$r->log->debug("dirproperties: ".$dirproperties->toString());
-	$r->log->debug("Fetching properties for resource $uri");
+	$r->log->info("dirproperties: ".$dirproperties->toString());
+	$r->log->info("Fetching properties for resource $uri");
 	my $resourceproperties = DotMac::WebObjects::Wscomments::getCommentProperties($user, $uri);
-	$r->log->debug("resourceproperties: ".$resourceproperties->toString());
-	$r->log->debug("Fetching comments for $uri");
+	$r->log->info("resourceproperties: ".$resourceproperties->toString());
+	$r->log->info("Fetching comments for $uri");
 	my $comments = DotMac::WebObjects::Wscomments::getCommentsForPath($user, $uri);
-	$r->log->debug("comments: ".$comments->toString());
+	$r->log->info("comments: ".$comments->toString());
 
 	# Get the relevant parts and output JSON
 	my $data;

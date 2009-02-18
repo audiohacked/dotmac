@@ -29,6 +29,8 @@ use Data::Dumper;
 use Apache2::Const -compile => qw(OK HTTP_CREATED HTTP_NO_CONTENT HTTP_BAD_REQUEST DONE :log);
 use CGI::Carp;
 use DotMac::CommonCode;
+use XML::LibXML;
+use XML::LibXML::XPathContext;
 use Compress::Zlib;
 
 sub handler
@@ -55,6 +57,15 @@ sub dmmkpath {
 	my $logging = $r->dir_config('LoggingTypes');
 	my $rlog = $r->log;
 	$logging =~ /Sections/&&$rlog->info("Content Handler: dmmkpath");
+	my $content;
+	my $buf;
+	my $content_length = $r->header_in('Content-Length');
+	if ($content_length > 0) {
+		while ($r->read($buf, $content_length)) {
+			$content .= $buf;
+		}
+		$logging =~ m/Sections/&&$rlog->info("Content from POST: $content");
+	}
 	$r->print(DotMac::CommonCode::dmmkpath_response(DotMac::CommonCode::recursiveMKCOL( $r)));
 	$r->content_type('text/xml');
 	$r->status(207);
@@ -243,9 +254,16 @@ sub truthget {
 	return Apache2::Const::OK;
 }
 sub acl {
+	# now this is quite funny
+	# apple seems to have some WEBDAV ACL implementation;
+	# but doesn't call ACL - but POSTs acl commands
+	
+	# as we don't have acl at all - lets just proppatch it
+	# as properties on the DAV resources
 	my $r = shift;
 	my $logging = $r->dir_config('LoggingTypes');
 	my $rlog = $r->log;
+	my $targeturi = $r->uri;
 	$logging =~ /Sections/&&$rlog->info("Content Handler: acl");
 	my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
 
@@ -257,10 +275,62 @@ sub acl {
 		while ($r->read($buf, $content_length)) {
 			$content .= $buf;
 		}
-		$logging =~ m/Sections/&&$rlog->info("Content from POST: $content");
+		$logging =~ m/Sections/&&$rlog->info("Acl: content from POST: $content");
 	}
-	# we might want to check if the uri starts with username ;)
-	#DotMac::CommonCode::recursiveMKdir($dotMaciDiskPath, $r->uri);
+	
+	my $DAVns = 'NSDAV';
+	my $DAVnsURI = 'DAV:';
+#	my $iphotons = 'iphoto';
+#	my $iphotonsURI = 'urn:iphoto:property';
+#	my $idiskns = 'idisk';
+#	my $idisknsURI = 'http://idisk.mac.com/_namespace/set/';
+#	my $dotmacns = 'dotmac';
+#	my $dotmacnsURI = 'urn:dotmac:property';
+	my $dotmacacl = 'dotmacacl';
+	my $dotmacaclURI = 'http://mobile.us/_namespace/set/';
+	
+	
+	
+	my $parser = XML::LibXML->new();
+	#$parser->keep_blanks(0);	# this would strip whitespacess of the xml
+								# but textnodes would still have spaces and newline chars
+	my $doc    = $parser->parse_string($content);
+	my $xc     = XML::LibXML::XPathContext->new( $doc->documentElement() );
+	$xc->registerNs( $DAVns => $DAVnsURI );
+#	$xc->registerNs( $iphotons => $iphotonsURI );
+#	$xc->registerNs( $idiskns => $idisknsURI );
+#	$xc->registerNs( $dotmacns => $dotmacnsURI );
+	$xc->registerNs( $dotmacacl => $dotmacaclURI );
+	
+	my $acl = $doc->documentElement;
+	#replace the D: prefix by ours (found with the DAV: namespace URI)
+	$acl->setNamespaceDeclPrefix($acl->lookupNamespacePrefix($DAVnsURI), $dotmacacl);
+	#now replace the DAV namespace URI by ours
+	$acl->setNamespaceDeclURI($dotmacacl, $dotmacaclURI);
+#	print $doc->toString();
+	
+	#setup a new proppatch xml doc
+	my $proppatch = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
+	my $propertyupdate = $proppatch->createElement('propertyupdate');
+	$propertyupdate->setNamespace( $DAVnsURI , $DAVns );
+	$proppatch->setDocumentElement($propertyupdate);
+	#$propertyupdate->registerNs( $DAVns => $DAVnsURI );
+	my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
+	my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
+	my $newn = $acl->cloneNode(1);
+	$prop->appendChild($newn);
+#	print $proppatch->toString();
+	#now (re) encode the URI
+	$targeturi =~ s/([^\w\d\-_\.!~\*\'\(\)\/])/"%" . uc(sprintf("%2.2x",ord($1)))/eg;
+	$logging =~ m/Sections/&&$r->log->info("#### ACL ### PROPPATCH : ". $proppatch->toString() );
+	# my $returndata=DotMac::DMUserAgent::handler($r,$method, $href, $xml, $headers);
+	$r->headers_in->{'Host'} = 'idisk.mac.com';
+	my $proppatchResponse = DotMac::CommonCode::subrequest($r, 'PROPPATCH', $targeturi,  $proppatch->toString());
+	#$propfindAlbumResponse->[1]
+	$logging =~ m/Sections/&&$r->log->info("#### ACL ### PROPPATCH returned : ". $proppatchResponse->[0] .' - '. $proppatchResponse->[1] );	
+	
+	
+	# the response apple sends:
 	$r->content_type('text/plain');
 	$r->print("");
 	return Apache2::Const::OK;
