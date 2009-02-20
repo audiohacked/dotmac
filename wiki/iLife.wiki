@@ -7,6 +7,19 @@ The developers have been using/developing on the iLife branch for over half a ye
 We think it's about time to push things towards stable.
 We invite the daredevils amongst [http://dotmac.googlecode.com/svn/wiki/images/plotgraph.png you] to try installing from the iLife branch - and give us feedback.
 
+==Supported Features==
+==== Current status ====
+
+10.5 "Leopard"
+  * .Mac prefpane
+  * iSync
+  * iDisk
+  * iDisk sync
+  * Backup
+  * iPhoto '09 gallery publishing
+  * iWeb '09 publishing
+
+_(*note - the iLife branch dropped support for os 10.4. As iLife 09 was introduced, our main focus moved there. Don't expect us to backport our changes to iLife 08)_
 
 = Install =
 
