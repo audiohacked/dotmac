@@ -154,6 +154,9 @@ some files were edited after the binary release - so these have to be updated by
 
   * *_Do_* use the [http://code.google.com/p/dotmac/issues/list Issues] tab; both users and developers are helping each-other out there.
 
+  * The certificate we ship has expired. You can create a new certificate by running the script 'signKey.sh' in /var/www/dotmac/private (don't forget to restart apache afterwards). Running this script will enable all dotmac hosts we use (from the file 'extensions'). Good practice would be creating your own certificate of course (and using signKey for enabling the dns hosts from 'extensions').
+
 ==== Continue Reading ====
   * [http://code.google.com/p/dotmac/wiki/Help_the_project Help the project]
   * [http://code.google.com/p/dotmac/wiki/Plans Plans]
+  * [http://code.google.com/p/dotmac/wiki/iLife The iLife branch]. When you feel familiar with your setup, you might want to consider moving to the iLife branch straightaway! 
