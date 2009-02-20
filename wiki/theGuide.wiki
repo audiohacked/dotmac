@@ -141,7 +141,7 @@ please continue reporting!
 ==== Updates for the binary release (0.5) ====
 some files were edited after the binary release - so these have to be updated by hand:
   * http://dotmac.googlecode.com/svn/trunk/server/var/www/dotmac/perlmodules/DotMac/UserFolderAuthz.pm should end up in /var/www/dotmac/perlmodules (replacing the old one)
-  * from http://code.google.com/p/dotmac/source/browse/#svn/trunk/server/var/www/dotmac/configuration/configurations/internetservices/syncservices clientConfiguration-10.5.n should end up in /var/www/dotmac/configuration/configurations/internetservices/syncservices/
+  * from http://code.google.com/p/dotmac/source/browse/#svn/trunk/server/var/www/dotmac/configuration/configurations/internetservices/syncservices clientConfiguration-10.5.n should end up in /var/www/dotmac/configuration/configurations/internetservices/syncservices/ Users have reported these files are all similar; so copying clientConfiguration-10.5.2 to clientConfiguration-10.5.3...clientConfiguration-10.5.10 works as well. 
 
 
 ==== Global Hints ====
