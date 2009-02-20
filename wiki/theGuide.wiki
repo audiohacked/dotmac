@@ -139,9 +139,10 @@ Users reported the following Operating Systems Working:
 please continue reporting!
 
 ==== Updates for the binary release (0.5) ====
-2 files were edited after the binary release - so these have to be updated by hand:
+some files were edited after the binary release - so these have to be updated by hand:
   * http://dotmac.googlecode.com/svn/trunk/server/var/www/dotmac/perlmodules/DotMac/UserFolderAuthz.pm should end up in /var/www/dotmac/perlmodules (replacing the old one)
-  * http://dotmac.googlecode.com/svn/trunk/server/var/www/dotmac/configuration/configurations/internetservices/syncservices/clientConfiguration-10.5.2 should end up in /var/www/dotmac/configuration/configurations/internetservices/syncservices/
+  * http://dotmac.googlecode.com/svn/trunk/server/var/www/dotmac/configuration/configurations/internetservices/syncservices/clientConfiguration-10.5.n should end up in /var/www/dotmac/configuration/configurations/internetservices/syncservices/
+
 
 ==== Global Hints ====
 
