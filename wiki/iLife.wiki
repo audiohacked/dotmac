@@ -24,17 +24,14 @@ _(*note - the iLife branch dropped support for os 10.4. As iLife 09 was introduc
 = Install =
 
 Install is globally the same as from trunk.
-The first thing you'll notice when migrating is that your current setup will be broken; this is because we moved to a user db backend - which needs to be in sync with the .htdigest database.
-The easiest way out (now) is re-creating your users with idiskAdmin (you won't lose any files (we hope) on idisk).
 
-idiskAdmin features a new button 'Generate HTDigest Files' which you'll want to hit after changing/adding users. It syncs the user db with the .htdigest file.
-Restarting Apache reflects your user changes.
+We moved to a db backend for auth. This means we got rid of the .htdigest files.
+You'll need to have (a patched) apache httpd >= 2.2.8 for being able to use the new backend.
+_(on older apache versions; you'll still be able to install - you'll just need to keep the db in sync with your .htdigest
+files. Consult the README.txt in ./private/obsolete for instructions)_
 
-SVN >= r274: 	
-`Converted authentication to use mod_dbd (on RH distributions you will need to install apr-util-sqlite)`
-This means your apache needs to sport `mod_dbd.so` and `mod_authn_dbd.so` - and gets rid of the htdigest files.
-Make sure the 'private' folder is writable by Apache.  If your httpd version is too old, you can grab a dotmac.conf from an older SVN release for now. We might make this a configurable option.
-
+In your httpd.conf make sure you enable `mod_dbd.so` and `mod_authn_dbd.so`, you'll also need to make sure
+you installed apr-util-sqlite.
 
 Besides the perl modules needed for trunk we need a few more (available from CPAN):
  * LWP::UserAgent
