@@ -26,5 +26,6 @@ Replace idiskUserAdmin.pm in /var/www/dotmac/perlmodules with the one from this 
 
 Run genAdminAccount.pl from within the private folder; this will setup your admin user;
 from here on you should be able to use idiskAdmin from the web interface for creating users.
-After creating a user, you'll need to tick the 'sync' buttons for syncing the db with the htdigest
-files.
+idiskAdmin features a button 'Generate HTDigest Files' which you'll want to hit after
+changing/adding users. It syncs the user db with the .htdigest file.
+Restarting Apache reflects your user changes.
