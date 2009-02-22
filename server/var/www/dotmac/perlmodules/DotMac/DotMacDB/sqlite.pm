@@ -119,7 +119,7 @@ sub add_user{
 	$md5->add("$user:$realm:$newpass");
 	my $genPassWd = $md5->hexdigest;
 
-	my $insertQuery = "INSERT INTO auth (username, passwd, realm, created) VALUES (?,?,?, DATE('NOW'))";
+	my $insertQuery = "INSERT INTO auth (username, passwd, realm) VALUES (?,?,?)";
 	
 	my $q = $dbh->prepare($insertQuery);
 	$q->execute($user,$genPassWd,$realm);

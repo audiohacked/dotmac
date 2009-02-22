@@ -43,7 +43,7 @@ timestamp INTEGER
 CREATE TRIGGER ai_auth_createDate
 AFTER INSERT ON auth
 BEGIN
-UPDATE auth SET created = DATETIME('NOW') WHERE rowid = new.rowid;
+UPDATE auth SET created = DATE('NOW') WHERE rowid = new.rowid;
 END;
 CREATE TRIGGER fkdc_commentProperties_user_auth_id
 BEFORE DELETE ON auth
