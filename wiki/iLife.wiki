@@ -26,7 +26,7 @@ _(*note - the iLife branch dropped support for os 10.4. As iLife 09 was introduc
 Install is globally the same as from trunk.
 
 We moved to a db backend for auth. This means we got rid of the .htdigest files.
-You'll need to have (a patched) apache httpd >= 2.2.8 for being able to use the new backend.
+You'll need to have (a patched) apache httpd >= 2.2 for being able to use the new backend.
 _(on older apache versions; you'll still be able to install - you'll just need to keep the db in sync with your .htdigest
 files. Consult the README.txt in ./private/obsolete for instructions)_
 
