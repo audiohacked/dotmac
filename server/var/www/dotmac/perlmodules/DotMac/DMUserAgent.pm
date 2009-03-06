@@ -98,16 +98,16 @@ sub request
 {
     my($self, $request, $arg, $size, $previous) = @_;
 
-    LWP::Debug::trace('()');
+#    LWP::Debug::trace('()');
 
     my $response = $self->simple_request($request, $arg, $size);
 
     my $code = $response->code;
     $response->previous($previous) if defined $previous;
 
-    LWP::Debug::debug('Simple response: ' .
-		      (HTTP::Status::status_message($code) ||
-		       "Unknown code $code"));
+#    LWP::Debug::debug('Simple response: ' .
+#		      (HTTP::Status::status_message($code) ||
+#		       "Unknown code $code"));
 
     if ($code == &HTTP::Status::RC_MOVED_PERMANENTLY or
 	$code == &HTTP::Status::RC_FOUND or
@@ -124,7 +124,7 @@ sub request
 	    $referral->url->scheme eq 'http')
 	{
 	    # RFC 2616, section 15.1.3.
-	    LWP::Debug::trace("https -> http redirect, suppressing Referer");
+#	    LWP::Debug::trace("https -> http redirect, suppressing Referer");
 	    $referral->remove_header('Referer');
 	}
 
