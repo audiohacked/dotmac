@@ -326,19 +326,6 @@ sub find_nearest_path_with_properties{
         return $result;
 }
 
-sub write_acl{
-	my $self = shift;
-        my $user = shift;
-        my $url = shift;
-        my $acl = shift;
-
-	my $dbh = $self->{dbh};
-
-	my $q = $dbh->prepare("INSERT OR REPLACE INTO acl ('user', 'url', 'acl') SELECT auth.id, ? as url, ? as acl FROM auth WHERE username=? ") or die "Error in write_comment: ".$dbh->errstr;
-	$q->execute($url,$acl,$user) or die "Error in write_acl: ".$q->errstr;
-	$q->finish();
-}
-
 sub write_comment{
 	my $self = shift;
         my $user = shift;
