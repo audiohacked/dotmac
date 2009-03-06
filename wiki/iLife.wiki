@@ -71,4 +71,4 @@ We've opened a [http://code.google.com/p/dotmac/issues/detail?id=88 new issue] w
 = Notes =
 
  * iPhoto and iWeb publishing have only been tested with iLife '08 with latest updates. We won't support earlier versions/revisions.
- * 
+ * On some older Apache versions the ./private dir should be writable by Apache
