@@ -46,8 +46,23 @@ Besides the perl modules needed for trunk we need a few more (available from CPA
  * Image::ExifTool
  * Imager
 
-Before installing Imager, *you'll need to make sure to have jpeg headers installed*. On common linux distibutions these are packaged as libjpeg-devel. On Mac OS Leopard google is your friend.
- 
+Before installing Imager, *you'll need to make sure to have jpeg headers installed*. On common linux distibutions these are packaged as libjpeg-devel.
+
+On Mac OS Leopard:
+  get the sources from [http://www.ijg.org/files/jpegsrc.v6b.tar.gz www.ijg.org].
+  {{{
+  tar zxvf jpegsrc.v6b.tar.gz
+  cd jpeg-6b/
+  ./configure
+  make
+
+  sudo mkdir /usr/local/include
+  sudo mkdir /usr/local/lib
+
+  sudo make install-lib
+  }}}
+  after that you can install Imager with: {{{sudo perl -MCPAN -e 'install Imager'}}}
+
 (the list might not be complete - please let us know when you find missing modules)
 
 Also make sure you enable mod_rewrite in your Apache config
