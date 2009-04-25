@@ -69,8 +69,9 @@ Also make sure you enable mod_rewrite in your Apache config
 
 The hosts you'll need to enter in /etc/hosts on your client machines:
 {{{
-###.###.###.### www.mac.com web.me.com syncmgmt.mac.com idisk.mac.com idisk.me.com configuration.apple.com lcs.mac.com certinfo.mac.com delta.mac.com notify.mac.com publish.mac.com publish.me.com homepage.mac.com webservices.mac.com web.mac.com gallery.mac.com photocast.mac.com m3.mac.com
-###.###.###.### www.mac.com. web.me.com. syncmgmt.mac.com. idisk.mac.com. idisk.me.com. configuration.apple.com. lcs.mac.com. certinfo.mac.com. delta.mac.com. notify.mac.com. publish.mac.com. publish.me.com. homepage.mac.com. webservices.mac.com. web.mac.com. gallery.mac.com. photocast.mac.com. m3.mac.com.
+###.###.###.###  www.mac.com web.me.com syncmgmt.mac.com idisk.mac.com idisk.me.com configuration.apple.com lcs.mac.com certinfo.mac.com delta.mac.com notify.mac.com publish.mac.com publish.me.com homepage.mac.com webservices.mac.com web.mac.com gallery.mac.com photocast.mac.com m3.mac.com members.mac.com
+###.###.###.### www.mac.com. web.me.com. syncmgmt.mac.com. idisk.mac.com. idisk.me.com. configuration.apple.com. lcs.mac.com. certinfo.mac.com. delta.mac.com. notify.mac.com. publish.mac.com. publish.me.com. homepage.mac.com. webservices.mac.com. web.mac.com. gallery.mac.com. photocast.mac.com. m3.mac.com. members.mac.com.
+
 }}}
 
 ==Gallery==
