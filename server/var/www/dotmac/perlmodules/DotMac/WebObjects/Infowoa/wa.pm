@@ -35,27 +35,27 @@ sub handler {
 	
 	if ($r->uri eq "/WebObjects/Info.woa/wa/DynamicUI/dotMacPreferencesPaneMessage")
 		{
-		carp 'executing dotMacPreferencesPaneMessage';
+		#carp 'executing dotMacPreferencesPaneMessage';
 		$answer = dotMacPreferencesPaneMessage($r);
 		}
 	elsif ($r->uri eq "/WebObjects/Info.woa/wa/Query/retrieveDiskConfiguration")
 		{
-		carp 'executing retrieveDiskConfiguration';
+		#carp 'executing retrieveDiskConfiguration';
 		$answer = retrieveDiskConfiguration($r);
 		}
 	elsif ($r->uri eq "/WebObjects/Info.woa/wa/Query/accountInfo")
 		{
-		carp 'executing QUERYaccountInfo';
+		#carp 'executing QUERYaccountInfo';
 		$answer = QUERYaccountInfo($r);
 		}
 	elsif ($r->uri eq '/WebObjects/Info.woa/wa/XMLRPC/accountInfo')
 		{
-		carp 'executing XMLRPCaccountinfo';
+		#carp 'executing XMLRPCaccountinfo';
 		$answer = XMLRPCaccountinfo($r);
 		}
 	elsif ($r->uri eq '/WebObjects/Info.woa/wa/Query/configureDisk')
 		{
-		carp 'executing configureDisk';
+		#carp 'executing configureDisk';
 		$answer = configureDisk($r);
 		}
 	else
@@ -151,18 +151,20 @@ sub dotMacPreferencesPaneMessage {
 	my $systemVersion = "";
 	my $dotmacversion = "";
 	my $answer;
-	my(@name_value_array) = split(/;/, $content);
+	#if ($content =~ m/^{(.*)}$/){ $content = $1; } #strip enclosing brackets
+	my(@name_value_array) = split(/;\n/, $content);
 	foreach my $name_value_pair (@name_value_array) {
 		chomp ($name_value_pair);
 		my($name, $value) = split(/ = /, $name_value_pair);
+		if (($name) && ($name =~ m/^"(.*)"$/)){ $name = $1; } #strip enclosing double quotes
+		if (($value) && ($value =~ m/^"(.*)"$/)){ $value = $1; } #strip enclosing double quotes
+		if ($value){ $value =~ s/\\(.)/$1/g; } # remove shell escapes
 		if ($name =~ m/username/){ $username = $value; }
 		elsif ($name =~ m/password/){ $password = $value; }
 		elsif ($name =~ m/service/){ $service = $value; }
 		elsif ($name =~ m/systemVersion/){ $systemVersion = $value; }
 		elsif ($name =~ m/version/){ $dotmacversion = $value; }
 		}
-		$username =~ s/^\"|\"$//g;
-		$password =~ s/^\"|\"$//g;
 
 	if (DotMac::CommonCode::authen_user($r, $username, $password))
 		{
