@@ -50,6 +50,12 @@ nano ports.conf
 /etc/init.d/apache2 restart
 }}}
 
+
+You can pin the patched packages using:
+{{{
+echo "apache2-prefork-dev hold" | dpkg --set-selections
+echo "apache2.2-common hold" | dpkg --set-selections
+}}}
 = Gentoo =
 
 install the perl prerequisites with:
