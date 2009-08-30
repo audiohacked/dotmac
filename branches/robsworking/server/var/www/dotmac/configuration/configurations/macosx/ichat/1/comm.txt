@@ -1,0 +1,5 @@
+MainServer=17.202.37.58
+MainPort0=16385
+MainPort1=16386
+CohortServer=17.202.33.203
+CohortPort=16387

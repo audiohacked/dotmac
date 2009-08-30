@@ -1,0 +1,403 @@
+
+# If this is giving you warnings/errors - review your setup
+# mod_perl _needs_ to be loaded before _this_ file is parsed!!!
+# when you're sure mod_perl is already loaded here, just comment out the following line
+#LoadModule perl_module modules/mod_perl.so
+
+# You'll want to uncomment this on debian/ubuntu
+# on other systems this might already be set in httpd.conf
+DAVLockDB /var/www/dotmac/locks/DAVLockDB
+
+DirectorySlash Off
+#Listen 443
+DavDepthInfinity on
+LogFormat "%a %v %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" dotmac
+LogLevel Info
+ServerTokens Prod
+
+<Directory "/var/www/dotmac">
+	Options All +Indexes
+	AllowOverride All
+    Order allow,deny
+    Allow from all
+</Directory>
+
+BrowserMatch "^WebDAVFS/" redirect-carefully
+BrowserMatch "^DotMacKit" redirect-carefully
+BrowserMatch "^DAVKit/" redirect-carefully
+
+<Perl >
+$Apache2::PerlSections::Save = 1;
+################################################################################
+### config starts here #########################################################
+################################################################################
+	# probably these are the only 4 things you want to change
+	# the rootpath to notmac
+	my $dotMacRootPath = "/var/www/dotmac";
+
+	# the IP address of your server
+	my $dotMacIPAddress = '###.###.###.###';
+
+	# the A records pointing to your server
+	# this is where the rest of the world will find your users' web pages
+	my $dotMacWebAddress = ''; # for example web.mydomain.com
+	my $dotMacHomepagesAddress = ''; # for example homepage.mydomain.com
+	my $dotMacGalleryAddress = ''; # for example gallery.mydomain.com
+
+	#currently the following types are available (Sections Headers Locks Body SubreqDebug)
+	#example: my $LoggingTypes = "Sections Locks";
+	my $LoggingTypes = '"Sections Locks TransHandler"';
+	
+	
+	# names, names, names...
+	my $dotMacAuthModule = 'DotMac::AuthenDigestDM';
+	my $dotMacDBServType = 'sqlite';
+	my $dotMacDBServHost = 'localhost';
+	my $dotMacDBName = 'dotmac';
+	my $dotMacDBUser = 'dotmac';
+	my $dotMacDBPasswd = 'dotmac';
+	my $dotMacPerlDBI = 'DBI:mysql:database=dotmac;host=localhost';
+	my $dotMacApacheRestart = '"none"';
+	my $dotMacUserDBName = 'iDiskUsers';
+	my $dotMacAdminDBName = 'iDiskAdmins';
+	my $dotMacRealm = 'idisk.mac.com';
+	my $dotMacInfoDBname = 'info.dat';
+	my $dotMacLockTokenDBname = 'locktoken.dat';
+	my $dotMacUserTokenDBname = 'usertoken.dat';
+	my $dotMacAttrDBname = 'attributes.dat';
+	my $dotMacUdataDBname = 'user.dat';
+	my $dotMacLogPath = '/var/log/apache2';
+	
+	# these are the default locations for dotMac folders (under $dotMacRootPath)
+	my $dotMaciDiskPath = "$dotMacRootPath/idisk";
+	my $dotMacUserDataPath = "$dotMacRootPath/userxml";
+	my $dotMacPrivatePath = "$dotMacRootPath/private";
+	my $dotMacCachePath = "$dotMacRootPath/cache";
+	my $dotMacUserDB = "$dotMacPrivatePath/$dotMacUserDBName";
+	my $dotMacAdminDB = "$dotMacPrivatePath/$dotMacAdminDBName";
+	#local cache
+	my @dotMacCachedDirs = ("g", "st");
+	#vhosts
+	my $dotMacConfigurationPath = "$dotMacRootPath/configuration";
+	my $dotMacStubPath = "$dotMacRootPath/stub";
+	my $dotMacPerlmodulesPath = "$dotMacRootPath/perlmodules";
+
+	my $dotMacWebServerAlias = $dotMacWebAddress&&"ServerAlias $dotMacWebAddress" || '';
+	my $dotMacHomepagesServerAlias = $dotMacHomepagesAddress&&"ServerAlias $dotMacHomepagesAddress" || '';
+	my $dotMacGalleryServerAlias = $dotMacGalleryAddress&&"ServerAlias $dotMacGalleryAddress" || '';
+################################################################################
+### config ends here ###########################################################
+################################################################################
+	eval "use lib '$dotMacPerlmodulesPath'"; die $@ if $@;
+	eval "use Apache2::compat"; die $@ if $@;
+	eval "use DotMac::CommonCode"; die $@ if $@;
+	eval "use DotMac::DotMacDB"; die $@ if $@;
+	eval "use Apache::httpd_conf ()";
+	eval "use Data::Dumper()";
+#	eval "use Apache::AuthenHook"; die $@ if $@;
+
+	push @PerlSetVar, ['dotMacIPAddress' => $dotMacIPAddress];
+	push @PerlSetVar, ['dotMacAuthModule' => $dotMacAuthModule];
+	push @PerlSetVar, ['dotMacDBServType' => $dotMacDBServType];	
+	push @PerlSetVar, ['dotMacDBServHost' => $dotMacDBServHost];	
+	push @PerlSetVar, ['dotMacDBName' => $dotMacDBName];	
+	push @PerlSetVar, ['dotMacDBUser' => $dotMacDBUser];	
+	push @PerlSetVar, ['dotMacDBPasswd' => $dotMacDBPasswd];	
+	push @PerlSetVar, ['dotMacPerlDBI' => $dotMacPerlDBI];
+	push @PerlSetVar, ['dotMacDBUser' => $dotMacDBUser];
+	push @PerlSetVar, ['dotMacDBPasswd' => $dotMacDBPasswd];
+	push @PerlSetVar, ['dotMacRootPath' => $dotMacRootPath];
+	push @PerlSetVar, ['dotMacPrivatePath' => $dotMacPrivatePath];
+	push @PerlSetVar, ['dotMacCachePath' => $dotMacCachePath];
+	push @PerlSetVar, ['dotMaciDiskPath' => $dotMaciDiskPath];
+	push @PerlSetVar, ['dotMacUserDataPath' => $dotMacUserDataPath];
+#	push @PerlSetVar, ['dotMacDBType' => $dotMacDBType];
+	push @PerlSetVar, ['dotMacUserDB' => $dotMacUserDB];
+	push @PerlSetVar, ['dotMacAdminDB' => $dotMacAdminDB];
+
+	push @PerlSetVar, ['dotMacApacheRestart' => $dotMacApacheRestart];
+	push @PerlSetVar, ['dotMacRealm' => $dotMacRealm];
+	push @PerlSetVar, ['dotMacInfoDBname' => $dotMacInfoDBname];
+	push @PerlSetVar, ['dotMacLockTokenDBname' => $dotMacLockTokenDBname];
+	push @PerlSetVar, ['dotMacUserTokenDBname' => $dotMacUserTokenDBname];
+	push @PerlSetVar, ['dotMacAttrDBname' => $dotMacAttrDBname];
+	push @PerlSetVar, ['dotMacUdataDBname' => $dotMacUdataDBname];
+	push @PerlSetVar, ['LoggingTypes' => $LoggingTypes];
+	
+	foreach my $dotMacCachedDir (@dotMacCachedDirs) {
+		#cachedDirs can be retrieved with:
+		#my @cachedDirs = $r->dir_config->get('dotMacCachedDirs');
+		push @PerlAddVar, ['dotMacCachedDirs' => $dotMacCachedDir];
+		push @Alias, [ "/$dotMacCachedDir/" => "$dotMacCachePath/$dotMacCachedDir/" ];
+	}
+	# vhosts
+	push @PerlSetVar, ['dotMacConfigurationPath' => $dotMacConfigurationPath];
+	push @PerlSetVar, ['dotMacStubPath' => $dotMacStubPath];
+	push @PerlSetVar, ['DumpHeaders_File' => '/tmp/443headersdumped'];
+
+
+	require DotMac::CommonCode;
+	require HTTPD::UserAdmin;
+################################################################################
+### vhosts start here ##########################################################
+################################################################################
+# push @Alias, [ '/idiskAdmin/' => '/var/www/dotmac/idiskAdmin/' ];
+my $s = Apache2::ServerUtil->server;
+if (Apache2::ServerUtil::restart_count() == 1) {
+        open(PIDFILE,">$dotMacPrivatePath/dotmac.pid");
+        print PIDFILE time();
+        close(PIDFILE);
+}
+my $conf = <<"EOC";
+NameVirtualHost $dotMacIPAddress:80
+
+<Directory $dotMacRootPath>
+	Order allow,deny
+	Allow from all
+</Directory>
+
+<VirtualHost $dotMacIPAddress:443>
+	ServerName dot.mac.com
+	ServerAlias www.mac.com syncmgmt.mac.com idisk.mac.com configuration.apple.com lcs.mac.com certinfo.mac.com
+	DocumentRoot $dotMaciDiskPath
+	SSLEngine on
+	SSLCertificateFile $dotMacPrivatePath/server.crt
+	SSLCertificateKeyFile $dotMacPrivatePath/server.key                                                                                                      
+	CustomLog $dotMacLogPath/idiskAccesslog dotmac                                                                                                              
+	ErrorLog $dotMacLogPath/idiskErrorlog                                                                                                                              
+	ServerSignature Off                                                                                                                                      
+	Alias /configurations/ $dotMacConfigurationPath/configurations/                                                                                  
+	PerlTransHandler DotMac::DMTransHandler                
+	PerlLogHandler	DotMac::DMStatusLogger                                                                                                                                                                
+	
+	<LocationMatch /servlet/>
+		satisfy any                                                                                                                                          
+		SetHandler perl-script                                                                                                                           
+		PerlResponseHandler DotMac::ServiceRequest
+	</LocationMatch>
+	<LocationMatch /WebObjects/Account.woa>                                                                                                                        
+		SetHandler perl-script                                                                                                                           
+		PerlResponseHandler DotMac::WebObjects::Accountwoa
+	</LocationMatch>
+	<LocationMatch /WebObjects/WSComments.woa/>                                                                                                                        
+		SetHandler perl-script                                                                                                                           
+		PerlResponseHandler DotMac::WebObjects::Wscomments
+		satisfy any                                                                                                                                      
+	</LocationMatch>
+	<LocationMatch /WebObjects/Info.woa/wa/>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::WebObjects::Infowoa::wa
+		satisfy any
+	</LocationMatch>
+	<LocationMatch /WebObjects/RequestRouter.woa/wa/>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::WebObjects::RequestRouterwoa::wa
+		satisfy any
+	</LocationMatch>
+	<LocationMatch /locate>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::locate
+		satisfy any
+	</LocationMatch>
+	<Location /osxSharedSecret>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::osxSharedSecret
+		Order allow,deny
+		Allow from all
+		satisfy any
+	</Location>
+	<Location /_secondaryAccountManagement>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::SecondaryAcct
+	</Location>
+</VirtualHost> 
+
+<VirtualHost $dotMacIPAddress:80>
+	ServerName idisk.mac.com
+	ServerAlias publish.mac.com notify.mac.com delta.mac.com configuration.apple.com www.mac.com webservices.mac.com
+	DocumentRoot $dotMaciDiskPath
+	CustomLog $dotMacLogPath//idiskAccesslog dotmac
+	ErrorLog  $dotMacLogPath//idiskErrorlog
+	ServerSignature Off
+	Alias /configurations/ $dotMacConfigurationPath/configurations/                                                                                  
+	PerlTransHandler DotMac::DMTransHandler
+	PerlLogHandler  DotMac::DMStatusLogger
+	<LocationMatch /locate> 
+		SetHandler perl-script
+		PerlResponseHandler DotMac::locate
+		satisfy any
+	</LocationMatch>
+	<LocationMatch /WebObjects/WSComments.woa/>
+		SetHandler  perl-script
+		PerlResponseHandler DotMac::WebObjects::Wscomments
+		satisfy  any
+	</LocationMatch>
+	<LocationMatch /WebObjects/Comments.woa/wa>
+		SetHandler  perl-script
+		PerlResponseHandler DotMac::WebObjects::Comments::wa
+		satisfy  any
+	</LocationMatch>
+	<LocationMatch /notify>
+		SetHandler  perl-script
+		PerlResponseHandler DotMac::Notify
+	</LocationMatch>
+	<LocationMatch /locate>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::locate
+		satisfy any
+	</LocationMatch>
+	<LocationMatch /status> 
+		SetHandler  perl-script
+		PerlResponseHandler DotMac::Status
+		AuthType Digest
+		AuthName idisk.mac.com
+		AuthDigestProvider file
+		AuthUserFile $dotMacUserDB
+		Require  valid-user
+	</LocationMatch>
+	<Location /idiskAdmin>
+		SetHandler  perl-script
+		PerlResponseHandler DotMac::iDiskUserAdmin
+		AuthType Digest
+		AuthName $dotMacRealm
+		AuthDigestProvider file
+	   	AuthUserFile $dotMacAdminDB
+		Require valid-user
+	</Location>	
+</VirtualHost>
+
+<VirtualHost $dotMacIPAddress:80>
+	ServerName homepage.mac.com
+	$dotMacHomepagesServerAlias
+	DocumentRoot $dotMaciDiskPath
+	CustomLog $dotMacLogPath//idiskAccesslog dotmac
+	ErrorLog  $dotMacLogPath//idiskErrorlog
+	ServerSignature Off
+	AliasMatch ^/*/([^/]*)/?(.*) $dotMaciDiskPath/\$1/Sites/\$2
+</VirtualHost>
+
+<VirtualHost $dotMacIPAddress:80>
+	ServerName web.mac.com
+	$dotMacWebServerAlias
+	DocumentRoot $dotMaciDiskPath
+	CustomLog $dotMacLogPath//idiskAccesslog dotmac
+	ErrorLog  $dotMacLogPath//idiskErrorlog
+	ServerSignature Off
+	AliasMatch ^/*/([^/]*)/?(.*) $dotMaciDiskPath/\$1/Web/Sites/\$2
+
+#TODO: OK, this is pretty ugly. any better way to handle it?
+        RewriteEngine On
+        RewriteLog /tmp/rewrite.log
+        RewriteLogLevel 3
+        RewriteCond %{QUERY_STRING} wsc=entry.js
+        RewriteRule (.*)\$ \$1/entry.js [PT]
+	<LocationMatch .*/entry.js>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::WebObjects::Wscomments::JSON
+		satisfy  any
+	</LocationMatch>
+        RewriteCond %{QUERY_STRING} wsc=summary.js
+        RewriteRule (.*)\$ \$1/summary.js [PT]
+	<LocationMatch .*/summary.js>
+		SetHandler perl-script
+		PerlResponseHandler DotMac::WebObjects::Wscomments::JSON
+		satisfy  any
+	</LocationMatch>
+</VirtualHost>
+
+<VirtualHost $dotMacIPAddress:80>
+	ServerName gallery.mac.com
+	$dotMacGalleryServerAlias
+	PerlTransHandler DotMac::GalleryTransHandler
+	Options -Indexes
+	DocumentRoot $dotMaciDiskPath
+	LogLevel debug
+	CustomLog $dotMacLogPath//idiskAccesslog dotmac
+	ErrorLog  $dotMacLogPath//idiskErrorlog 
+	ServerSignature Off
+</VirtualHost>
+
+
+<Directory $dotMaciDiskPath>
+	AuthType Digest
+	AuthName $dotMacRealm
+	AuthDigestProvider file
+	AuthUserFile $dotMacUserDB
+#	Options indexes
+	PerlFixupHandler DotMac::DMFixupHandler
+</Directory>
+<Directory $dotMaciDiskPath/*>
+	Deny from all
+</Directory>
+<Directory $dotMaciDiskPath/1>
+	Allow from all
+</Directory>
+<Directory $dotMaciDiskPath/st>
+	Allow from all
+</Directory>
+<Directory $dotMaciDiskPath/if>
+	Allow from all
+</Directory>
+<Directory $dotMaciDiskPath/i>
+	Allow from all
+</Directory>
+#FIXME: just temporary, remove!
+<Directory $dotMaciDiskPath/Comments.woa>
+	Allow from all
+</Directory>
+<Directory $dotMaciDiskPath/WebObjects/Comments.woa>
+	Allow from all
+</Directory>
+
+EOC
+print STDOUT "$conf\n";
+$s->add_config([split /\n/,$conf]);
+
+my $perUserConf;
+my $dmdb = DotMac::DotMacDB::->new(cfg_array => \@PerlSetVar);
+my @users = $dmdb->list_users_idisk($dotMacRealm);
+
+for my $user (@users) {
+	#users can be retrieved with:
+	#my @users = $r->dir_config->get('dotMacUsers');
+	push @PerlAddVar, ['dotMacUsers' => $user];
+	print STDOUT "$user\n";
+	my $userquota = $dmdb->get_user_quota($user,$dotMacRealm);
+	$userquota = 0 if ($userquota eq "");
+	$perUserConf =<<"EOPC";
+<Directory $dotMaciDiskPath/$user>
+	Dav On
+	DAVSATMaxAreaSize $userquota
+	require user $user
+	order Deny,Allow
+	allow from all
+</Directory>
+<Directory $dotMaciDiskPath/$user/Public/>
+	satisfy any
+	PerlAccessHandler DotMac::PublicFolderAccess
+</Directory>
+Alias /$user-Public $dotMaciDiskPath/$user/Public/
+<Directory $dotMaciDiskPath/$user/Sites/>
+	<LimitExcept GET HEAD OPTIONS>
+		require user $user
+	</LimitExcept>
+</Directory>
+<Directory $dotMaciDiskPath/$user/Web/Sites/>
+	<LimitExcept GET HEAD OPTIONS PROPFIND>
+        require user $user
+    </LimitExcept>
+</Directory>
+EOPC
+$s->add_config([split /\n/,$perUserConf]);
+}
+
+$dmdb="";
+
+
+</Perl>
+
+
+#<Perl>
+#print STDOUT Apache2::PerlSections->dump;
+#</Perl>
+

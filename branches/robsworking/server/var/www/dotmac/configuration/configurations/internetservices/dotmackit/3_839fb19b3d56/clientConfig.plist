@@ -1,0 +1,20 @@
+{
+    accountInfoURL = "https://www.mac.com/WebObjects/Info.woa/wa/XMLRPC/accountInfo";
+    commentsBatchSize = 50;
+    commentsURL = "http://www.mac.com/WebObjects/WSComments.woa/xmlrpc";
+    configURL = "http://configuration.apple.com/configurations/internetservices/dotmackit/3_839fb19b3d56/clientConfig.plist";
+    iDiskURL = "http://idisk.mac.com";
+    indexingBatchSize = 50;
+    indexingURL = "http://webservices.mac.com";
+    mobilePublishConfigURL = "https://www.mac.com/WebObjects/MobileServices.woa/xmlrpc";
+    otherParameters =     {
+    };
+    publishURL = "http://publish.mac.com";
+    referralLookupURL = "http://homepage.mac.com/dotmackitsupport/Referrals";
+    signUpURL =     {
+        de = "https://secure.me.com/wo/WebObjects/Signup.woa/wa/trial?aff=consumer&lang=de&cty=DE";
+        en = "http://www.apple.com/mobileme/share-your-world/index.html";
+        fr = "https://secure.me.com/wo/WebObjects/Signup.woa/wa/trial?aff=consumer&lang=fr&cty=FR";
+        ja = "https://secure.me.com/wo/WebObjects/Signup.woa/wa/trial?aff=consumer&lang=ja&cty=JP";
+    };
+}
