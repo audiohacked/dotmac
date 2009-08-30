@@ -103,7 +103,8 @@ sub subscribe {
 			}
 		else
 			{
-			carp "subscribe was called with command: $string; don't know how to handle that";
+			carp "subscribe was called with command: $string; don't know how to handle that - Post input:";
+			carp $my_data;
 			}
 	 }
 

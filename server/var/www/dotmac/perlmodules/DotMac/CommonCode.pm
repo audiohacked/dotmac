@@ -36,8 +36,59 @@ use Apache2::RequestUtil ();
 use Apache2::Log;
 use Apache2::SubRequest ();
 use DotMac::NullOutputFilter;
+# use DotMac::CaptureOutputFilter;
 use DotMac::PostingInputFilter;
 use Data::Dumper;
+use Digest::MD5;
+use DBI;
+
+use DotMac::DMUserAgent;
+use HTTP::Request;
+use HTTP::Request::Common;
+use HTTP::Response;
+
+
+sub returnDeltaRecords{
+	my $dmdb = DotMac::DotMacDB->new();
+	my ($r,$queryts) = @_;
+	return $dmdb->return_delta_records($r->user,$queryts);
+}
+
+sub writeDeltaRecord{
+	my ($r) = @_;
+	my ($dbh);
+	my $opcode="";
+	my $source="";
+	my $target="";
+	my $user = $r->user();
+	my $dbargs = {	AutoCommit => 1, 
+					PrintError => 1};
+
+	
+	if ($r->method() eq "MOVE") { 
+		$opcode="MOV";
+		$source=$r->uri;
+		$target=$r->headers_in->{'Destination'};
+		$target =~ m|http[s]{0,1}://([a-zA-Z0-9\.]*)/(.*)|;
+		$target = $2;		
+	} elsif ($r->method() eq "PUT") {
+		$opcode="PUT";
+		$source=$r->uri;
+	} elsif ($r->method() eq "DELETE") {
+		$opcode="DEL";
+		$source=$r->uri;
+	} elsif ($r->method() eq "MKCOL") {
+		$opcode="MKD";
+		$source=$r->uri;
+	} else {
+		$r->log->info("writeDeltaRecord: unhandled opcode");
+		return;
+	}
+	my $dmdb = DotMac::DotMacDB->new();
+	$dmdb->write_delta_record($user, $opcode, $source, $target);
+	return 1;
+	
+}
 
 sub readUserDB
 	{ my ($dbpath, %attributes) = @_;
@@ -102,7 +153,176 @@ sub recursiveMKdir
 		$rootpath = $rootpath.$slash.$adddir;
 		}
 	}
+sub checkparent {
+	my ($r, $directory) = @_;
+	my @arr = File::Spec->splitdir($directory);
+	pop(@arr);
+	my $parentdir=File::Spec->catdir(@arr);
+	return -d $parentdir;
+	}
 
+sub dmoverlay {
+	my ($r,$statusarr, $source, $target, $sourceuri, $targeturi ) = @_;
+	my @holding;
+	my $logging = $r->dir_config('LoggingTypes');
+	$r->log->info("Checking Source: $sourceuri Target: $targeturi"); #.File::Spec->catdir($target,"test123"));
+	$r->log->info("First check if the source is a file or a directory");
+	my ($dirhandle,$ret);
+	
+	if ((-d $source) && (-d $target)) {
+		@holding=([$sourceuri, $targeturi,0,"WALK"]);
+		push(@$statusarr,@holding);		
+	}
+	if (!(-e $source)) {
+		$r->log->info("hit source doesn't exist");
+		return 0;
+	} elsif (-d $source) {
+		$r->log->info("Directory: Source: $source ");
+		if (!(-e $target) && checkparent($r,$target)) { 
+			$r->log->info("Target does not exist, and the target's parent is a dir");
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"MOVE"]);
+			push(@$statusarr,@holding);
+			$r->log->info("#### Call a MOVE subrequest");
+		} elsif ((-e $target) && !(-d $target)) {
+			$r->log->info("	#### Delete the target and MOVE the source to the destination");
+			subrequest($r,"DELETE",$targeturi);
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"OVERLAY"]);
+			push(@$statusarr,@holding);
+
+		} elsif ((-e $target) && (-d $target)) {
+			opendir($dirhandle, $source);
+			my $entry;
+			while ($entry=readdir($dirhandle)) {
+				$r->log->info("Entry: $entry");
+				next if (($entry =~ m/^\.$/) || ($entry =~ m/^\.\.$/) || ($entry =~ m/^\.DAV$/));
+		#		if (-e File::Spec->catdir($target,$entry)) {
+					dmoverlay($r,$statusarr,File::Spec->catdir($source,$entry),File::Spec->catdir($target,$entry),$sourceuri."/".$entry,$targeturi."/".$entry);
+		#		} else  {
+		#			dmoverlay($r,$statusarr,File::Spec->catdir($source,$entry),$target,$sourceuri."/".$entry,$targeturi);
+		#		}
+			}
+			closedir($dirhandle);
+			#$r->print(Dumper(@arr));
+### don't forget to fetch props from sourcedir - and proppatch them onto target dir
+			##make sure we have a trailing slash
+			if ( $sourceuri !~ m/\/$/ ) {
+				$sourceuri = $sourceuri.'/';
+			}
+			copyDavProps ( $r,$sourceuri, $targeturi );
+### patched target dir with source props ?!? should be done here
+		}
+	} elsif (!(-d $source)) {
+		if (!(-e $target) && checkparent($r,$target)) {
+			$r->log->info("	#### MOVE the file from source to the new target and rename");
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"MOVE"]);
+			push(@$statusarr,@holding);			
+		} elsif ((-d $target) && (-e File::Spec->catdir($target,basename($source)))) {
+			$r->log->info("	#### Delete the file and Move the file into the new directory");
+			subrequest($r,"DELETE",$targeturi);
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});
+			@holding=([$sourceuri, $targeturi,$$ret[0],"OVERLAY"]);
+			push(@$statusarr,@holding);
+		} elsif ((-d $target) && !(-e File::Spec->catdir($target,basename($source)))) {
+			$r->log->info("	#### Move the File into the directory");
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});	
+			@holding=([$sourceuri, $targeturi,$$ret[0],"MOVE"]);
+			push(@$statusarr,@holding);
+		} elsif ((-e $target) && !(-d $target)) {
+			$r->log->info("#### Delete the target file and move the file there ");
+			subrequest($r,"DELETE",$targeturi);
+			$ret = subrequest($r,"MOVE",$sourceuri,"",{'Destination'=>formCurrentServer($r).$targeturi});		
+			@holding=([$sourceuri, $targeturi,$$ret[0],"OVERLAY"]);
+			push(@$statusarr,@holding);
+		}
+	
+	}
+	return Apache2::Const::OK;
+}
+
+sub copyDavProps {
+	my ( $r,$sourceuri, $targeturi ) = @_;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $propfindResponse = subrequest($r, 'PROPFIND', $sourceuri, '<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>', {'Depth'=> '0'});
+	$logging =~ m/Sections/&&$r->log->info("fetching props for existing dir $sourceuri ". $propfindResponse->[0]. " - " . $propfindResponse->[1]);
+	
+
+my $DAVns = 'NSDAV';
+my $DAVnsURI = 'DAV:';
+my $iphotons = 'iphoto';
+my $iphotonsURI = 'urn:iphoto:property';
+my $idiskns = 'idisk';
+my $idisknsURI = 'http://idisk.mac.com/_namespace/set/';
+my $dotmacns = 'dotmac';
+my $dotmacnsURI = 'urn:dotmac:property';
+my $dotmacacl = 'dotmacacl';
+my $dotmacaclURI = 'http://mobile.us/_namespace/set/';
+
+
+
+
+	#setup a new proppatch xml doc
+	my $proppatch = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
+	my $propertyupdate = $proppatch->createElement('propertyupdate');
+	$propertyupdate->setNamespace( $DAVnsURI , $DAVns );
+	$proppatch->setDocumentElement($propertyupdate);
+	
+	my $parser = XML::LibXML->new();
+	$parser->keep_blanks(0);
+	my $data = $parser->parse_string($propfindResponse->[1]);
+	my $xc = XML::LibXML::XPathContext->new($data);
+
+	$xc->registerNs( $DAVns => $DAVnsURI );
+	$xc->registerNs( $iphotons => $iphotonsURI );
+	$xc->registerNs( $idiskns => $idisknsURI );
+	$xc->registerNs( $dotmacns => $dotmacnsURI );
+
+	
+	foreach my $propset ( $xc->findnodes("/NSDAV:multistatus/NSDAV:response/NSDAV:propstat/NSDAV:prop/*") ){	
+		if ( $propset->namespaceURI eq $DAVnsURI) {
+			# do we want to copy dav props ???
+			$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH : not patching dav props: ". $propset->toString() );
+		}
+		else {
+			# do we want to copy all _non_ dav props ???
+			my $set = $propertyupdate->appendChild($proppatch->createElement("$DAVns:set"));
+			my $prop = $set->appendChild($proppatch->createElement("$DAVns:prop"));
+			my $newn = $propset->cloneNode(1);
+			$prop->appendChild($newn);
+		}
+	}
+
+	$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH : ". $proppatch->toString() );
+	my $proppatchResponse = subrequest($r, 'PROPPATCH', $targeturi,  $proppatch->toString());
+	#$propfindAlbumResponse->[1]
+	$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH returned : ". $proppatchResponse->[0] .' - '. $proppatchResponse->[1] );
+}
+
+sub dmoverlay_response{
+	my ($r,$responsearray) = @_;
+	my $content="<?xml version=\"1.0\" encoding=\"utf-8\" ?><multistatus xmlns=\"DAV:\">";
+	my $holding;
+	while ($holding = pop(@$responsearray)) {
+		$content=$content."
+<response xmlns=\"DAV:\">
+ <href href-type=\"source\">".$$holding[0]."</href>
+ <href href-type=\"target\">".$$holding[1]."</href>
+ <status>HTTP/1.1 200 OK</status>
+ <responsedescription>Action ".$$holding[3]."</responsedescription>
+</response>\n";
+	}
+	$content=$content."</multistatus>\n";
+	return $content;
+}
+
+sub formCurrentServer{
+	my ($r) = @_;
+	my $httpType="http://";
+	$httpType="https://" if $r->get_server_port() == 443;
+	return $httpType.$r->headers_in->{'Host'};
+}
 sub recursiveMKCOL
 	{
 	my ($r,$uri) = @_;
@@ -139,84 +359,74 @@ sub recursiveMKCOL
 sub dmpatchpaths_response {
 	my ($r, @resparr) = @_;
 	my $innerarr;
-	$r->print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>
-<INS:response-status-set xmlns:INS=\"http://idisk.mac.com/_namespace/set/\">\n");
+	my $content="<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<INS:response-status-set xmlns:INS=\"http://idisk.mac.com/_namespace/set/\">\n";
 	foreach $innerarr (@resparr) {
 		my $xmlout=$innerarr->[1];
 		$xmlout=~s/\<\?xml version="1.0" encoding="utf-8"\?\>//g;
-		$r->print($xmlout);
+		$content=$content.$xmlout;
 		}
-	$r->print("</INS:response-status-set>\n");
-
+	$content=$content."</INS:response-status-set>\n";
+	return $content;
 	}
 sub dmpatchpaths_request {
 	my ($r, $inXML) = @_;
 	my $logging = $r->dir_config('LoggingTypes');
-	my $xp = new XML::DOM::Parser(ErrorContext => 2);
-	my $requestxml = $xp->parse($inXML);
-	my $requestrootnode = $requestxml->getElementsByTagName('x0:request-instructions-set')->[0];
-	my $rootattributes = $requestrootnode->getAttributes;
-	my $rootattributescount = $requestrootnode->getAttributes->getLength;
-	my %nshash;
+	my $DAVns = 'NSDAV';
+	my $DAVnsURI = 'DAV:';
+	my $iphotons = 'iphoto';
+	my $iphotonsURI = 'urn:iphoto:property';
+	my $idiskns = 'idisk';
+	my $idisknsURI = 'http://idisk.mac.com/_namespace/set/';
+	my $dotmacns = 'dotmac';
+	my $dotmacnsURI = 'urn:dotmac:property';
 	my @retarr;
-	for (my $i = 0; $i < $rootattributescount; $i++) {
-		$nshash{$rootattributes->item($i)->getName()}=$rootattributes->item($i)->getValue();
+	my $parser = XML::LibXML->new();
+	my $doc    = $parser->parse_string($inXML);
+	my $xc     = XML::LibXML::XPathContext->new( $doc->documentElement() );
+	$xc->registerNs( $DAVns => $DAVnsURI );
+	$xc->registerNs( $iphotons => $iphotonsURI );
+	$xc->registerNs( $idiskns => $idisknsURI );
+	$xc->registerNs( $dotmacns => $dotmacnsURI );
+	
+	foreach my $ccc ($xc->findnodes('//idisk:request-instructions-set//idisk:request-instructions')) {
+		my $action = $xc->findnodes('./idisk:action', $ccc)->[0]->textContent();
+		print "Found idisk:request-instruction: $action\n";
+		if ($action eq 'PROPPATCH') {
+			my $href = $xc->findnodes('./idisk:href', $ccc)->[0]->textContent();
+			print "href: $href\n";
+			my $proppatchrequest = $xc->findnodes('./NSDAV:propertyupdate', $ccc)->[0];
+			#setup a new proppatch xml doc
+			my $proppatchxml = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
+			my $newn = $proppatchrequest->cloneNode(1);
+			$proppatchxml->setDocumentElement($newn);
+			my $xc     = XML::LibXML::XPathContext->new( $proppatchxml->documentElement() );
+			$xc->registerNs( $DAVns => $DAVnsURI );
+			$xc->registerNs( $iphotons => $iphotonsURI );
+			$xc->registerNs( $idiskns => $idisknsURI );
+			$xc->registerNs( $dotmacns => $dotmacnsURI );
+			$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH: ".$proppatchxml->toString());
+			my $proppatchResponse = subrequest($r, 'PROPPATCH', $href,  $proppatchxml->toString());
+			#my $proppatchResult = DotMac::DMUserAgent::handler($r, "PROPPATCH", $href, $proppatchxml->toString() );
+			$logging =~ m/Sections/&&$r->log->info("#### PROPPATCH result: ".$proppatchResponse->[1]);
+			push(@retarr,$proppatchResponse);
+		}
 	}
-
-	my $requestxml_root = $requestxml->getDocumentElement;
-	my $requestInstructions = $requestrootnode->getElementsByTagName('x0:request-instructions'); # gather all 'transaction' child nodes
-	my $requestInstructionsCount = $requestInstructions->getLength();
-	my $resulturi;
-	$r->log->info("In dmpatchpaths");
-	
-	
-	for (my $j = 0; $j < $requestInstructionsCount; $j++){
-		my $action = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:action')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
-		my $href = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:href')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
-		my $successcodes = XMLDOMgetFirstChildByName($requestInstructions->[$j], 'x0:success-codes')->getFirstChild->toString(); # bad bad bad! whaddayathink xml namespaces are for!
-    	my $subreq;
-    	#print ("action: $action, href: $href, success-codes: $successcodes\n");
-		if ($action eq 'PROPPATCH')
-        {
-        	my $propblock = XMLDOMgetFirstChildByName($requestInstructions->[$j],'x1:propertyupdate')->cloneNode(1);
-			my $newXML = XML::DOM::Document->new();
-			my $decl=new XML::DOM::XMLDecl;
-			$decl->setVersion("1.0");
-			$newXML->setXMLDecl($decl);
-			$propblock->setOwnerDocument($newXML);
-			foreach my $key (keys %nshash) {
-				$propblock->setAttribute($key,$nshash{$key});
-			}
-			$newXML->appendChild($propblock);
-			$logging =~ m/Sections/&&$r->log->info("Found a PROPPATCH buried in DMPATCHPATHS, uri: ".$href);	
-			push(@retarr,subrequest($r, "PROPPATCH", $href, $newXML->toString()));
-			}
-     }
 	return @retarr;
-
 }
 
 sub subrequest {
 	my ($r, $method, $href, $xml, $headers) = @_;
 	my $subreq;
-	my $rc;
+	#my $rc;
 	my $logging = $r->dir_config('LoggingTypes');
-	$subreq = $r->lookup_method_uri($method, $href);
 	my ($key,$value);
-
 	$r->log->info("source: ".$href." Destination: ".$$headers{'Destination'});
-	$subreq->add_output_filter(\&DotMac::NullOutputFilter::CaptureOutputFilter);			
-	$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
-	$subreq->headers_in->{'X-Webdav-Method'}="";
-	if ($headers) {
-		foreach $key (keys %$headers) {
-			$subreq->headers_in->add($key,$$headers{$key});
-		}
-	}
-	$subreq->pnotes('postdata',$xml);
-	$rc=$subreq->run();
-	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$subreq->pnotes('returndata'));
-	return ([$rc,$subreq->pnotes('returndata')]);
+	#$subreq->add_output_filter(\&DotMac::CaptureOutputFilter);			
+	#$subreq->add_input_filter(\&DotMac::PostingInputFilter::handler);
+	#$subreq->headers_in->{'X-Webdav-Method'}="";
+    my $returndata=DotMac::DMUserAgent::handler($r,$method, $href, $xml, $headers);
+	$logging =~ m/SubreqDebug/&&$r->log->info("Captured Data dm: ".$returndata->[1]);
+	return ($returndata);
 }
 
 sub dmmkpath_request { 
@@ -265,6 +475,174 @@ sub returnHTTPCodesText {
 		return "HTTP/1.1 $val UNKNOWN";
 	}
 }
+sub truthget_generate {
+	my ($r,$content,$user) = @_;
+	my @datearray=gmtime(time());
+	my $lastupdate=sprintf('%s-%#.2d-%#.2dT%#.2d:%#.2d:%#.2dZ',$datearray[5]+1900,$datearray[4]+1,$datearray[3],$datearray[2],$datearray[1],$datearray[0]);
+
+
+my ($parser,$doc,$dom);
+
+$content =~ s/D:prop/prop/g;
+$content =~ s/\n//g;
+$r->log->info("truthget:".$content);
+$parser = XML::LibXML->new();
+$parser->clean_namespaces(1);
+my $truthget = XML::LibXML::Document->createDocument("1.0","UTF-8");
+my $feed=$truthget->createElement("feed");
+$truthget->setDocumentElement($feed);
+### Set Namespace Stuff Here
+$feed->setNamespace("urn:iweb:","iweb",0);
+$feed->setNamespace("urn:iphoto:property","iphoto",0);
+$feed->setNamespace("http://www.itunes.com/dtds/podcast-1.0.dtd","itunes",0);
+$feed->setNamespace("http://www.w3.org/2005/Atom","",0);
+$feed->setNamespace("urn:dotmac:property","dotmac",0);
+$feed->setNamespace("DAV:","D",0);
+my $newworkingnode = $truthget->createElement("generator");
+$newworkingnode->appendText("dotmobile.us");
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("title");
+$newworkingnode->appendText("dotMobile.us Atom Feed");
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("updated");
+$newworkingnode->appendText($lastupdate);
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("author");
+$newworkingnode->appendChild($truthget->createElement("name"));
+$newworkingnode->appendText($user);
+$feed->appendChild($newworkingnode);
+
+$newworkingnode = $truthget->createElement("id");
+$newworkingnode->appendText("http://web.mac.com/".$user);
+$feed->appendChild($newworkingnode);
+
+$dom = $parser->parse_string($content);
+my $rootnode = $dom->documentElement;
+my $rootsubnodescount = scalar @{$rootnode->childNodes};
+#$r->log->info("Here ABC".Dumper(@{$rootnode->childNodes}[$lcv]->toString()));
+#	$r->log->info("Here ABC".Dumper($rootnode->childNodes));
+
+#print Dumper(@{$rootnode->childNodes}->[0]->getNamespaces);
+my $currentnode;
+for (my $lcv=0; $lcv < $rootsubnodescount; $lcv++) {
+	$currentnode=@{$rootnode->childNodes}[$lcv];
+	
+	my $ns;
+	foreach $ns ($currentnode->getNamespaces){
+#		print $ns->getLocalName.":".$ns->getData."\n";
+		if ($ns->getData eq "urn:dotmac:property") {
+			$currentnode->setNamespaceDeclPrefix($ns->getLocalName,"dotmac");
+		} elsif ($ns->getData eq "urn:iphoto:property") {
+			$currentnode->setNamespaceDeclPrefix($ns->getLocalName,"iphoto");
+		}
+
+
+	}
+
+	my $href=@{$currentnode->getElementsByLocalName("href")}[0]->textContent;
+		
+	my $propstatnode=@{$currentnode->getElementsByLocalName("propstat")}[0];
+	$currentnode=@{$propstatnode->getElementsByLocalName("prop")}[0];
+	$currentnode->setNodeName("entry");
+	$currentnode->setOwnerDocument($truthget);
+	$feed->addChild($currentnode);
+	my $id=@{$currentnode->getElementsByLocalName("getetag")}[0]->textContent;
+	$id =~ s/^"(.*)"$/$1/;  # strip enclosing quotes
+	$id = 'urn:uuid:' . $id;
+	my $idnode=$truthget->createElement("id"); #<D:getetag>
+	$idnode->appendText($id);
+	$currentnode->addChild($idnode);
+	my $titlenode=$truthget->createElement("title");
+	$titlenode->appendText(basename $href);
+	$currentnode->addChild($titlenode);
+	my $hrefnode=$truthget->createElement("link");
+	$hrefnode->setAttribute("rel","alternate");
+	$hrefnode->setAttribute("href","http://idisk.me.com".$href);
+	$currentnode->addChild($hrefnode);
+	
+	#sort out the viewIdentifier <dotmac:viewIdentifier />
+	#from com.apple.iPhoto.plist:
+	# index			:	1
+	# album			:	2
+	# asset			:	3
+	# iphoto.video	:	4
+	# movie			:	5
+	# aperture.album:	6
+	my $viewIdentifier;
+	my $viewIdentifierNode = @{$currentnode->getElementsByLocalName("viewIdentifier")}[0];
+	if ($viewIdentifierNode) {
+		$viewIdentifier = @{$currentnode->getElementsByLocalName("viewIdentifier")}[0]->textContent;
+		$viewIdentifierNode->parentNode->removeChild($viewIdentifierNode); #just pull the bastard out - we'll create a node anyway
+	}
+	if ( !$viewIdentifier) {
+		if ($href =~ m/^\/$user\/Web\/Sites\/_gallery\/$/) {
+			$viewIdentifier = '1';
+		}
+		elsif ($href =~ m/^\/$user\/Web\/Sites\/_gallery\/([0-9]+)\/$/) {
+			$viewIdentifier = '2';
+		}
+		elsif ($href =~ m/^\/$user\/Web\/Sites\/_gallery\/([0-9]+)\/([a-zA-Z\-_0-9]+)\/$/) {
+			$viewIdentifier = '3'; # this should never happen - this deep things are already set
+		}
+	}
+
+
+	if ($viewIdentifier) {
+		$viewIdentifierNode = $truthget->createElement("viewIdentifier");
+		$viewIdentifierNode->appendText($viewIdentifier);
+		$viewIdentifierNode->setNamespace("urn:dotmac:property","dotmac",1);
+		$currentnode->addChild($viewIdentifierNode);
+	}
+	
+	#<dotmac:version content="1" props="1" />
+	my $versionnode=$truthget->createElement("version");
+	$versionnode->setNamespace("urn:dotmac:property","dotmac",1);
+	$versionnode->setAttribute("content","1"); # !!! replace these hardcoded values !!!!
+	$versionnode->setAttribute("props","1"); # !!! replace these hardcoded values !!!!
+	$currentnode->addChild($versionnode);
+	#<dotmac:clientid>7ee6b535b01c25163183d6cc28ea315a4acae197</dotmac:clientid>
+	my $clientidNode = $truthget->createElement("clientid");
+	$clientidNode->appendText('7ee6b535b01c25163183d6cc28ea315a4acae197');
+	$clientidNode->setNamespace("urn:dotmac:property","dotmac",1);
+	$currentnode->addChild($clientidNode);
+	#<dotmac:iscollection>0</dotmac:iscollection>
+	my $resourcetypeNode = @{$currentnode->getElementsByLocalName("resourcetype")}[0];
+	my $iscollection = (scalar @{$resourcetypeNode->getElementsByLocalName("collection")});
+	my $iscollectionNode = $truthget->createElement("iscollection");
+	$iscollectionNode->appendText($iscollection);
+	$iscollectionNode->setNamespace("urn:dotmac:property","dotmac",1);
+	$currentnode->addChild($iscollectionNode);
+	
+	for (my $lcv1=0; $lcv1 < scalar @{$currentnode->childNodes}; $lcv1++ ) {
+		my $currentnode1=@{$currentnode->childNodes}[$lcv1];
+					
+#		print $currentnode1->lookupNamespaceURI($currentnode1->prefix)."\n";
+#		print $currentnode1->prefix."\n";
+		if ($currentnode1->prefix eq "D"){
+#			print $currentnode1->getName."\n";
+			$currentnode1->parentNode->removeChild($currentnode1);
+			$lcv1--;
+		}
+		
+		
+	}
+	 
+
+}
+$newworkingnode = $truthget->createElement("recCount");
+$newworkingnode->appendText(scalar @{$truthget->getElementsByTagName("entry")});
+$newworkingnode->setNamespace("urn:dotmac:property","dotmac",1);
+$feed->insertBefore($newworkingnode,@{$feed->childNodes}[4]);
+
+
+
+my $str= $truthget->toString();
+#$str=~ s/>/>\n/g;
+return $str;
+}
 
 sub dmmkpath_response
 	{
@@ -277,10 +655,9 @@ sub dmmkpath_response
 	$responsexml->setXMLDecl($decl);
 	my $responserootnode = $responsexml->createElement('INS:response-status-set'); # this is the root node
 	$responserootnode->setAttribute('xmlns:INS', 'http://idisk.mac.com/_namespace/set/');
-
+	my $responsemultistatus = $responsexml->createElement('multistatus');
+	$responsemultistatus->setAttribute('xmlns', 'DAV:');
 	foreach $innerarr (@arr) {
-		my $responsemultistatus = $responsexml->createElement('multistatus');
-		$responsemultistatus->setAttribute('xmlns', 'DAV:');
 		my $responsemultistatusresponse = $responsexml->createElement('response');
 		$responsemultistatusresponse->setAttribute('xmlns', 'DAV:');
 		my $hrefelement = $responsexml->createElement('href');
@@ -296,12 +673,19 @@ sub dmmkpath_response
 		$statuselement->appendChild($statustextnode);
 		$responsemultistatusresponse->appendChild($statuselement);
 		$responsemultistatus->appendChild($responsemultistatusresponse); # append the 'multistatus' childnode;
-		$responserootnode->appendChild($responsemultistatus);
 		}
-		$responsexml->appendChild($responserootnode);
+	$responserootnode->appendChild($responsemultistatus);
+	$responsexml->appendChild($responserootnode);
 	return ($responsexml->toString());
 	}
 
+sub URLDecode {
+    my $theURL = $_[0];
+    $theURL =~ tr/+/ /;
+    $theURL =~ s/%([a-fA-F0-9]{2,2})/chr(hex($1))/eg;
+    $theURL =~ s/<!--(.|\n)*-->//g;
+    return File::Spec->canonpath($theURL);
+}
 
 sub movefile 
 	{ 
@@ -319,24 +703,7 @@ sub check_for_dir_backref {
 		return 0;
 	}
 }
-sub authen_user{
-	my ($r, $user, $sent_pw) = @_;
-	if ($r->dir_config('dotMacDBType') eq 'file')
-		{
-		return authen_user_file($r, $user, $sent_pw);
-		}
-	elsif ($r->dir_config('dotMacDBType') eq 'SQL')
-		{
-		
-		}
-    }
-sub URLDecode {
-    my $theURL = $_[0];
-    $theURL =~ tr/+/ /;
-    $theURL =~ s/%([a-fA-F0-9]{2,2})/chr(hex($1))/eg;
-    $theURL =~ s/<!--(.|\n)*-->//g;
-    return File::Spec->canonpath($theURL);
-}
+
 sub authen_user_file{
 	my ($r, $username, $password) = @_;
 	carp $r->dir_config('dotMacUserDB');
@@ -356,15 +723,47 @@ sub authen_user_file{
 	else {
 		return 0;
 		}
-  
+	}
+
+sub authen_user_sql{
+	my ($dsn, $user, $sent_pw) = @_;
+	carp "AuthenDOTMAC_SQL";
+	my $u = $user;
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q = "SELECT passwd FROM auth WHERE username=\'$u\'";
+	my $QueryPW = $dbh->prepare($q);
+	$QueryPW->execute;
+	my $passwd = $QueryPW->fetchrow_array;
+	
+	$QueryPW->finish;
+	$dbh->disconnect;
+
+	my $md5 = Digest::MD5->new();
+	$md5->add("$u:idisk.mac.com:$sent_pw");
+	my $gen_passwd = $md5->hexdigest; 
+
+	if ($passwd eq $gen_passwd) {
+		return 1;
+	} else {
+		return 0;
+	}
     }
 
-sub authen_user_SQL{
-      my ($r, $user, $sent_pw) = @_;
-      return "Not implemented yet !";
-    }
 
-sub get_user_quota{
+sub get_user_quota_sql{
+	my ($dsn, $user) = @_;
+	carp "QuotaDotMac_SQL";
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q = "SELECT idisk_quota_limit FROM auth WHERE username=\'$user\'"; 
+	my $dbq = $dbh->prepare($q);
+	$dbq->execute;
+	my ($quota) = $dbq->fetchrow_array;
+	$dbq->finish;
+	$dbh->disconnect;
+	return $quota;
+	}
+
+sub get_user_quota_file{
 	my ($r, $user) = @_;
 	my $dotMacUserDataPath = $r->dir_config('dotMacUserDataPath');
 	my $dotMacUdataDBname = $r->dir_config('dotMacUdataDBname');
@@ -387,18 +786,6 @@ sub get_user_quota_used{
 	return $quotaUsedBytes;
 	}
 
-sub list_users{
-	my ($r) = @_;
-	if ($r->dir_config('dotMacDBType') eq 'file')
-		{
-		return list_users_file($r);
-		}
-	elsif ($r->dir_config('dotMacDBType') eq 'SQL')
-		{
-		
-		}
-    }
-
  sub list_users_file{
 	my ($r) = @_;
 	my $dbFile = $r->dir_config('dotMacUserDB');
@@ -414,6 +801,24 @@ sub list_users{
 	my $userAdmin = new HTTPD::UserAdmin @htfile;
 	my @users = $userAdmin->list;
 	return sort @users;
+	}
+
+sub list_users_sql{
+	my ($dsn) = @_;
+	carp "ListUsersDotMac_SQL";
+	my $dbh = DBI->connect("DBI:mysql:database=dotmac;host=localhost", "dotmac", "dotmac");
+	my $q = $dbh->prepare("SELECT username FROM auth");
+	$q->execute;
+
+	my @userlist = ();
+	while (my ($user) = $q->fetchrow_array) {
+		push @userlist, $user;
+	}
+
+	$q->finish;
+	$dbh->disconnect;
+
+	return sort @userlist;
 	}
 
  sub dec2hex {
@@ -540,4 +945,18 @@ sub XMLDOMgetFirstChildByName
   { my( $node, $tag)= @_;
     return $node->getElementsByTagName($tag)->[0];
   }
+
+sub file_size
+	{ 
+	my $nr = shift;
+	my $i = 0;
+	my @units = qw/B KB MB GB TB/;
+	while ( $nr > 1024 ) {
+		$nr /= 1024 ;
+		$i++ ;
+	}
+	$nr = sprintf("%.2f ", $nr);
+	$nr .= $units[$i] ;
+    return $nr;
+	}
 1;
