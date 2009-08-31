@@ -208,7 +208,36 @@ sub signing {
 					</params>
 				</methodResponse>
 				";
-			}
+			} elsif ($methodName eq 'archive.fetch') {
+					$rlog->info("Time to Get the PKCS12File");
+					my $pkcs12dir=$r->dir_config('dotMacCertsPath')."/pkcs12";
+					my $pkcs12file=$pkcs12dir."/".$r->user().".pkcs12";
+					my $filecontents;
+					$rlog->info("Tring to open $pkcs12file");
+					open(PKCS12,"$pkcs12file");
+					my $line;
+					while ($line=<PKCS12>) {
+						$filecontents=$filecontents.$line;
+					}
+					close(PKCS12);
+					return "
+					<?xml version=\"1.0\"?>
+					<methodResponse>
+						<params>
+							<param>
+								<value> 
+									<string>SharedServices PKCS12</string> 
+									</value>
+						</param>
+						<param> 
+							<value> 
+								<string>$filecontents</string>
+								</value>
+							</param>
+						</params>
+					</methodResponse>
+					";
+				}
 
 		}
 1;
