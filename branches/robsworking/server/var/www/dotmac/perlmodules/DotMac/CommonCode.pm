@@ -390,10 +390,8 @@ sub dmpatchpaths_request {
 	
 	foreach my $ccc ($xc->findnodes('//idisk:request-instructions-set//idisk:request-instructions')) {
 		my $action = $xc->findnodes('./idisk:action', $ccc)->[0]->textContent();
-		print "Found idisk:request-instruction: $action\n";
 		if ($action eq 'PROPPATCH') {
 			my $href = $xc->findnodes('./idisk:href', $ccc)->[0]->textContent();
-			print "href: $href\n";
 			my $proppatchrequest = $xc->findnodes('./NSDAV:propertyupdate', $ccc)->[0];
 			#setup a new proppatch xml doc
 			my $proppatchxml = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
