@@ -81,9 +81,9 @@ sub TransHandler {
 	}
 				
 	foreach my $username (@dotMacUsers) {
-		#$logging =~ m/Sections/&&$rlog->info("matching $username against $uri");
+		$logging =~ m/Sections/&&$rlog->info("matching $username against $uri");
 		my $initialUri = $r->uri;
-		if($uri =~m{^/$username(.*)})  {
+		if($uri =~m{^/$username/(.*)})  {
 			#fix uris that start with $username
 			if ($1 !~m{^/Web/Sites/_gallery}) {
 				$uri = "/$username/Web/Sites/_gallery$1";
