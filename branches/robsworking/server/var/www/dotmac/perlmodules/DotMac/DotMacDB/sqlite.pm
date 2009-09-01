@@ -18,7 +18,7 @@ package DotMac::DotMacDB::sqlite;
 
 use DBI;
 use strict;
-#use CGI::Carp;
+use CGI::Carp;
 use Data::Dumper;
 use File::Spec;
 
@@ -132,7 +132,7 @@ sub update_user_info{
 	my $dbh = $self->{dbh};
 	$realm ||= $self->{realm};
 	my $q = $dbh->prepare(qq{UPDATE auth SET idisk_quota_limit=?, is_admin=?, is_idisk=?, email_addr=?, firstname=?, lastname=? WHERE username=? AND realm=?});
-	$q->execute($storageHash->{'quota'},$storageHash->{'is_admin'},$storageHash->{'is_idisk'}, $storageHash->{'email'}, $storageHash->{'firstname'}, $storageHash->{'lastname'}, $storageHash->{'user'}, $realm);
+	$q->execute($storageHash->{'idisk_quota_limit'},$storageHash->{'is_admin'},$storageHash->{'is_idisk'}, $storageHash->{'email_addr'}, $storageHash->{'firstname'}, $storageHash->{'lastname'}, $storageHash->{'user'}, $realm);
 	$q->finish;
 }
 
