@@ -92,6 +92,19 @@ sub dmpatchpaths {
 	return Apache2::Const::OK;
 }			
 
+sub options {
+	my $r = shift;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $rlog = $r->log;
+	$logging =~ /Sections/&&$rlog->info("Content Handler: options");
+	$r->headers_out->add('Allow' => "GET, HEAD, OPTIONS, PUT, POST, COPY, PROPFIND, DELETE, LOCK, MKCOL, MOVE, PROPPATCH, UNLOCK, ACL");
+	$r->headers_out->add('DAV' => "1,2, access-control");
+	$r->headers_out->add('MS-Author-Via' => "DAV");
+	$r->print("");
+	$r->content_type('text/xml');
+	$r->status(200);
+	return Apache2::Const::OK;
+}
 
 
 sub dmputfrom { #this shouldn't be used anymore... this was transferred to the DMTransHandler

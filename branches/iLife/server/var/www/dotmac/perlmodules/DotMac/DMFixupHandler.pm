@@ -145,6 +145,7 @@ sub handler
 			}
 		}
 	} 
+
 	elsif ($rmethod eq "MOVE") {
 		if ($userAgent =~ m/^DotMacKit(.*)SyncServices$/) {
 			$logging =~ m/Sections/&&$rlog->info("In the DotMacKit SyncServices Section");
@@ -163,7 +164,11 @@ sub handler
 				if ($ifHeader =~ m/^\(<(.*?)>\)\(<(.*?)>\)/) {
 					$r->headers_in->{'If'} = "<$schemasfolder/$childfolder> (<$2>)";
 					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
-					$r->headers_in->{'Destination'} =~ s{^http://idisk.mac.com}{https://idisk.mac.com}s; # we don't want a  HTTP/1.1" 502 (Bad Gateway)
+					if ($r->get_server_port()==443 ){ 
+							$r->headers_in->{'Destination'} =~ s{^http://}{https://}s;
+					} elsif ($r->get_server_port()==80) {
+						$r->headers_in->{'Destination'} =~ s{^https://}{http://}s  ; # we don't want a  HTTP/1.1" 502 (Bad Gateway)
+					}
 				}
 			}
 		}
