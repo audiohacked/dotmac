@@ -1,0 +1,26 @@
+{
+	applicationOverrides = {
+		fs2c = {
+			iDiskURL = "http://idisk.mac.com";
+			sIDiskURL = "https://idisk.mac.com";
+			deltaURL = "http://delta.mac.com";
+		};
+	};
+	accountInfoURL = "https://www.mac.com/WebObjects/Info.woa/wa/XMLRPC/accountInfo";
+	accountInfoURL2 = "https://www.mac.com/WebObjects/Info.woa/wa/Query/accountInfo";
+	referralLookupURL = "http://homepage.mac.com/dotmackitsupport/Referrals";
+	iDiskURL = "http://idisk.mac.com";
+	sIDiskURL = "https://idisk.mac.com";
+	"mobilePublishConfigURL" = "https://www.mac.com/WebObjects/MobileServices.woa/xmlrpc";
+	commentsURL = "http://www.mac.com/WebObjects/WSComments.woa/xmlrpc";
+	indexingURL = "http://webservices.mac.com";
+	indexingBatchSize = 50;
+	commentsBatchSize = 50;
+	signUpURL = {
+		de = "http://www.apple.com/de/mobileme/share-your-world/index.html";
+		en = "http://www.apple.com/mobileme/share-your-world/index.html";
+		fr = "http://www.apple.com/fr/mobileme/share-your-world/index.html";
+		ja = "http://www.apple.com/jp/mobileme/share-your-world/index.html";
+	};
+	otherParameters = {};
+}
