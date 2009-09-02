@@ -40,6 +40,12 @@ sub handler {
 	my ($r, $rMethod, $href, $newXMLstring, $headers) = @_;
 	my $logging = $r->dir_config('LoggingTypes');
 	$username = $r->user();
+	
+		if($username eq "") {
+			$r->uri =~ /^\/([a-zA-Z0-9]*)\/.*/;
+			$username = $1;	
+		}
+	
 	$realm  = $r->dir_config('dotMacRealm');
 	my $dotMacIPAddress = $r->dir_config('dotMacIPAddress');
 	my $dbauth = DotMac::DotMacDB->new();
