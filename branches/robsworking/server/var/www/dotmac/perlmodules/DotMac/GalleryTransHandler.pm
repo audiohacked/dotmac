@@ -83,11 +83,12 @@ sub TransHandler {
 	foreach my $username (@dotMacUsers) {
 		$logging =~ m/Sections/&&$rlog->info("matching $username against $uri");
 		my $initialUri = $r->uri;
-		if($uri =~m{^/$username/(.*)})  {
+		if($uri =~m{^/$username(.*)})  {
 			#fix uris that start with $username
 			if ($1 !~m{^/Web/Sites/_gallery}) {
 				$uri = "/$username/Web/Sites/_gallery$1";
 				$r->uri($uri);
+				$logging =~ m/Sections/&&$rlog->info("Modified URI $uri");
 			}
 			if (-d $r->document_root.$r->uri) { # we set our perlhandler on directories - files will be served by Apache
 				# add a trailing slash if its not on there
@@ -172,26 +173,34 @@ sub TransHandler {
 			return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
 		}
 	}
-    
-    
-    $r->document_root($r->dir_config->get('dotMacCachePath'));
-    foreach my $dotMacCachedDir ($r->dir_config->get('dotMacCachedDirs')) {
-    	if($uri =~m{^/$dotMacCachedDir/})  {
+
+    	$r->document_root($r->dir_config->get('dotMacCachePath'));
+    	foreach my $dotMacCachedDir ($r->dir_config->get('dotMacCachedDirs')) {
+    		if($uri =~m{^/$dotMacCachedDir/})  {
     		if (-f $r->document_root.$r->uri) {
     			$logging =~ m/Sections/&&$rlog->info($r->document_root . "$uri: matched cache dir $dotMacCachedDir");
 				$r->filename($r->document_root.$r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
 				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
 			}
-			else {
-			        $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
+			elsif ($r->dir_config('dotMacUseAppleResources') eq "TRUE") { 
+			    $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
 				$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
 				$r->filename($r->document_root.$r->uri);
 				$r->handler('perl-script');
 				$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::handler);
 				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
+			} elsif ($r->dir_config('dotMacUseAppleResources') eq "DOWNLOAD") {
+				$r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
+				$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
+				$r->filename($r->dir_config('dotMacCachePath').$r->uri);
+				$r->handler('perl-script');
+				$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::download);
+				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
+				
 			}
     	}
-    }
+    
+   }
 # actually we should check if we're called by hostname 'gallery.mac.com'
 # if not - we should prolly just throw a 404 (we don't want to be anyone's proxy)
     	# set up a proxy to apple servers
@@ -199,10 +208,10 @@ sub TransHandler {
     	$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
 # we should first set up pnotes
 # we can have the CachingProxy really cache things, when we tell it what to
-    	
+    if ($r->dir_config('dotMacGalleryProxy') eq "TRUE") {
 		$r->handler('perl-script');
 		$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::handler);
-
+	}
 
     return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
 }
