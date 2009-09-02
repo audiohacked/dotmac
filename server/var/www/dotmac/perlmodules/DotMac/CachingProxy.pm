@@ -37,6 +37,18 @@ my $UA = __PACKAGE__->new;
 $UA->agent(join "/", __PACKAGE__, $VERSION);
 
 
+sub download {
+	my $r = shift;
+	my $uri=$r->uri;
+	my $httpType="http://";
+	$httpType="https://" if $r->get_server_port() == 443;
+	my $uri = join '', $httpType, $r->get_server_name, $r->uri;
+	my $filepath=$r->dir_config('dotMacCachePath');
+	#### This is a really REALLY really REALLY really bad way to do things. No one should use this EVER
+	$r->log->info("CACHE: Downloading $uri ");
+	`wget -P $filepath -nH -x $uri`;
+	return Apache2::Const::OK;
+}
 sub handler {
 	my $r = shift;
 	my $httpType="http://";
