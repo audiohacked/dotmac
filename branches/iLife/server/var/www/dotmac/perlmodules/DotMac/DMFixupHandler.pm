@@ -75,6 +75,9 @@ sub handler
 	# end useragent related variables
 
 	$logging =~ m/Headers/&&$rlog->info($r->as_string());
+	if ($xwebdavmethod eq "SSMOVE") {
+
+	}
 	
 	if ($rmethod eq "PUT") {
 		if ($userAgent =~ m/^DotMacKit(.*)SyncServices$/) {
@@ -161,7 +164,7 @@ sub handler
 				# LOCK /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Contacts/
 				# PUT /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Contacts/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp
 				# MOVE /walinsky/Library/Application%20Support/SyncServices/Schemas/com.apple.Contacts/CB18B05E-248E-4117-8C05-AF6AF61E429100001.temp HTTP/1.1" 502 (Bad Gateway)
-				if ($ifHeader =~ m/^\(<(.*?)>\)\(<(.*?)>\)/) {
+				if (($ifHeader =~ m/^\(<(.*?)>\)\(<(.*?)>\)/)) {
 					$r->headers_in->{'If'} = "<$schemasfolder/$childfolder> (<$2>)";
 					$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
 					if ($r->get_server_port()==443 ){ 
@@ -169,8 +172,10 @@ sub handler
 					} elsif ($r->get_server_port()==80) {
 						$r->headers_in->{'Destination'} =~ s{^https://}{http://}s  ; # we don't want a  HTTP/1.1" 502 (Bad Gateway)
 					}
-				}
-			}
+				} 
+			}	
+
+				
 		}
 		elsif ($userAgent =~m/^DotMacKit-like, File-Sync-Direct/) {
 			if (($r->headers_in->{'If'}) && ($r->headers_in->{'If'} =~ m/^(\(<.*>\))(\(<.*>\))$/)) {
@@ -206,6 +211,51 @@ sub handler
 		}
 	} 
 	elsif ($rmethod eq "POST") {
+		### If there is a destination header, make sure it matches the server
+			my $server_port=$r->get_server_port();
+			$logging =~ m/Locks/&&$rlog->info("My Server Port is $server_port");
+			if ($r->headers_in->{'Destination'} && $r->get_server_port()==443 ){ 									$r->headers_in->{'Destination'} =~ s{^http://}{https://}s;
+			} elsif ($r->headers_in->{'Destination'} && $r->get_server_port()==80) {
+					$r->headers_in->{'Destination'} =~ s{^https://}{http://}s  ; # we don't want a  HTTP/1.1" 502 (Bad Gateway)
+			}
+		if ($userAgent =~ m/^DotMacKit(.*)SyncServices$/) {
+			if ($xwebdavmethod eq "SSMOVE") {
+						if (($ifHeader =~ m/^\(<(.*?)>\)\(<(.*?)>\)/)) {
+							$r->headers_in->{'If'} = "<$schemasfolder> (<$1>)";
+							$logging =~ m/Locks/&&$rlog->info("If header originally $ifHeader, now ".$r->headers_in->{'If'});
+							my $server_port=$r->get_server_port();
+							$logging =~ m/Locks/&&$rlog->info("My Server Port is $server_port");
+	
+						}
+
+			}
+		}
+		if (($xwebdavmethod) && ($xwebdavmethod eq 'SSMOVE')) {
+			#carp "setting perlresponsehandler to SSMOVE_handler Here";
+			$r->handler('perl-script');
+			$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::ssmove);
+		}
+		elsif ($xwebdavmethod eq 'DMMKPATH') {
+			$r->handler('perl-script');
+			$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpath);
+		}
+		elsif ($xwebdavmethod eq 'DMMKPATHS') {
+			#carp "setting perlresponsehandler to DMMKPATHS_handler";
+			$r->handler('perl-script');
+			$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmmkpaths);
+		}
+		elsif ($xwebdavmethod eq 'DMOVERLAY') {
+			#carp $r->as_string();
+			# "setting perlresponsehandler to DMOVERLAY_handler";
+			$r->handler('perl-script');
+			$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmoverlay);
+		}
+		elsif ($xwebdavmethod eq 'DMPATCHPATHS') {
+			$rlog->info("Matched DMPATCHPATHS");
+			$r->handler('perl-script');
+			$r->set_handlers(PerlResponseHandler => \&DotMac::DMXWebdavMethods::dmpatchpaths);
+		}
+
 		if (($userAgent =~m/^DotMacKit-like, File-Sync-Direct/) && $r->uri !~ m/^\/status\/.*/) {
 			# *sigh*
 			# X-Webdav-Method: DMMKPATH
@@ -315,7 +365,7 @@ sub handler
 				$r->set_handlers(PerlResponseHandler => \&DotMac::SecondaryAcct);
 			}
 		}
-		elsif (($userAgent =~m/^DotMacKit(.*)iPho/) || ($userAgent =~m/^iPhoto(.*)CFNetwork(.*)Darwin/)) { #DotMacKit-E-MM5-I (10.5.6; iPho)
+		elsif (($userAgent =~m/^DotMacKit(.*)iPho/) || ($userAgent =~m/^iPhoto(.*)CFNetwork(.*)Darwin/) || ($userAgent =~m/^iPhoto(.*)Macintosh/)) { #DotMacKit-E-MM5-I (10.5.6; iPho)
 			# iWeb Publishing #DotMacKit-E-3Lite46 (10.4.9; iweb) iWeb-local-build-20071223
 			# User-Agent: iPhoto8.0 CFNetwork/422.11 Darwin/9.6.0 (i386) (MacBookPro4%2C1) (iLife 09)
 			# *sigh*
@@ -424,7 +474,7 @@ sub handler
 	} 
 	elsif ($rmethod eq "GET") {
 	#	if (($r->headers_in->{'Host'} eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/)) {
-		if ($r->headers_in->{'Host'} eq 'publish.mac.com') {
+		if (($r->headers_in->{'Host'} eq 'publish.mac.com') || ($r->headers_in->{'Host'} eq 'publishdev.rsee.net')) {
 
 			if($r->args()) {
 				my @args = split '&', $r->args();

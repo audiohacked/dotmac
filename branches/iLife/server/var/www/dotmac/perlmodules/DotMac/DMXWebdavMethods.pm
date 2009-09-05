@@ -106,32 +106,48 @@ sub options {
 	return Apache2::Const::OK;
 }
 
+sub ssmove {
+### We get to use assbackwards here... $r->status_line should have allowed me to return Apple's 
+### non-standard 257 Header, but it doesn't If I set it with $r->status, it turns into a 500
+### If I set it with $r->status_line, it does nothing. I'm guessing its a bug as of
+### libapache2-mod-perl2 2.0.4-5ubu
 
-sub dmputfrom { #this shouldn't be used anymore... this was transferred to the DMTransHandler
+### At some point, I'm sure the Overwrite header is going to burn me, but I'll worry about when I have
+### proof that I need to
+
 	my $r = shift;
 	my $logging = $r->dir_config('LoggingTypes');
 	my $rlog = $r->log;
-	$logging =~ /Sections/&&$rlog->info("Content Handler: dmputfrom");
-	my $dotMaciDiskPath = $r->dir_config('dotMaciDiskPath');
-	my $XSourceHref = DotMac::CommonCode::URLDecode($r->header_in('X-Source-Href'));
-	my $ruri= DotMac::CommonCode::URLDecode($r->uri);
-	my $ruser=$r->user;
-	if ((DotMac::CommonCode::check_for_dir_backref($ruri)) || (DotMac::CommonCode::check_for_dir_backref($XSourceHref))) {
-		$rlog->error("path contained a back reference: ".DotMac::CommonCode::check_for_dir_backref($ruri)." ".DotMac::CommonCode::check_for_dir_backref($XSourceHref));
-		return Apache2::Const::HTTP_BAD_REQUEST;
-	}	
-	if (($ruri =~ m/^\/$ruser\//) && ($XSourceHref =~ m/^\/$ruser\//)) {
-		$logging =~ m/Sections/&&$rlog->info("Calling movefile $dotMaciDiskPath $XSourceHref $ruri"); 
-		DotMac::CommonCode::movefile($dotMaciDiskPath, $XSourceHref, $ruri);
-		#$r->content_type('text/plain');
-		$r->print("");
-		return Apache2::Const::HTTP_NO_CONTENT;
+	$logging =~ /Sections/&&$rlog->info("Content Handler: ssmove");
+	my $xml=DotMac::CommonCode::subrequest($r, 'MOVE', $r->uri,"",$r->headers_in);
+	my $destination = $r->headers_in->{'Destination'};
+	$destination =~ /^http[s]?:\/\/[^\/]*(\/.*)/;
+	my $newdestination=$1;
+	$logging =~ /Sections/&&$rlog->info("Extracted new destination $newdestination");
+	$r->status_line("HTTP/1.1 257 Response Status Set");
+
+	if ($xml->[0]=='201') {
+			$r->assbackwards(1);
+	my $returnxml = <<HERE;
+HTTP/1.1 257 Response Status Set
+
+<INS:response-status-set xmlns:INS="http://idisk.mac.com/_namespace/set/"> 
+		<multistatus xmlns="DAV:"> 
+			<response xmlns="DAV:"> 
+				<href>$newdestination</href> 
+				<status>HTTP/1.1 204 No Content</status> 
+			</response> 
+		</multistatus> 
+	</INS:response-status-set>
+HERE
+	$r->print($returnxml);
 	} else {
-		$r->print(" ");			
-		$rlog->error("Directory path didn't match the user User:$ruser URI:$ruri Sourcehref:$XSourceHref");
-		return Apache2::Const::HTTP_BAD_REQUEST;
+		$r->status(400);
 	}
+
+	return Apache2::Const::OK;
 }
+
 sub dmmkpaths {
 	my $r = shift;
 	my $logging = $r->dir_config('LoggingTypes');
