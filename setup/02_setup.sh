@@ -22,9 +22,16 @@ echo "Error: you are not in the correct directory. These scripts must be run"
 echo "from the setup directory"
 exit 1;
 fi
-echo 
-echo "Clearing Old Config File"
-echo > conf
+echo
+
+if [ -f /etc/dotmobile.us/conf ]; then
+. /etc/dotmobile.us/conf
+echo "Found current Config file: reading in for defaults"
+fi
+
+echo  
+#echo "Clearing Old Config File"
+#echo > conf
 OUTPUTVALS=""
 OLDIFS=${IFS}
 IFS="
@@ -43,9 +50,21 @@ KEY=`echo ${x} | awk -F '|' '{ print $1 }'`
 QUESTION=`echo ${x} | awk -F '|' '{ print $2 }'`
 
 echo $QUESTION
-read ANSWER
-echo ${KEY}=${ANSWER} >> conf
+if [ x${KEY} != "x" ]; then
 
+	CURVAL=`eval echo -n "\\\$$KEY"`
+	echo "Current value = $CURVAL"
+	read ANSWER
+	if [ x$ANSWER != "x" ]; then	
+		echo ${KEY}=${ANSWER} >> conf
+	else 
+		echo ${KEY}=$CURVAL >> conf
+
+	fi
+else
+	read ANSWER
+	echo ${KEY}=${ANSWER} >> conf
+fi
 echo
 done
 IFS=${OLDIFS}
