@@ -45,9 +45,10 @@ REQUIRED_COMMANDS="
 wget
 curl
 "
+
 ERRORCOUNT=0
 for X in ${REQUIRED_COMMANDS}; do
-	perl -M${X} -e 1 2>/dev/null >/dev/null
+	which ${X} >/dev/null
 	if [ $? != 0 ] ; then
 		echo "Not Installed: ${X} "
 		ERRORCOUNT=$(($ERRORCOUNT+1));
@@ -55,5 +56,11 @@ for X in ${REQUIRED_COMMANDS}; do
 		echo "Installed: ${X}"
 	fi
 done
+if [ ${ERRORCOUNT} != 0 ] ; then
+	echo "Bad::: There are $ERRORCOUNT missing commands. dotMobile.us will not run correctly until this is fixed."
+exit 1
+else
+	echo "Good::: All of the required commands are installed"
+fi
 
 
