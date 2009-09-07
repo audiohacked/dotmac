@@ -37,6 +37,9 @@ $DotMac::GalleryTransHandler::VERSION = '0.1';
 
 sub handler {
     my $r = shift;
+	my $rlog = $r->log;   
+ 	my $logging = $r->dir_config('LoggingTypes');
+	my $method = $r->method;
     if ($r->method eq 'GET') {
 		return TransHandler($r);
 	}
@@ -60,6 +63,8 @@ sub TransHandler {
 	my $webdavMethod;
 	my $derivative;
 	my %params;
+	$logging =~ m/Sections/&&$rlog->info("GTH: my URI = $uri");
+	#Allow robots to be used
 	if ($r->args()) {
 		my @args = split '&', $r->args();
 		
@@ -100,7 +105,7 @@ sub TransHandler {
 				
 				
 				if ($webdavMethod) {    
-					if ($webdavMethod eq 'truthget') {
+					if (($webdavMethod eq 'truthget') || ($webdavMethod eq 'TRUTHGET')) {
 						$logging =~ m/Sections/&&$rlog->info("setting handler DotMac::Gallery::truthgetHandler");
 						$r->handler('perl-script');
 						$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::truthgetHandler);
@@ -172,8 +177,16 @@ sub TransHandler {
 			$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::truthgetHandler);
 			return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
 		}
+	} 
+	if ($r->uri()  eq "/") {
+		$r->uri("/index.html");
 	}
-
+	my $fullpath=$r->document_root.$r->uri;
+	if (-f $fullpath) {
+		$r->filename($fullpath);
+		return Apache2::Const::OK;
+	}
+	
     	$r->document_root($r->dir_config->get('dotMacCachePath'));
     	foreach my $dotMacCachedDir ($r->dir_config->get('dotMacCachedDirs')) {
     		if($uri =~m{^/$dotMacCachedDir/})  {
@@ -181,15 +194,14 @@ sub TransHandler {
     			$logging =~ m/Sections/&&$rlog->info($r->document_root . "$uri: matched cache dir $dotMacCachedDir");
 				$r->filename($r->document_root.$r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
 				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
-			}
-			elsif ($r->dir_config('dotMacUseAppleResources') eq "TRUE") { 
-			    $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
-				$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
-				$r->filename($r->document_root.$r->uri);
-				$r->handler('perl-script');
-				$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::handler);
-				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
-			} elsif ($r->dir_config('dotMacUseAppleResources') eq "DOWNLOAD") {
+#			} elsif ($r->dir_config('dotMacUseAppleResources') eq "TRUE") { 
+#			    $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
+#				$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
+#				$r->filename($r->document_root.$r->uri);
+#				$r->handler('perl-script');
+#				$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::handler);
+#				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
+			} elsif ($r->dir_config('dotMacUseDownloadResources') eq "YES") {
 				$r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
 				$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
 				$r->filename($r->dir_config('dotMacCachePath').$r->uri);
@@ -201,10 +213,20 @@ sub TransHandler {
     	}
     
    }
+			$logging =~ m/Sections/&&$rlog->info("gth $uri");
+			my $fullpath=$r->document_root.$r->uri;
+			$logging =~ m/Sections/&&$rlog->info("gth $fullpath");
+			if (-f $fullpath) {
+				
+				$logging =~ m/Sections/&&$rlog->info("GTH: mapping default url to $fullpath");
+				$r->filename($fullpath);
+				return Apache2::Const::OK;
+			}
+	
 # actually we should check if we're called by hostname 'gallery.mac.com'
 # if not - we should prolly just throw a 404 (we don't want to be anyone's proxy)
     	# set up a proxy to apple servers
-        $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
+       $r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
     	$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
 # we should first set up pnotes
 # we can have the CachingProxy really cache things, when we tell it what to
