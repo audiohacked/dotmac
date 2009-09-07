@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+#### I want to add to this at some point the ability to compare to what you have already, and only download new files
 
 use Cwd;
 use File::Copy;
@@ -64,14 +64,16 @@ my $configurationdir=$conf->{'DOTMOBILEROOT'}."/configuration";
 if (-d $configurationdir."/configurations") {
 	print "You already have a configurations directory in place. Do you really want to run this ?\n";
 	print "If yes, move $configurationdir somewhere else, and run this script again\n\n ";
-	exit();
+#	exit();
 }
 while ($line=<LIST>){
 	
 	chomp $line;
 	$uri="http://configuration.apple.com/$line";
 	print $uri."\n";
-	`wget -P $configurationdir -nH -x $uri`
+#	`wget -P $configurationdir -nH -x $uri`
 }
-
+print "Creating a tarball of what you just downloaded\n";
+`tar -cvf $configurationdir/appledotmobileconfbackup.tar $configurationdir/configurations`;
+print "All done";
 
