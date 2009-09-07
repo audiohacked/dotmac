@@ -92,14 +92,21 @@ print "\n\nStarting to ask questions:\n\n";
 my $question;
 foreach $question (@$questions){
 	print $question->[3]."\n";
+	if ($question->[2]) {
+		print "Default Value=".$question->[2]."\n";
+	}
 	if ($currconf->{$question->[0]}) {
-		print "Current Value=".$currconf->{$question->[0]}."\n\n";
+		print "Current Value=".$currconf->{$question->[0]}."\n";
 	}
 	my $response=<STDIN>;
 	chomp $response;
 	if ($response eq "") {
 		$response = $currconf->{$question->[0]};
 	}
+	if (($response eq "") && ($question->[2] ne "")) {
+		$response = $question->[2];
+	}
+
 
 	if ($question->[1] eq "B") {
 		if ($response =~ /[Yy][Ee]?[Ss]?/){
@@ -110,6 +117,13 @@ foreach $question (@$questions){
 			print "\n\nIncorrect Value, try again:\n\n";
 			redo;
 		}
+	} elsif ($question->[1] eq "D") {
+		if (!-d $response) {
+			print "Directory doesn't exist, please try again\n\n";
+			redo;
+		}
+		#Strip ending slash from directory name
+		$response =~ s/(.*)\/$/\1/g;
 	}
 	
 	if ($response eq "") {
