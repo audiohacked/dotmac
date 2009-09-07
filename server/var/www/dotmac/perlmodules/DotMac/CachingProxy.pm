@@ -42,13 +42,22 @@ sub download {
 	my $uri=$r->uri;
 	my $httpType="http://";
 	$httpType="https://" if $r->get_server_port() == 443;
-	my $uri = join '', $httpType, $r->get_server_name, $r->uri;
+	my $uri = escape_input($httpType.$r->get_server_name.$r->uri);
 	my $filepath=$r->dir_config('dotMacCachePath');
-	#### This is a really REALLY really REALLY really bad way to do things. No one should use this EVER
+	#### This is a really potentially bad way to do things
 	$r->log->info("CACHE: Downloading $uri ");
 	`wget -P $filepath -nH -x $uri`;
 	return Apache2::Const::OK;
 }
+## I think this will mitigate some of my concerns. I'd still someone else to verify this will take care of all security
+## concerns before we recommend using it in production
+sub escape_input {
+  my ($str) = @_; 
+	$str =~ s/([;<>\*\|`&\$!#\(\)\[\]\{\}:'"])/\\$1/g;
+  return $str;
+}
+
+
 sub handler {
 	my $r = shift;
 	my $httpType="http://";
