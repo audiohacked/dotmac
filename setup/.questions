@@ -1,4 +1,5 @@
 IPADDR|T||What is the primary IP address of this machine:
+NATIPADDR|T|NONE|What is the external/router IP address (if any) that you will use to connect to dotMobile.us
 LOCALIDISKNAME|T||What is the local name for idisk (ex: idisk.yourdomain.com):  
 LOCALPUBLISHNAME|T||What is the local name for the publish service (ex: publish.yourdomain.com):
 LOCALGALLERYNAME|T||What is the local name for the gallery service (ex: gallery.yourdomain.com)
