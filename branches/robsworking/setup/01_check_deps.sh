@@ -20,6 +20,7 @@ MD5
 XML::DOM
 HTTP::DAV
 XML::LibXML
+Embperl
 "
 echo "Checking Perl Modules"
 for X in ${REQUIRED_MODS}; do
@@ -44,6 +45,7 @@ echo "Checking for Commands"
 REQUIRED_COMMANDS="
 wget
 curl
+sqlite3
 "
 
 ERRORCOUNT=0
