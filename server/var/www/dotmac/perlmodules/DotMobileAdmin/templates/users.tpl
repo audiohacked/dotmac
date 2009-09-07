@@ -109,7 +109,7 @@ if (CGI::param('saveUser') eq 'Save User') {
 		  <td height="22">&nbsp;[+ $hash->{'username'} +]</td>
           <td><a href="mailto:[+ $hash->{'email_addr'} +]">[+ $hash->{'firstname'} +] [+ $hash->{'lastname'} +]</a></td>
           <td>[+ $hash->{'created'} +]</td>
-          <td>[+ getiDiskUsage($hash->{'username'}) +] of <strong>[+ humanFileSize($hash->{'idisk_quota_limit'}) +]</strong></td>
+          <td>[+ getiDiskUsage($hash->{'username'}) +] of <strong>[+ humanFileSize($hash->{'idisk_quota_limit'}*1024) +]</strong></td>
           <td>[+ humanFileSize($hash->{'email'}*1024) +]</td>
           <td>[$ if $hash->{'is_admin'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
           <td>[$ if $hash->{'is_idisk'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
@@ -151,7 +151,7 @@ if (CGI::param(uid)) {
       <td>&nbsp;</td>
       <td colspan="3"><select name="idisk_quota_limit" id="idisk_quota_limit" style="width:205px;" tabindex="6" >
      [$ foreach $idisksize (@idisksizes) $] 
-     <option value="[+ $idisksize +]" [$ if $hash->{'idisk_quota_limit'} eq $idisksize $]  selected [$endif$] > [+ humanFileSize($idisksize) +] </option>
+     <option value="[+ $idisksize +]" [$ if $hash->{'idisk_quota_limit'} eq $idisksize $]  selected [$endif$] > [+ humanFileSize($idisksize*1024) +] </option>
 	 [$ endforeach $]
       </select></td>
     </tr>
@@ -165,7 +165,7 @@ if (CGI::param(uid)) {
       <td>&nbsp;</td>
       <td colspan="3"><select name="mail" id="mail_quota_limit" style="width:205px;" tabindex="7" >
 	     [$ foreach $mailsize (@mailsizes) $] 
-	     <option value="[+ $mailsize +]" [$ if $hash->{'idisk_quota_limit'} eq $mailsize $]  selected [$endif$] > [+ humanFileSize($mailsize) +] </option>
+	     <option value="[+ $mailsize +]" [$ if $hash->{'idisk_quota_limit'} eq $mailsize $]  selected [$endif$] > [+ humanFileSize($mailsize*1024) +] </option>
 		 [$ endforeach $]
       </select></td>
     </tr>
