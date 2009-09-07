@@ -47,6 +47,8 @@ print "Replacing idisk.mac.com with local name\n";
 `find $configurationdir -name '*.plist' -exec perl -p -i -e \"s/idisk.mac.com/$localidiskname/g\" {} \\;`;
 print "Replacing idisk.me.com with local name\n";
 `find $configurationdir -name '*.plist' -exec perl -p -i -e \"s/idisk.me.com/$localidiskname/g\" {} \\;`;
+print "Replacing fileservices.me.com with local name\n";
+`find $configurationdir -name '*.plist' -exec perl -p -i -e \"s/fileservices.me.com/$localidiskname/g\" {} \\;`;
 print "Replacing publish.mac.com with local name\n";
 `find $configurationdir -name '*.plist' -exec perl -p -i -e \"s/publish.mac.com/$localpublishname/g\" {} \\;`;
 print "Replacing publish.me.com with local name\n";
