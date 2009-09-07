@@ -5,6 +5,6 @@ LOCALGALLERYNAME|T||What is the local name for the gallery service (ex: gallery.
 LOCALWWWMACNAME|T||What is the local name for the administrative scripts (can be the same as the idisk name)
 LOCALWEBNAME|T||What is the name that your iWeb sites should be viewable from (ex: homepages.yourdomain.com)
 GALLERYPROXYENABLE|B|N|Should we proxy to other users Gallery Sites
-GALLERYRESOURCEDOWNLOAD|B|N|Should we attempt to download missing resources and cache them locally for gallery
-DOTMOBILEROOT|T||Where is the root of the dotMobile installation (the folder that has idisk, private, etc...
+GALLERYRESOURCEDOWNLOAD|B|Y|Should we attempt to download missing resources and cache them locally for gallery
+DOTMOBILEROOT|D||Where is the root of the dotMobile installation (the folder that has idisk, private, etc...
 QUIETSTARTUP|B||Do you want to print the apache config on startup
