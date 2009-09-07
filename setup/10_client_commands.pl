@@ -41,4 +41,4 @@ my $certsdir=$root."/certs";
 print "You will need to run the following commands in terminal on each client before you login to dotMac:\n";
 
 print "curl -O http://$server/dotMacCA.pem\n";
-print "sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain\n"
+print "sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain dotMacCA.pem\n"
