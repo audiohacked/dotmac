@@ -34,10 +34,23 @@ certinfo.me.com
 gallery.me.com
 publish.me.com
 web.me.com
+fileservices.me.com
 etc...
 
 /idiskAdmin is now only on the SSL address, and is availble from any of the names (not just configuration.apple.com). Only the modify existing users page is completed
 
 
+
+In the new 2_27*/clientConfiguration.plist, it looks like you can override the address for idisk... maybe even make it use https. Apple uses it to point to fileservices.me.com
+   Yep, https works. I switched fileservices.me.com to idisk.mac.com to get rid of that dependency. 
+
+
+So the minimum host setup needed for initial sync to 10.6:
+
+idisk.mac.com
+certinfo.me.com
+certmgmt.me.com
+lcs.mac.com
+delta.mac.com
 
 
