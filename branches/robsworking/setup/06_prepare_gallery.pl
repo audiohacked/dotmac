@@ -37,11 +37,11 @@ my $localwwwmacname=$conf->{'LOCALWWWMACNAME'};
 my $localidiskname=$conf->{'LOCALIDISKNAME'};
 my $localpublishname=$conf->{'LOCALPUBLISHNAME'};
 my $localgalleryname=$conf->{'LOCALGALLERYNAME'};
-my $filetouse="gallery.ht";
+my $filetouse="gallery.html";
 my $fullpath=$cachedir."/".$filetouse;
 my	$uri="http://gallery.mac.com/emily_parker";
 	print "Downloading index page from $uri \n";
-#	`curl $uri > $fullpath`;
+	`curl $uri > $fullpath`;
 
 print "Splitting $localgalleryname into parts\n";
 my $hostname;
@@ -74,5 +74,5 @@ print "Rewriting Hostname\n";
 print "Removing Annoying .com reference\n";
 `perl -p -i -e 's|\\\\.com||g' $fullpath`;
 
-#print "Replacing publish.me.com with local name\n";
-#`find $configurationdir -name '*.plist' -exec perl -p -i -e \"s/publish.me.com/$localpublishname/g\" {} \\;`;
+print "Rewrite gallery.me.com to $localgalleryname\n";
+`perl -p -i -e 's|gallery.mac.com|$localgalleryname|g' $fullpath`;
