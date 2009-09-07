@@ -1,4 +1,5 @@
 #!/bin/bash
+use Cwd;
 
 echo "----------------------------------------------"
 echo "-Server Name Setup Script                    -"
@@ -20,34 +21,39 @@ echo "Good, you are running from the setup directory"
 else
 echo "Error: you are not in the correct directory. These scripts must be run"
 echo "from the setup directory"
-exit 1;
+exit 1
 fi
 echo
 
 if [ -f /etc/dotmobile.us/conf ]; then
 . /etc/dotmobile.us/conf
 echo "Found current Config file: reading in for defaults"
+cp /etc/dotmobile.us/comf conf.old
+echo "Copying current config file to conf.old"
 fi
 
 echo  
-#echo "Clearing Old Config File"
-#echo > conf
+echo "Clearing Temp Local Config File"
+echo > conf
 OUTPUTVALS=""
 OLDIFS=${IFS}
 IFS="
 "
 QUESTIONS="
-IPADDR|What is the primary IP address of this machine: 
-LOCALIDISKNAME|What is the local name for idisk (ex: idisk.yourdomain.com):
-LOCALPUBLISHNAME|What is the local name for the publish service (ex: publish.yourdomain.com):
-LOCALGALLERYNAME|What is the local name for the gallery service (ex: gallery.yourdomain.com)
-LOCALWWWMACNAME|What is the local name for the administrative scripts (can be the same as the idisk name)
-LOCALWEBNAME|What is the name that your iWeb sites should be viewable from (ex: homepages.yourdomain.com)
+IPADDR|T|What is the primary IP address of this machine: 
+LOCALIDISKNAME|T|What is the local name for idisk (ex: idisk.yourdomain.com):
+LOCALPUBLISHNAME|T|What is the local name for the publish service (ex: publish.yourdomain.com):
+LOCALGALLERYNAME|T|What is the local name for the gallery service (ex: gallery.yourdomain.com)
+LOCALWWWMACNAME|T|What is the local name for the administrative scripts (can be the same as the idisk name)
+LOCALWEBNAME|T|What is the name that your iWeb sites should be viewable from (ex: homepages.yourdomain.com)
+GALLERYPROXYENABLE|B|Should we proxy to other users Gallery Sites
 "
 
 for x in ${QUESTIONS}; do 
 KEY=`echo ${x} | awk -F '|' '{ print $1 }'`
-QUESTION=`echo ${x} | awk -F '|' '{ print $2 }'`
+TYPE=`echo ${x} | awk -F '|' '{ print $3 }'`
+
+QUESTION=`echo ${x} | awk -F '|' '{ print $3 }'`
 
 echo $QUESTION
 if [ x${KEY} != "x" ]; then

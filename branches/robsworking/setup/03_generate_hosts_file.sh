@@ -25,7 +25,7 @@ echo "DotMac Hosts file changes" > hosts
 echo "Generated on `date`" >> hosts
 
 echo "$IPADDR	idisk.mac.com idisk.mac.com. certinfo.me.com. certinfo.me.com. certmgmt.me.com certmgmt.me.com." >> hosts
-echo "$IPADDR	lcs.mac.com lcs.mac.com. configuration.apple.com configuration.apple.com." >>hosts
+echo "$IPADDR	lcs.mac.com lcs.mac.com. configuration.apple.com configuration.apple.com. m3.mac.com m3.mac.com." >>hosts
 echo "$IPADDR	$LOCALIDISKNAME $LOCALIDISKNAME. $LOCALPUBLISHNAME $LOCALPUBLISHNAME." >> hosts
 echo "$IPADDR	$LOCALGALLERYNAME $LOCALGALLERYNAME. ">>hosts
 echo "" >>hosts
