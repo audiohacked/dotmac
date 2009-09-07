@@ -64,21 +64,8 @@ sub handler
 			$logging =~ m/Sections/&&$rlog->info($r->as_string());
 			return Apache2::Const::DECLINED;
 			}
-	elsif (($r->method() eq "POST") && ($r->headers_in->{'X-Webdav-Method'}) && ($r->headers_in->{'X-Webdav-Method'} eq "SSMOVE")){
-			### This is the new SSMOVE handler needed for Snow Leopard. It looks like it is just MOVE 
-			### renamed (but I'm sure there is SOMETHING that is different.) It may have something to do with whether Status
-			### records are created or not. 
-			$logging =~ m/Sections/&&$rlog->info("In the SSMOVE TransHandler");
-			my $httpType="http://";
-			$httpType="https://" if $r->get_server_port() == 443;
-			$logging =~ m/Sections/&&$rlog->info($httpType.$r->headers_in->{'Host'}.$r->uri." ".$r->headers_in->{'X-Target-Href'});
-			$r->method("MOVE");
-			if ($r->get_server_port()==443 ){ 
-					$r->headers_in->{'Destination'} =~ s{^http://}{https://}s;
-			}
-			$r->method_number(Apache2::Const::M_MOVE);
-
-			}			
+	
+	
 			return Apache2::Const::DECLINED;
 	}
 
