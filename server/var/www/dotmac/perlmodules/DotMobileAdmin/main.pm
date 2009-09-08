@@ -11,10 +11,7 @@ use Apache2::RequestRec ();
 use Apache2::RequestIO ();
 
 use Apache2::Const -compile => qw(OK HTTP_PAYMENT_REQUIRED);
-#use CGI::FastTemplate;
-#use HTML::Template;
 use Embperl;
-$DotMobileAdmin::locate::VERSION = '0.1';
 
 
 sub handler {
