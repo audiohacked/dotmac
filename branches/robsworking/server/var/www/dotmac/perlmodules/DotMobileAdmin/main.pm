@@ -20,6 +20,9 @@ sub handler {
 	
 #	my $tpl = new CGI::FastTemplate();
 	$ENV{'HTML_TEMPLATE_ROOT'} = $r->dir_config('dotMacPerlmodulesPath')."/DotMobileAdmin/templates";
+	$ENV{'dotMacPID'} = $r->dir_config('dotMacPrivatePath')."/dotmac.pid";
+	$ENV{'dotMacRealm'} = $r->dir_config('dotMacRealm');
+	$ENV{'dotMaciDiskPath'} = $r->dir_config('dotMaciDiskPath');
 	my @idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
     #print "<br />";
     
@@ -30,9 +33,9 @@ sub handler {
 	
 #	my $template = HTML::Template->new(filename => 'main.tpl');
 	my $out;
-	Embperl::Execute({inputfile => $tplpath.'main.tpl', output => \$out} );
-	
-	$r->print($out);
+	Embperl::Execute({inputfile => $tplpath.'main.tpl'} );
+	#, output => \$out
+#	$r->print($out);
 #	carp $$ref;
 #	$r->print($template->output);
 	return Apache2::Const::OK;
