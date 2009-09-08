@@ -1,5 +1,6 @@
 
 [-
+use CGI;
 #Check to make sure m is an allowed value (and an existing template)
 	$m=CGI::param('m');
 	@valid_pages=qw/stats adduser server users test/;
