@@ -36,7 +36,7 @@ html, body {
 	height:190px;
 	margin-left:10px;
 	padding:10px;
-	background:url(../img/mbg.png) no-repeat top right;
+	background:url(/idiskAdminres/mbg.png) no-repeat top right;
 	list-style:none;
 }
 
@@ -76,7 +76,7 @@ html, body {
 	height:50px;
 	line-height:50px;
 	padding-left:120px;
-	background: #464646 url(img/l.png) bottom left repeat-x;
+	background: #464646 url(/idiskAdminres/l.png) bottom left repeat-x;
 }
 
 #logo {
@@ -115,7 +115,7 @@ html, body {
 	position:absolute;
 	left:0px;
 	bottom:0px;
-	background: #464646 url(img/b.png) top left repeat-x;
+	background: #464646 url(/idiskAdminres/b.png) top left repeat-x;
 	font-family:Arial, Helvetica, sans-serif;
 	font-size:12px;
 	line-height:35px;
