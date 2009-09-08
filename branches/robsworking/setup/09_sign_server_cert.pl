@@ -52,4 +52,4 @@ close(EXTN);
 
 `$CA -days 365 -in $root/private/server.csr -extfile $root/private/extensions -out $root/private/server.crt -batch`;
 
-print "Server certificates generated. Apache will use then next time you reboot\n";
+print "Server certificates generated. Apache will use then next time you restart it\n";
