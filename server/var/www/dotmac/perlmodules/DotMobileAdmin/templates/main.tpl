@@ -9,7 +9,7 @@ use CGI;
 
 [- 
 #Set the Apache Last restart time
- 	@idiskuserstat=stat($req_rec->dir_config('dotMacPrivatePath')."/dotmac.pid");
+ 	@idiskuserstat=stat($ENV{'dotMacPID'});
 	$lastrestart=scalar localtime($idiskuserstat[9]);
 	
 
