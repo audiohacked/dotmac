@@ -104,8 +104,6 @@ if (CGI::param('saveUser') eq 'Save User') {
 		[- $hash=$dbadmin->fetch_user_info($user,$realm) -]
 	
 		<tr onmouseover="this.style.backgroundColor='#FFFFCC';" onmouseout="this.style.backgroundColor='';" bgcolor="[$ if CGI::param('uid') eq $hash->{'username'} $]#D3DDEE [$ endif $]" style="cursor:pointer;" onclick="document.location='?m=users&uid=[+ $hash->{'username'} +]'">
-		
-	<!--	<?=$u['id'].($_REQUEST['who'] ? '&who='.$_REQUEST['who'] : '');?>';">-->
 		  <td height="22">&nbsp;[+ $hash->{'username'} +]</td>
           <td><a href="mailto:[+ $hash->{'email_addr'} +]">[+ $hash->{'firstname'} +] [+ $hash->{'lastname'} +]</a></td>
           <td>[+ $hash->{'created'} +]</td>
@@ -114,7 +112,7 @@ if (CGI::param('saveUser') eq 'Save User') {
           <td>[$ if $hash->{'is_admin'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
           <td>[$ if $hash->{'is_idisk'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
           <td>[$ if -d $idiskPath."/".$hash->{'username'} eq 1 $]<font color="green">Yes</font>[$ else $]<font color="red">No</font>[$ endif $]</td>
-            </tr>
+        </tr>
         <tr><td colspan="8" bgcolor="#999" height="1"><img width="1" height="1" /></td></tr>
 
 		[$ endforeach $]
