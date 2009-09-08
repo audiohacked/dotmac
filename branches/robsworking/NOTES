@@ -54,3 +54,4 @@ lcs.mac.com
 delta.mac.com
 
 
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain Certificate.cer
