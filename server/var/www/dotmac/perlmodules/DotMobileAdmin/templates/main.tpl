@@ -1,10 +1,9 @@
 
 [-
 use CGI;
-#Check to make sure m is an allowed value (and an existing template)
-	$m=CGI::param('m');
-	@valid_pages=qw/stats adduser server users test/;
-	$m="users" if(not exists {map { $_ => 1 } @valid_pages}->{$m});
+
+$subtemplate = @param[1];
+$confhash = @param[0];
 -]
 
 [- 
@@ -46,7 +45,8 @@ use CGI;
 				</ul>
 			</div>
 			</td>
-			<td valign="top" style="padding-top:15px;">[- Execute $m.".tpl" -]</td>
+			[- $escmode = 0 -]
+			<td valign="top" style="padding-top:15px;">[+ $subtemplate +]</td>
 			<td width="30">&nbsp;</td>
 		  </tr>
 		</table>

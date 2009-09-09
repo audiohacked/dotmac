@@ -1,9 +1,10 @@
 [-
 use DotMac::CommonCode;
 use DotMac::DotMacDB;
-$dbadmin = DotMac::DotMacDB->new();
+$dbadmin = @param[0]->{'dbconn'};
 
-$realm = $ENV{'dotMacRealm'};
+
+$realm = @param[0]->{'realm'};
 
 #@onceusers = $dbadmin->list_users($realm);
 @idisksizes = qw/1048576 2097152 5242880 10485760 15728640 20971520/;
@@ -20,7 +21,7 @@ sub CGIparamToHash
 }
 
 @users = $dbadmin->list_users($realm);
-$idiskPath=$ENV{'dotMaciDiskPath'};
+$idiskPath=@param[0]->{'idiskPath'};
 
 
 sub humanFileSize
