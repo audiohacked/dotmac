@@ -70,9 +70,22 @@ sub humanFileSize
 }
 
 
-if (CGI::param('saveUser') eq 'Save User') {
+if (CGI::param('duid')) {
+	$dbadmin->delete_user(CGI::param('duid'));
+	@users = $dbadmin->list_users($realm);
+} elsif (CGI::param('saveUser') eq 'Save User') {
+	if (CGI::param('passwd')) {
+		if (CGI::param('passwd') eq CGI::param('passwdver')) {
+			$dbadmin->change_password(CGI::param('user'),CGI::param('passwd'),$realm);
+			$dbadmin->update_user_info(CGIparamToHash(),$realm);
+		} else {
+			$error="Passwords don't match";
+		}
+	} else {
+		$dbadmin->update_user_info(CGIparamToHash(),$realm);
+	}
 
-	$dbadmin->update_user_info(CGIparamToHash(),$realm);
+	
 
 }
 
@@ -84,7 +97,7 @@ if (CGI::param('saveUser') eq 'Save User') {
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom:5px;">
   <tr>
-    <td width="40%"><h3>MobileMe Users:</h3></td>
+    <td width="40%"><h3>dotMobile.us Users:</h3></td>
     <td width="60%" align="right"><form name="su" method="post" action="">
         Username: <input type="text" name="uid" value="[+ CGI::param("uid") +]" /> <input type="submit" value="Search" name="find" /> [$ IF CGI::param('uid') ne "" $]<input type="button" value="Clear" onclick="document.location='?m=users';" />[$ endif $]
     </form></td>
@@ -128,9 +141,13 @@ if (CGI::param(uid)) {
 	$hash=$dbadmin->fetch_user_info(CGI::param(uid),$realm);
 	} 
 -]
+<font color="blue"><strong>[+ $message +]</strong></font>
+[$ if $error $]
+<font color="red">&nbsp;<strong>Error: </strong>[+ $error +]</font>
+[$ endif $]
 [$ if $hash $]<br />
 <form name="adduser" method="post">
-  <?=($error ? '<font color="red">&nbsp;<strong>Error</strong>: '.$error.'</font>' : '');?>
+
   <table border="0" cellspacing="2" cellpadding="2">
     <tr>
       <td>Username:</td>
@@ -157,12 +174,12 @@ if (CGI::param(uid)) {
       </select></td>
     </tr>
     <tr>
-      <td>First Name:</td>
+      <td>Verify Password:</td>
       <td>&nbsp;</td>
       <td colspan="3">E-mail Storage:</td>
     </tr>
     <tr>
-      <td><input type="text" name="firstname" id="firstname" style="width:200px;" value="[+ $hash->{'firstname'} +]" tabindex="3"  /></td>
+      <td><input type="password" name="passwdver" id="passwdver" style="width:200px;" tabindex="2"  /></td>
       <td>&nbsp;</td>
       <td colspan="3"><select name="mail" id="mail_quota_limit" style="width:205px;" tabindex="7" >
 	     [$ foreach $mailsize (@mailsizes) $] 
@@ -171,14 +188,14 @@ if (CGI::param(uid)) {
       </select></td>
     </tr>
     <tr>
-      <td>Last Name:</td>
+      <td>First Name:</td>
       <td>&nbsp;</td>
       <td>iDisk Access:</td>
       <td>&nbsp;</td>
       <td align="right">Admin Access:</td>
     </tr>
     <tr>
-      <td><input type="text" name="lastname" id="lastname" value="[+ $hash->{'lastname'} +]" style="width:200px;" tabindex="4"  /></td>
+      <td><input type="text" name="firstname" id="firstname" style="width:200px;" value="[+ $hash->{'firstname'} +]" tabindex="3"  /></td>
       <td>&nbsp;</td>
       <td><select name="is_idisk" id="is_idisk" style="width:90px;" tabindex="8" >
         <option value="1">Yes</option>
@@ -190,6 +207,15 @@ if (CGI::param(uid)) {
         <option value="1"[$ if $hash->{'is_admin'} eq 1 $] selected [$ endif $]>Yes</option>
       </select></td>
     </tr>
+  <tr>
+      <td>Last Name:</td>
+      <td>&nbsp;</td>
+      <td>Create User Dir:</td>
+      <td>&nbsp;</td>
+    </tr>
+    <td><input type="text" name="lastname" id="lastname" value="[+ $hash->{'lastname'} +]" style="width:200px;" tabindex="4"  /></td>
+    <td>&nbsp;</td>
+
     <tr>
       <td height="40" colspan="5"><input type="submit" name="saveUser" id="saveUser" value="Save User" tabindex="10"  />
       <input type="button" name="reset" id="reset" onclick="document.location='?m=users';" value="Cancel" tabindex="11"  /></td>
@@ -202,14 +228,15 @@ if (CGI::param(uid)) {
           <tr>
             <td><input type="button" name="Button" id="button" value="Delete User" onclick="if(confirm('Delete user?')){document.location='?m=users&duid=[+ $hash->{'username'} +]'+(this.form.delSkel.checked ? '&dskel=1' : '');}" /></td>
             <td>&nbsp;</td>
-            <td><input type="checkbox" id="delSkel" name="delSkel" value="1" /></td>
-            <td><label for="delSkel">Delete User's iDisk Folder</label></td>
+            <td><!--><input type="checkbox" id="delSkel" name="delSkel" value="1" />--></td>
+            <td><!--><label for="delSkel">Delete User's iDisk Folder</label>--></td>
           </tr>
       </table></td>
     </tr>
   </table>
   <input type="hidden" name="userOriginal" value="[+ $hash->{'username'} +]" />
   <input type="hidden" name="user" value="[+ $hash->{'username'} +]" />
+  <input type="hidden" name="uid" value="[+ $hash->{'username'} +]" />
   <input type="hidden" name="m" value="users" />
 </form>
 
