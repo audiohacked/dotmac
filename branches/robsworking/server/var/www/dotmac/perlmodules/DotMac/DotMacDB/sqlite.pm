@@ -108,6 +108,40 @@ sub get_user_quota{
 	return $quota;
 }
 
+sub delete_user{
+	my $self = shift;
+	my ($user, $realm) = @_;
+
+	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
+
+
+
+	my $deleteQuery = "delete from auth where username = ? and realm = ?";
+	
+	my $q = $dbh->prepare($deleteQuery);
+	$q->execute($user,$realm);
+	$q->finish;
+	
+}
+sub change_password{
+	my $self = shift;
+	my ($user, $newpass, $realm) = @_;
+
+	my $dbh = $self->{dbh};
+	$realm ||= $self->{realm};
+
+	my $md5 = Digest::MD5->new();
+	$md5->add("$user:$realm:$newpass");
+	my $genPassWd = $md5->hexdigest;
+
+	my $updateQuery = "update auth set passwd = ? where username = ? and realm = ?";
+	
+	my $q = $dbh->prepare($updateQuery);
+	$q->execute($genPassWd,$user,$realm);
+	$q->finish;
+	
+}
 sub add_user{
 	my $self = shift;
 	my ($user, $newpass, $realm) = @_;
