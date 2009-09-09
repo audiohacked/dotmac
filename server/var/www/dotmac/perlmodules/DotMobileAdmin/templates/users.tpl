@@ -71,7 +71,7 @@ sub humanFileSize
 
 
 if (CGI::param('duid')) {
-	$dbadmin->delete_user(CGI::param('duid'));
+	$dbadmin->delete_user(CGI::param('duid'),$realm);
 	@users = $dbadmin->list_users($realm);
 } elsif (CGI::param('saveUser') eq 'Save User') {
 	if (CGI::param('passwd')) {
@@ -210,8 +210,7 @@ if (CGI::param(uid)) {
   <tr>
       <td>Last Name:</td>
       <td>&nbsp;</td>
-      <td>Create User Dir:</td>
-      <td>&nbsp;</td>
+      <td colspan=2>Create User Directory:</td>
     </tr>
     <td><input type="text" name="lastname" id="lastname" value="[+ $hash->{'lastname'} +]" style="width:200px;" tabindex="4"  /></td>
     <td>&nbsp;</td>
@@ -226,7 +225,8 @@ if (CGI::param(uid)) {
     <tr>
       <td height="40" colspan="5"><table border="0" cellspacing="0" cellpadding="0">
           <tr>
-            <td><input type="button" name="Button" id="button" value="Delete User" onclick="if(confirm('Delete user?')){document.location='?m=users&duid=[+ $hash->{'username'} +]'+(this.form.delSkel.checked ? '&dskel=1' : '');}" /></td>
+            <td><input type="button" name="Button" id="button" value="Delete User" onclick="if(confirm('Delete user?')){document.location='?m=users&duid=[+ $hash->{'username'} +]';}" /></td>
+	<!--+(this.form.delSkel.checked ? '&dskel=1' : '')-->
             <td>&nbsp;</td>
             <td><!--><input type="checkbox" id="delSkel" name="delSkel" value="1" />--></td>
             <td><!--><label for="delSkel">Delete User's iDisk Folder</label>--></td>
