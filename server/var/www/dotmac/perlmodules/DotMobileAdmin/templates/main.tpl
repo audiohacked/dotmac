@@ -27,28 +27,30 @@ use CGI;
 	  <a href="/" title="WebAdmin Home"><img src="/idiskAdminres/dm.png" id="logo" border="0" /></a>WebAdmin
 	  <div id="info"> 
 		Logged as: <strong>[+ $ENV{'REMOTE_USER'} +]</strong> ( Digest )<br />
-		Apache Last Restart: <strong> [+ $lastrestart +]<strong></strong> 
+		Apache Last Restart: <strong> [+ $lastrestart +]<strong>
 		
 	  </div>
 	</div>
 	<!-- CONTENT START -->
-	<table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:25px;">
-	  <tr>
-		<td width="220" valign="top">
-		<div id="nav">
-			<ul>
-				<div>MobileMe Manager</div>
-				<li><a href="?m=users"[$ if $m eq 'users' $] class="active" [$ endif $]> &raquo; List Users</a></li>
-				<li><a href="?m=adduser"[$ if $m eq 'adduser' $] class="active" [$ endif $] > &raquo; Add User</a></li>
-				<li><a href="?m=stats"[$ if $m eq 'stats' $]  class="active" [$ endif $]> &raquo; Statistics</a></li>
-				<li><a href="?m=server"[$ if $m eq 'server' $] class="active" [$ endif $]> &raquo; Server Admin</a></li>
-			</ul>
-		</div>
-		</td>
-		<td valign="top" style="padding-top:15px;">[- Execute $m.".tpl" -]</td>
-		<td width="30">&nbsp;</td>
-	  </tr>
-	</table>
+	<div id="body">
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:25px;">
+		  <tr>
+			<td width="220" valign="top">
+			<div id="nav">
+				<ul>
+					<div>MobileMe Manager</div>
+					<li><a href="?m=users"[$ if $m eq 'users' $] class="active" [$ endif $]> &raquo; List Users</a></li>
+					<li><a href="?m=adduser"[$ if $m eq 'adduser' $] class="active" [$ endif $] > &raquo; Add User</a></li>
+					<li><a href="?m=stats"[$ if $m eq 'stats' $]  class="active" [$ endif $]> &raquo; Statistics</a></li>
+					<li><a href="?m=server"[$ if $m eq 'server' $] class="active" [$ endif $]> &raquo; Server Admin</a></li>
+				</ul>
+			</div>
+			</td>
+			<td valign="top" style="padding-top:15px;">[- Execute $m.".tpl" -]</td>
+			<td width="30">&nbsp;</td>
+		  </tr>
+		</table>
+	</div>
 	<!-- CONTENT END -->
 	<div id="footer">&copy;2009 WebAdmin &raquo; Part of <a href="http://code.google.com/p/dotmac/" target="_blank">dotMobile.us Project</a></div>
 </div>
