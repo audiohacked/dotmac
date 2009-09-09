@@ -476,7 +476,7 @@ sub handler
 	} 
 	elsif ($rmethod eq "GET") {
 	#	if (($r->headers_in->{'Host'} eq 'publish.mac.com') && ($userAgent =~ m/^DotMacKit/)) {
-		if (($r->headers_in->{'Host'} eq 'publish.mac.com') || ($r->headers_in->{'Host'} eq 'publishdev.rsee.net')) {
+		if (($r->headers_in->{'Host'} eq 'publish.mac.com') || ($r->headers_in->{'Host'} eq $r->dir_config('dotMacPublishAddress'))) {
 
 			if($r->args()) {
 				my @args = split '&', $r->args();
@@ -492,7 +492,7 @@ sub handler
 				}
 			}
 		}
-		elsif ( ( ($r->headers_in->{'Host'} eq 'idisk.mac.com') || ($r->headers_in->{'Host'} eq 'idiskdev.rsee.net') ) && ($r->uri =~ m/^(.*)\/Web\/Sites/)) {
+		elsif ( ( ($r->headers_in->{'Host'} eq 'idisk.mac.com') || ($r->headers_in->{'Host'} eq $r->dir_config('dotMacFileServicesAddress')) ) && ($r->uri =~ m/^(.*)\/Web\/Sites/)) {
 			
 			if($r->args()) {
 				my @args = split '&', $r->args();
