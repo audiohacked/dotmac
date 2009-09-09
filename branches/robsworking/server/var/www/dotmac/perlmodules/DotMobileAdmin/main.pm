@@ -22,7 +22,6 @@ sub handler {
 	$ENV{'HTML_TEMPLATE_ROOT'} = $r->dir_config('dotMacPerlmodulesPath')."/DotMobileAdmin/templates";
 	$ENV{'dotMacPID'} = $r->dir_config('dotMacPrivatePath')."/dotmac.pid";
 	$ENV{'dotMacRealm'} = $r->dir_config('dotMacRealm');
-	$ENV{'dotMaciDiskPath'} = 
 	my @idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
     #print "<br />";
     
