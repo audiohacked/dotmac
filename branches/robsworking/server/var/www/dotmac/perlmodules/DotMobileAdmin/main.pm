@@ -22,20 +22,39 @@ sub handler {
 	$ENV{'HTML_TEMPLATE_ROOT'} = $r->dir_config('dotMacPerlmodulesPath')."/DotMobileAdmin/templates";
 	$ENV{'dotMacPID'} = $r->dir_config('dotMacPrivatePath')."/dotmac.pid";
 	$ENV{'dotMacRealm'} = $r->dir_config('dotMacRealm');
-	$ENV{'dotMaciDiskPath'} = $r->dir_config('dotMaciDiskPath');
+	$ENV{'dotMaciDiskPath'} = 
 	my @idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
     #print "<br />";
     
 	our $lastrestart=scalar localtime($idiskuserstat[9]);
 	my $tplpath = $r->dir_config('dotMacPerlmodulesPath')."/DotMobileAdmin/templates/";
-#	$tpl->define( main => "main.tpl",
-#				  users => "users.tpl" );
-	
-#	my $template = HTML::Template->new(filename => 'main.tpl');
+
 	my $out;
-	Embperl::Execute({inputfile => $tplpath.'main.tpl'} );
+	my $params = { blah => '1',
+				  test => '2',
+				  dbconn => DotMac::DotMacDB->new(),
+				  realm => $r->dir_config('dotMacRealm'),
+				  idiskPath => $r->dir_config('dotMaciDiskPath') };
+				
+    my $subtemplate;
+
+	#Check to make sure m is an allowed value (and an existing template)
+	my	$m=CGI::param('m');
+	my	@valid_pages=qw/stats adduser server users test/;
+	$m="users" if(not exists {map { $_ => 1 } @valid_pages}->{$m});
+	
+	
+	Embperl::Execute({inputfile => $tplpath."$m.tpl",
+					  param => [$params,5,6666],
+					  output => \$subtemplate });
+
+	Embperl::Execute({inputfile => $tplpath.'main.tpl',
+					  param => [$params,$subtemplate],
+					  output => \$out} );
+					
+					
 	#, output => \$out
-#	$r->print($out);
+	$r->print($out);
 #	carp $$ref;
 #	$r->print($template->output);
 	return Apache2::Const::OK;

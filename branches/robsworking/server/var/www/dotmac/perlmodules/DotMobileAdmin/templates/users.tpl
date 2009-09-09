@@ -1,9 +1,12 @@
 [-
 use DotMac::CommonCode;
 use DotMac::DotMacDB;
-$dbadmin = DotMac::DotMacDB->new();
 
-$realm = $ENV{'dotMacRealm'};
+
+$dbadmin = @param[0]->{'dbconn'};
+
+
+$realm = @param[0]->{'realm'};
 
 
 @onceusers = $dbadmin->list_users($realm);
@@ -37,7 +40,6 @@ sub CGIparamToHash
 	return \%paramHash;
 }
 
-#print Dumper(CGIparamToHash());
 
 @users = $dbadmin->list_users($realm);
 $idiskPath=$ENV{'dotMaciDiskPath'};
@@ -210,7 +212,7 @@ if (CGI::param(uid)) {
   <tr>
       <td>Last Name:</td>
       <td>&nbsp;</td>
-      <td colspan=2>Create User Directory:</td>
+      <td colspan="3">Create User Directory:</td>
     </tr>
     <td><input type="text" name="lastname" id="lastname" value="[+ $hash->{'lastname'} +]" style="width:200px;" tabindex="4"  /></td>
     <td>&nbsp;</td>
