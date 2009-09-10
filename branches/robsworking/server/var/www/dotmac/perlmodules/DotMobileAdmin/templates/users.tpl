@@ -3,46 +3,19 @@ use DotMac::CommonCode;
 use DotMac::DotMacDB;
 
 
-$dbadmin = @param[0]->{'dbconn'};
+$dbadmin = @param[0]->{'dbadmin'};
 
 
-$realm = @param[0]->{'realm'};
+$realm = @param[0]->{'dotMacRealm'};
+
+$cgiparam = @param[0]->{'cgiparam'};
 
 
-@onceusers = $dbadmin->list_users($realm);
-@idisksizes = qw/1048576 2097152 5242880 10485760 15728640 20971520/;
-@mailsizes = qw/1048576 2097152 5242880 10485760 15728640 20971520/;
-foreach $onceuser (@onceusers){
-	$usagehash{$onceuser}=getiDiskUsage($onceuser);
-}
 
-sub getiDiskUsage
-{
-   $user = shift;
-   if(-d $idiskPath."/".$user){
-		$command = "/usr/bin/du -sh ".$idiskPath."/".$user;
-        $usage = `$command`;
-   		$usage =~ /(^[0-9KMGkmg.]+).*/;
-   		$val = $1;
-		return($val);
-   }
-   else{
-           return('N/A');   
-   }
-}
-
-sub CGIparamToHash
-{
-	my @arr = CGI::param();
-	foreach $key (@arr){
-		$paramHash{$key} = CGI::param($key);
-	}
-	return \%paramHash;
-}
 
 
 @users = $dbadmin->list_users($realm);
-$idiskPath=$ENV{'dotMaciDiskPath'};
+$idiskPath=@param[0]->{'idiskPath'};
 
 
 sub humanFileSize
@@ -72,19 +45,19 @@ sub humanFileSize
 }
 
 
-if (CGI::param('duid')) {
-	$dbadmin->delete_user(CGI::param('duid'),$realm);
+if ($cgiparam{'duid'}) {
+	$dbadmin->delete_user($cgiparam{'duid'},$realm);
 	@users = $dbadmin->list_users($realm);
-} elsif (CGI::param('saveUser') eq 'Save User') {
-	if (CGI::param('passwd')) {
-		if (CGI::param('passwd') eq CGI::param('passwdver')) {
-			$dbadmin->change_password(CGI::param('user'),CGI::param('passwd'),$realm);
-			$dbadmin->update_user_info(CGIparamToHash(),$realm);
+} elsif ($cgiparam{'saveUser'} eq 'Save User') {
+	if ($cgiparam{'passwd'}) {
+		if ($cgiparam{'passwd'} eq $cgiparam{'passwdver'}) {
+			$dbadmin->change_password($cgiparam{'user'},$cgiparam{'passwd'},$realm);
+			$dbadmin->update_user_info($cgiparam,$realm);
 		} else {
 			$error="Passwords don't match";
 		}
 	} else {
-		$dbadmin->update_user_info(CGIparamToHash(),$realm);
+		$dbadmin->update_user_info($cgiparam,$realm);
 	}
 
 	
@@ -101,7 +74,7 @@ if (CGI::param('duid')) {
   <tr>
     <td width="40%"><h3>dotMobile.us Users:</h3></td>
     <td width="60%" align="right"><form name="su" method="post" action="">
-        Username: <input type="text" name="uid" value="[+ CGI::param("uid") +]" /> <input type="submit" value="Search" name="find" /> [$ IF CGI::param('uid') ne "" $]<input type="button" value="Clear" onclick="document.location='?m=users';" />[$ endif $]
+        Username: <input type="text" name="uid" value="[+ CGI::param("uid") +]" /> <input type="submit" value="Search" name="find" /> [$ IF $cgiparam{'uid'} ne "" $]<input type="button" value="Clear" onclick="document.location='?m=users';" />[$ endif $]
     </form></td>
   </tr>
 </table>
@@ -125,7 +98,7 @@ if (CGI::param('duid')) {
 		  <td height="22">&nbsp;[+ $hash->{'username'} +]</td>
           <td><a href="mailto:[+ $hash->{'email_addr'} +]">[+ $hash->{'firstname'} +] [+ $hash->{'lastname'} +]</a></td>
           <td>[+ $hash->{'created'} +]</td>
-          <td>[+ getiDiskUsage($hash->{'username'}) +] of <strong>[+ humanFileSize($hash->{'idisk_quota_limit'}*1024) +]</strong></td>
+          <td>[+ $hash->{'username'} +] of <strong>[+ humanFileSize($hash->{'idisk_quota_limit'}*1024) +]</strong></td>
           <td>[+ humanFileSize($hash->{'email'}*1024) +]</td>
           <td>[$ if $hash->{'is_admin'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
           <td>[$ if $hash->{'is_idisk'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
@@ -138,9 +111,11 @@ if (CGI::param('duid')) {
 </div>
 	
 [- 
-$hash="";
-if (CGI::param(uid)) {
-	$hash=$dbadmin->fetch_user_info(CGI::param(uid),$realm);
+
+#$hash="";
+
+if ($cgiparam{'uid'}) {
+	$hash=$dbadmin->fetch_user_info($cgiparam{'uid'},$realm);
 	} 
 -]
 <font color="blue"><strong>[+ $message +]</strong></font>

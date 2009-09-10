@@ -18,10 +18,8 @@ sub handler {
 	my $r = shift;
 	$r->content_type('text/html');
 	
-#	my $tpl = new CGI::FastTemplate();
-	$ENV{'HTML_TEMPLATE_ROOT'} = $r->dir_config('dotMacPerlmodulesPath')."/DotMobileAdmin/templates";
-	$ENV{'dotMacPID'} = $r->dir_config('dotMacPrivatePath')."/dotmac.pid";
-	$ENV{'dotMacRealm'} = $r->dir_config('dotMacRealm');
+	my $dotMacPID = $r->dir_config('dotMacPrivatePath')."/dotmac.pid";
+	my $dotMacRealm = $r->dir_config('dotMacRealm');
 	my @idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
     #print "<br />";
     
@@ -29,11 +27,25 @@ sub handler {
 	my $tplpath = $r->dir_config('dotMacPerlmodulesPath')."/DotMobileAdmin/templates/";
 
 	my $out;
+	my $dbadmin = DotMac::DotMacDB->new();
+	my @onceusers = $dbadmin->list_users($dotMacRealm);
+	my @idisksizes = qw/1048576 2097152 5242880 10485760 15728640 20971520/;
+	my @mailsizes = qw/1048576 2097152 5242880 10485760 15728640 20971520/;
+	my $onceuser;
+	my %usagehash;
+	foreach $onceuser (@onceusers){
+		$usagehash{$onceuser}=getiDiskUsage($onceuser,$r->dir_config('dotMaciDiskPath'));
+	}
+	
 	my $params = { blah => '1',
 				  test => '2',
-				  dbconn => DotMac::DotMacDB->new(),
-				  realm => $r->dir_config('dotMacRealm'),
-				  idiskPath => $r->dir_config('dotMaciDiskPath') };
+				  dbadmin => $dbadmin,
+				  realm => $dotMacRealm,
+				  idiskPath => $r->dir_config('dotMaciDiskPath'),
+				  idisksizes => @idisksizes,
+				  mailsizes => @mailsizes,
+				  dotMacPid => $dotMacPID,
+				  cgiparam => CGIparamToHash()};
 				
     my $subtemplate;
 
@@ -69,4 +81,32 @@ sub users {
 	my $ref = $tpl->fetch("CONTENT");
 	return $$ref;
 }
+
+sub getiDiskUsage
+{
+   my $user = shift;
+   my $idiskPath = shift;
+   if(-d $idiskPath."/".$user){
+		my $command = "/usr/bin/du -sh ".$idiskPath."/".$user;
+        my $usage = `$command`;
+   		$usage =~ /(^[0-9KMGkmg.]+).*/;
+   		my $val = $1;
+		return($val);
+   }
+   else{
+           return('N/A');   
+   }
+}
+
+sub CGIparamToHash
+{
+	my @arr = CGI::param();
+	my $key;
+	my %paramHash;
+	foreach $key (@arr){
+		$paramHash{$key} = CGI::param($key);
+	}
+	return \%paramHash;
+}
+
 1;
