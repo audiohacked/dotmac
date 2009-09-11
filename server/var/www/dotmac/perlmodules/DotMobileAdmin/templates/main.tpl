@@ -1,18 +1,4 @@
 
-[-
-use CGI;
-
-$subtemplate = @param[1];
-$confhash = @param[0];
--]
-
-[- 
-#Set the Apache Last restart time
- 	@idiskuserstat=stat($ENV{'dotMacPID'});
-	$lastrestart=scalar localtime($idiskuserstat[9]);
-	
-
--]
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -25,8 +11,8 @@ $confhash = @param[0];
 	<div id="header">
 	  <a href="/" title="WebAdmin Home"><img src="/idiskAdminres/dm.png" id="logo" border="0" /></a>WebAdmin
 	  <div id="info"> 
-		Logged as: <strong>[+ $ENV{'REMOTE_USER'} +]</strong> ( Digest )<br />
-		Apache Last Restart: <strong> [+ $lastrestart +]<strong>
+		Logged as: <strong>[% remote_user %]</strong> ( Digest )<br />
+		Apache Last Restart: <strong> [% lastrestart %]<strong>
 		
 	  </div>
 	</div>
@@ -45,14 +31,11 @@ $confhash = @param[0];
 				</ul>
 			</div>
 			</td>
-			[- $escmode = 0 -]
-			<td valign="top" style="padding-top:15px;">[+ $subtemplate +]</td>
+
+			<td valign="top" style="padding-top:15px;">[% INCLUDE "$subtemplate" %]</td>
 			<td width="30">&nbsp;</td>
 		  </tr>
 		</table>
 	</div>
 	<!-- CONTENT END -->
-	<div id="footer">&copy;2009 WebAdmin &raquo; Part of <a href="http://code.google.com/p/dotmac/" target="_blank">dotMobile.us Project</a></div>
-</div>
-</body>
-</html>
+[% INCLUDE footer.tpl %]

@@ -1,80 +1,10 @@
-[-
-use DotMac::CommonCode;
-use DotMac::DotMacDB;
-
-
-$dbadmin = @param[0]->{'dbadmin'};
-
-
-$realm = @param[0]->{'dotMacRealm'};
-
-$cgiparam = @param[0]->{'cgiparam'};
-
-
-
-
-
-@users = $dbadmin->list_users($realm);
-$idiskPath=@param[0]->{'idiskPath'};
-
-
-sub humanFileSize
-{
-    my $size = shift;
-
-    if ($size > 1099511627776)  #   TiB: 1024 GiB
-    {
-        return sprintf("%.2f TiB", $size / 1099511627776);
-    }
-    elsif ($size > 1073741824)  #   GiB: 1024 MiB
-    {
-        return sprintf("%.2f GiB", $size / 1073741824);
-    }
-    elsif ($size > 1048576)       #   MiB: 1024 KiB
-    {
-        return sprintf("%.2f MiB", $size / 1048576);
-    }
-    elsif ($size > 1024)            #   KiB: 1024 B
-    {
-        return sprintf("%.2f KiB", $size / 1024);
-    }
-    else                                    #   bytes
-    {
-        return sprintf("%.2f bytes", $size);
-    }
-}
-
-
-if ($cgiparam{'duid'}) {
-	$dbadmin->delete_user($cgiparam{'duid'},$realm);
-	@users = $dbadmin->list_users($realm);
-} elsif ($cgiparam{'saveUser'} eq 'Save User') {
-	if ($cgiparam{'passwd'}) {
-		if ($cgiparam{'passwd'} eq $cgiparam{'passwdver'}) {
-			$dbadmin->change_password($cgiparam{'user'},$cgiparam{'passwd'},$realm);
-			$dbadmin->update_user_info($cgiparam,$realm);
-		} else {
-			$error="Passwords don't match";
-		}
-	} else {
-		$dbadmin->update_user_info($cgiparam,$realm);
-	}
-
-	
-
-}
-
-
--]
-
-[+ $blah +]
 
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom:5px;">
   <tr>
     <td width="40%"><h3>dotMobile.us Users:</h3></td>
     <td width="60%" align="right"><form name="su" method="post" action="">
-        Username: <input type="text" name="uid" value="[+ CGI::param("uid") +]" /> <input type="submit" value="Search" name="find" /> [$ IF $cgiparam{'uid'} ne "" $]<input type="button" value="Clear" onclick="document.location='?m=users';" />[$ endif $]
+        Username: <input type="text" name="uid" value="[% params.uid %]" /> <input type="submit" value="Search" name="find" /> [% IF cgiparam.uid != "" %]<input type="button" value="Clear" onclick="document.location='?m=users';" />[% END %]
     </form></td>
   </tr>
 </table>
@@ -84,45 +14,52 @@ if ($cgiparam{'duid'}) {
         	<td height="25" bgcolor="#CCCCCC">&nbsp;<strong>Username</strong></td>
         	<td bgcolor="#CCCCCC"><strong>Real Name</strong></td>
         	<td bgcolor="#CCCCCC"><strong>Added On</strong></td>
-        	<td bgcolor="#CCCCCC"><strong>iDisk Storage</strong></td>
+        	<td bgcolor="#CCCCCC"><strong>iDisk Storage</stroiidng></td>
         	<td bgcolor="#CCCCCC"><strong>Email Storage</strong></td>
         	<td bgcolor="#CCCCCC"><strong>Admin</strong></td>
         	<td bgcolor="#CCCCCC"><strong>Active</strong></td>
         	<td bgcolor="#CCCCCC"><strong>Skeleton</strong></td>
         </tr>
         <tr><td colspan="8" bgcolor="#999" height="1"><img width="1" height="1" /></td></tr>
-		[$ foreach $user (@users) $]
-		[- $hash=$dbadmin->fetch_user_info($user,$realm) -]
-	
-		<tr onmouseover="this.style.backgroundColor='#FFFFCC';" onmouseout="this.style.backgroundColor='';" bgcolor="[$ if CGI::param('uid') eq $hash->{'username'} $]#D3DDEE [$ endif $]" style="cursor:pointer;" onclick="document.location='?m=users&uid=[+ $hash->{'username'} +]'">
-		  <td height="22">&nbsp;[+ $hash->{'username'} +]</td>
-          <td><a href="mailto:[+ $hash->{'email_addr'} +]">[+ $hash->{'firstname'} +] [+ $hash->{'lastname'} +]</a></td>
-          <td>[+ $hash->{'created'} +]</td>
-          <td>[+ $hash->{'username'} +] of <strong>[+ humanFileSize($hash->{'idisk_quota_limit'}*1024) +]</strong></td>
-          <td>[+ humanFileSize($hash->{'email'}*1024) +]</td>
-          <td>[$ if $hash->{'is_admin'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
-          <td>[$ if $hash->{'is_idisk'} eq 1 $]<font color="green">Yes</font> [$ else $]<font color="red">No</font>[$ endif $]</td>
-          <td>[$ if -d $idiskPath."/".$hash->{'username'} eq 1 $]<font color="green">Yes</font>[$ else $]<font color="red">No</font>[$ endif $]</td>
+		[% FOREACH user = users %]
+		[% PERL %] 
+		my $dbadmin = $stash->get('dbadmin');
+		$stash->set(hash=>$dbadmin->fetch_user_info($stash->get('user'),$stash->get('realm')));
+		if (-d $stash->get('idiskPath')."/".$stash->get('user')){
+			$stash->set('useridisk'=>1);
+		} else {
+			$stash->set('useridisk'=>0);
+		}
+		[% END %]
+		<tr onmouseover="this.style.backgroundColor='#FFFFCC';" onmouseout="this.style.backgroundColor='';" bgcolor="[% IF params.uid == hash.username %]#D3DDEE [% END %]" style="cursor:pointer;" onclick="document.location='?m=users&uid=[% hash.username %]'">
+		  <td height="22">&nbsp;[% hash.username %]</td>
+          <td><a href="mailto:[% hash.email_addr %]">[% hash.firstname %] [% hash.lastname %]</a></td>
+          <td>[% hash.created %]</td>
+          <td>[% PERL %] print DotMobileAdmin::main::getiDiskUsage($stash->get('user'),$stash->get('idiskPath')) [% END %] of <strong>[% PERL %] print DotMobileAdmin::main::humanFileSize($stash->get('hash.idisk_quota_limit'))  [% END %]</strong></td>
+          <td>[% humanFileSize(hash.email*1024) %]</td>
+          <td>[% IF hash.is_admin == 1 %]<font color="green">Yes</font> [% ELSE %]<font color="red">No</font>[% END %]</td>
+          <td>[% IF hash.is_idisk == 1 %]<font color="green">Yes</font> [% ELSE %]<font color="red">No</font>[% END %]</td>
+
+          <td>[% IF useridisk == 1 %]<font color="green">Yes</font>[% ELSE %]<font color="red">No</font>[% END %]</td>
         </tr>
         <tr><td colspan="8" bgcolor="#999" height="1"><img width="1" height="1" /></td></tr>
 
-		[$ endforeach $]
+		[% END %]
     </table>    
 </div>
 	
-[- 
+[% PERL %] 
+my $dbadmin = $stash->get('dbadmin');
+my $params = $stash->get('params');
+$stash->set(hash=>$dbadmin->fetch_user_info($params->{'uid'},$stash->get('realm')));
 
-#$hash="";
+[% END %]
+<font color="blue"><strong>[% $message %]</strong></font>
+[% IF $error %]
+<font color="red">&nbsp;<strong>Error: </strong>[% $error %]</font>
+[% END %]
 
-if ($cgiparam{'uid'}) {
-	$hash=$dbadmin->fetch_user_info($cgiparam{'uid'},$realm);
-	} 
--]
-<font color="blue"><strong>[+ $message +]</strong></font>
-[$ if $error $]
-<font color="red">&nbsp;<strong>Error: </strong>[+ $error +]</font>
-[$ endif $]
-[$ if $hash $]<br />
+[% IF hash %]<br />
 <form name="adduser" method="post">
 
   <table border="0" cellspacing="2" cellpadding="2">
@@ -132,9 +69,9 @@ if ($cgiparam{'uid'}) {
       <td colspan="3">E-mail Address:</td>
     </tr>
     <tr>
-      <td><input type="text" name="username" id="username" style="width:200px;" value="[+ $hash->{'username'} +]" tabindex="1" /></td>
+      <td><input type="text" name="username" id="username" style="width:200px;" value="[% hash.username %]" tabindex="1" /></td>
       <td>&nbsp;</td>
-      <td colspan="3"><input type="text" name="email_addr" id="email" value="[+ $hash->{'email_addr'} +]" style="width:200px;" tabindex="5"  /></td>
+      <td colspan="3"><input type="text" name="email_addr" id="email" value="[% hash.email_addr %]" style="width:200px;" tabindex="5"  /></td>
     </tr>
     <tr>
       <td>Password:</td>
@@ -145,13 +82,13 @@ if ($cgiparam{'uid'}) {
       <td><input type="password" name="passwd" id="passwd" style="width:200px;" tabindex="2"  /></td>
       <td>&nbsp;</td>
       <td colspan="3"><select name="idisk_quota_limit" id="idisk_quota_limit" style="width:205px;" tabindex="6" >
-     [$ foreach $idisksize (@idisksizes) $] 
-     <option value="[+ $idisksize +]" [$ if $hash->{'idisk_quota_limit'} eq $idisksize $]  selected [$endif$] > [+ humanFileSize($idisksize*1024) +] </option>
-	 [$ endforeach $]
+     [% FOREACH idisksize = idisksizes %] 
+     <option value="[% idisksize %]" [% IF hash.idisk_quota_limit == idisksize %]  selected [%END%] > [% PERL %] print DotMobileAdmin::main::humanFileSize($stash->get('idisksize'))  [% END %] </option>
+	 [% END %]
       </select></td>
     </tr>
     <tr>
-      <td>Verify Password:</td>
+      <td>VerIFy Password:</td>
       <td>&nbsp;</td>
       <td colspan="3">E-mail Storage:</td>
     </tr>
@@ -159,9 +96,9 @@ if ($cgiparam{'uid'}) {
       <td><input type="password" name="passwdver" id="passwdver" style="width:200px;" tabindex="2"  /></td>
       <td>&nbsp;</td>
       <td colspan="3"><select name="mail" id="mail_quota_limit" style="width:205px;" tabindex="7" >
-	     [$ foreach $mailsize (@mailsizes) $] 
-	     <option value="[+ $mailsize +]" [$ if $hash->{'idisk_quota_limit'} eq $mailsize $]  selected [$endif$] > [+ humanFileSize($mailsize*1024) +] </option>
-		 [$ endforeach $]
+	     [% FOREACH mailsize = mailsizes %] 
+	     <option value="[% mailsize %]" [% IF hash.idisk_quota_limit == mailsize %]  selected [%END%] > [% PERL %] print DotMobileAdmin::main::humanFileSize($stash->get('mailsize'))  [% END %] </option>
+		 [% END %]
       </select></td>
     </tr>
     <tr>
@@ -172,16 +109,16 @@ if ($cgiparam{'uid'}) {
       <td align="right">Admin Access:</td>
     </tr>
     <tr>
-      <td><input type="text" name="firstname" id="firstname" style="width:200px;" value="[+ $hash->{'firstname'} +]" tabindex="3"  /></td>
+      <td><input type="text" name="firstname" id="firstname" style="width:200px;" value="[% hash.firstname %]" tabindex="3"  /></td>
       <td>&nbsp;</td>
       <td><select name="is_idisk" id="is_idisk" style="width:90px;" tabindex="8" >
         <option value="1">Yes</option>
-        <option value="0"[$ if $hash->{'is_idisk'} eq 0 $] selected [$ endif $]>>No</option>
+        <option value="0"[% IF hash.is_idisk == 0 %] selected [% END %]>>No</option>
       </select></td>
       <td>&nbsp;</td>
       <td align="right"><select name="is_admin" id="is_admin" style="width:90px;" tabindex="9" >
         <option value="0">No</option>
-        <option value="1"[$ if $hash->{'is_admin'} eq 1 $] selected [$ endif $]>Yes</option>
+        <option value="1"[% IF hash.is_admin == 1 %] selected [% END %]>Yes</option>
       </select></td>
     </tr>
   <tr>
@@ -189,7 +126,7 @@ if ($cgiparam{'uid'}) {
       <td>&nbsp;</td>
       <td colspan="3">Create User Directory:</td>
     </tr>
-    <td><input type="text" name="lastname" id="lastname" value="[+ $hash->{'lastname'} +]" style="width:200px;" tabindex="4"  /></td>
+    <td><input type="text" name="lastname" id="lastname" value="[% hash.lastname %]" style="width:200px;" tabindex="4"  /></td>
     <td>&nbsp;</td>
 
     <tr>
@@ -202,7 +139,7 @@ if ($cgiparam{'uid'}) {
     <tr>
       <td height="40" colspan="5"><table border="0" cellspacing="0" cellpadding="0">
           <tr>
-            <td><input type="button" name="Button" id="button" value="Delete User" onclick="if(confirm('Delete user?')){document.location='?m=users&duid=[+ $hash->{'username'} +]';}" /></td>
+            <td><input type="button" name="Button" id="button" value="Delete User" onclick="if(confirm('Delete user?')){document.location='?m=users&duid=[% hash.username %]';}" /></td>
 	<!--+(this.form.delSkel.checked ? '&dskel=1' : '')-->
             <td>&nbsp;</td>
             <td><!--><input type="checkbox" id="delSkel" name="delSkel" value="1" />--></td>
@@ -211,10 +148,10 @@ if ($cgiparam{'uid'}) {
       </table></td>
     </tr>
   </table>
-  <input type="hidden" name="userOriginal" value="[+ $hash->{'username'} +]" />
-  <input type="hidden" name="user" value="[+ $hash->{'username'} +]" />
-  <input type="hidden" name="uid" value="[+ $hash->{'username'} +]" />
+  <input type="hidden" name="userOriginal" value="[% hash.username %]" />
+  <input type="hidden" name="user" value="[% hash.username %]" />
+  <input type="hidden" name="uid" value="[% hash.username %]" />
   <input type="hidden" name="m" value="users" />
 </form>
 
-[$ endif $]
+[% END %]
