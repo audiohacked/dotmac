@@ -181,11 +181,6 @@ sub TransHandler {
 	if ($r->uri()  eq "/") {
 		$r->uri("/index.html");
 	}
-	my $fullpath=$r->document_root.$r->uri;
-	if (-f $fullpath) {
-		$r->filename($fullpath);
-		return Apache2::Const::OK;
-	}
 	
     	$r->document_root($r->dir_config->get('dotMacCachePath'));
     	foreach my $dotMacCachedDir ($r->dir_config->get('dotMacCachedDirs')) {
@@ -201,17 +196,22 @@ sub TransHandler {
 #				$r->handler('perl-script');
 #				$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::handler);
 #				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
-			} elsif ($r->dir_config('dotMacUseDownloadResources') eq "YES") {
-				$r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
+			} elsif ($r->dir_config('dotMacDownloadAppleResources') eq "YES") {
 				$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
-				$r->filename($r->dir_config('dotMacCachePath').$r->uri);
+				$r->set_handlers(PerlMapToStorageHandler =>\&DotMac::CachingProxy::download);    	
 				$r->handler('perl-script');
-				$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::download);
 				return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
 				
 			}
     	}
     
+	my $fullpath=$r->document_root.$r->uri;
+	if (-f $fullpath) {
+		$r->filename($fullpath);
+		return Apache2::Const::OK;
+	}
+
+
    }
 			$logging =~ m/Sections/&&$rlog->info("gth $uri");
 			my $fullpath=$r->document_root.$r->uri;

@@ -42,11 +42,14 @@ sub download {
 	my $uri=$r->uri;
 	my $httpType="http://";
 	$httpType="https://" if $r->get_server_port() == 443;
-	my $uri = escape_input($httpType.$r->get_server_name.$r->uri);
+	my $uri = $httpType.$r->get_server_name.escape_input($r->uri);
 	my $filepath=$r->dir_config('dotMacCachePath');
 	#### This is a really potentially bad way to do things
 	$r->log->info("CACHE: Downloading $uri ");
 	`wget -P $filepath -nH -x $uri`;
+
+        $r->filename($r->dir_config('dotMacCachePath').escape_input($r->uri));
+
 	return Apache2::Const::OK;
 }
 ## I think this will mitigate some of my concerns. I'd still someone else to verify this will take care of all security
