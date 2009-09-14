@@ -18,7 +18,7 @@ package DotMac::DotMacDB::mysql;
 
 use DBI;
 use strict;
-use CGI::Carp;
+#use CGI::Carp;
 
 our @ISA = qw(DotMac::DotMacDB);
 
@@ -26,16 +26,16 @@ sub new {
 	my $invocant = shift;
 	my $class = ref($invocant) || $invocant;
 
-	carp "new DotMacDB-mysql";
+	#carp "new DotMacDB-mysql";
 
 	my $var_hash={@_};
-  	my $dbname = exists $var_hash->{'db'} ? $var_hash->{'db'} : "dotmac";
-	my $host = exists $var_hash->{'host'} ? $var_hash->{'host'} : "localhost";
-	my $dbuser = exists $var_hash->{'user'} ? $var_hash->{'user'} : "dotmac";
-	my $dbpass = exists $var_hash->{'pass'} ? $var_hash->{'pass'} : "dotmac";
+  	my $dbname = exists $var_hash->{'dotMacDBName'} ? $var_hash->{'dotMacDBName'} : "dotmac";
+	my $host = exists $var_hash->{'dotMacDBServName'} ? $var_hash->{'dotMacDBServName'} : "localhost";
+	my $dbuser = exists $var_hash->{'dotMacDBUser'} ? $var_hash->{'dotMacDBUser'} : "dotmac";
+	my $dbpass = exists $var_hash->{'dotMacDBPasswd'} ? $var_hash->{'dotMacDBPasswd'} : "dotmac";
 	my $dbRealm = exists $var_hash->{'dotMacRealm'} ? $var_hash->{'dotMacRealm'} : "idisk.mac.com";
-
-	my $dotmacDBconn = DBI->connect('dbi:mysql:database='.$dbname.';host='.$host, $dbuser, $dbpass);
+	my $dbistring = exists $var_hash->{'dotMacPerlDBI'} ? $var_hash->{'dotMacPerlDBI'} : "dbi:mysql:database=".$dbname.";host=".$host;
+	my $dotmacDBconn = DBI->connect($dbistring, $dbuser, $dbpass);
 	my $self = {
 		dbh => $dotmacDBconn,
 		realm => $dbRealm,
