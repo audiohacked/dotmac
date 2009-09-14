@@ -34,7 +34,7 @@ sub new {
 	my $dbuser = exists $var_hash->{'dotMacDBUser'} ? $var_hash->{'dotMacDBUser'} : "dotmac";
 	my $dbpass = exists $var_hash->{'dotMacDBPasswd'} ? $var_hash->{'dotMacDBPasswd'} : "dotmac";
 	my $dbRealm = exists $var_hash->{'dotMacRealm'} ? $var_hash->{'dotMacRealm'} : "idisk.mac.com";
-	my $dbistring = exists $var_hash->{'dotMacPerlDBI'} ? $var_hash->{'dotMacPerlDBI'} : "dbi:mysql:database=".$dbname.";host=".$host;
+	my $dbistring = exists $var_hash->{'dotMacPerlDBI'} ? $var_hash->{'dotMacPerlDBI'} : "dbi:mysql:database=dotmac;host=localhost";
 	my $dotmacDBconn = DBI->connect($dbistring, $dbuser, $dbpass);
 	my $self = {
 		dbh => $dotmacDBconn,

@@ -75,5 +75,5 @@ while ($line=<LIST>){
 }
 print "Creating a tarball of what you just downloaded\n";
 `tar -cvf $configurationdir/appledotmobileconfbackup.tar $configurationdir/configurations`;
-print "All done";
+print "All done\n";
 
