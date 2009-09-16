@@ -22,8 +22,9 @@ use strict;
 use vars qw(@ISA $VERSION);
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
-
 use Apache2::Const -compile => qw(OK);
+use File::Spec;
+use DotMac::CommonCode;
 
 use LWP::UserAgent ();
 # use LWP::Debug qw(+);
@@ -36,37 +37,14 @@ $VERSION = '1.00';
 my $UA = __PACKAGE__->new;
 $UA->agent(join "/", __PACKAGE__, $VERSION);
 
-
-sub download {
-	my $r = shift;
-	my $uri=$r->uri;
-	my $httpType="http://";
-	$httpType="https://" if $r->get_server_port() == 443;
-	my $uri = $httpType.$r->get_server_name.escape_input($r->uri);
-	my $filepath=$r->dir_config('dotMacCachePath');
-	#### This is a really potentially bad way to do things
-	$r->log->info("CACHE: Downloading $uri ");
-	`wget -P $filepath -nH -x $uri`;
-
-        $r->filename($r->dir_config('dotMacCachePath').escape_input($r->uri));
-
-	return Apache2::Const::OK;
-}
-## I think this will mitigate some of my concerns. I'd still someone else to verify this will take care of all security
-## concerns before we recommend using it in production
-sub escape_input {
-  my ($str) = @_; 
-	$str =~ s/([;<>\*\|`&\$!#\(\)\[\]\{\}:'"])/\\$1/g;
-  return $str;
-}
-
-
 sub handler {
 	my $r = shift;
 	my $httpType="http://";
 	$httpType="https://" if $r->get_server_port() == 443;
 	my $uri = join '', $httpType, $r->get_server_name, $r->uri;
-	
+	my $logging = $r->dir_config('LoggingTypes');
+	my $rlog = $r->log;
+	$logging =~ m/Sections/&&$rlog->info("CachingProxy initiated");
 	my $query = $r->args() || '';
 	$uri .= "?$query" if defined $query and length $query;
 	my $request = new HTTP::Request($r->method, $uri);
@@ -84,8 +62,6 @@ sub handler {
 		$request->content_type($r->content_type);
 	}
 	my $res = (new LWP::UserAgent)->request($request);
-#	warn $uri;
-#	warn $headers->as_string;
 
 	#feed reponse back into our request_rec*
 	$r->status($res->code);
@@ -99,13 +75,26 @@ sub handler {
 			$r->content_type($_[1]);
 			}
 	});
-#	warn $r->content_type();
 	
 	if ($r->header_only) {
 		$r->send_http_header();
 		return Apache2::Const::OK;
 	}
-	
+	$logging =~ m/Sections/&&$rlog->info("apple returned code: " . $res->code);
+	my ($volume,$cacheddir,$cachedfile) = File::Spec->splitpath( $r->uri );
+	if ( (!DotMac::CommonCode::check_for_dir_backref($cacheddir)) && ($res->code == 200) ) { #we don't cache if there's backref(s) in our uri && want a 200 OK
+		if (!(-d $r->document_root.'/'.$cacheddir)) { #check if cacheddir exists
+			$logging =~ m/Sections/&&$rlog->info("creating dir: " . $r->document_root.'/'.$cacheddir);
+			DotMac::CommonCode::recursiveMKdir ($r->document_root, $cacheddir);
+		}
+		$logging =~ m/Sections/&&$rlog->info("caching: " . $r->document_root.'/'.$cacheddir.'/'.$cachedfile);
+		my $putFile = $r->document_root.'/'.$cacheddir.'/'.$cachedfile;
+		open(PUTFILE,">$putFile") || `cat /dev/null > $putFile;chmod 600 $putFile`;
+		binmode PUTFILE;
+		print PUTFILE $res->content;
+		close(PUTFILE);
+		chmod(0600, $putFile);
+	}
 	$r->send_http_header();
 	print $res->content;
 	return Apache2::Const::OK;
