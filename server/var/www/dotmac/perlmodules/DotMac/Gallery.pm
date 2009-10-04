@@ -33,7 +33,10 @@ use POSIX qw(strftime);
 use Time::HiRes qw(gettimeofday);
 use DotMac::CommonCode;
 use Compress::Zlib;
-
+use URI::Split qw(uri_split);
+use XML::LibXML;
+use APR::UUID;
+use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 # $DotMac::Gallery::VERSION = '0.1';
 
 sub handler {
@@ -48,6 +51,163 @@ sub handler {
 	$r->sendfile("$dotMacCachePath/gallery.html");
 	return Apache2::Const::OK;
 	}
+
+sub ziplistHandler {
+	my $r = shift;
+	my $logging = $r->dir_config('LoggingTypes');
+	my @dotMacUsers = $r->dir_config->get('dotMacUsers');
+	my ($buf, $content, $XdmUser);
+	my $content_length = $r->header_in('Content-Length');
+	my $xZipToken = APR::UUID->new->format;
+	if ($content_length > 0) {
+		while ($r->read($buf, $content_length)) {
+			$content .= $buf;
+		}
+	$logging =~ m/Gallery/&&$r->log->info("Content from POST: $content");
+	}
+
+	#set up a new xml response doc
+	my $DAVns = 'D';
+	my $DAVnsURI = 'DAV:';
+	my $responseDoc = XML::LibXML::Document->createDocument('1.0', 'UTF-8');
+	my $multistatus = $responseDoc->createElement('multistatus');
+	$multistatus->setNamespace( $DAVnsURI , undef );
+	$responseDoc->setDocumentElement($multistatus);
+	
+	#parse the data we got
+	my $parser = XML::LibXML->new();
+	my $data = $parser->parse_string($content);
+	my $xc = XML::LibXML::XPathContext->new($data);
+	$xc-> registerNs( weAllLoveNamespaces  => 'http://user.mac.com/properties/' );
+	my $zip = Archive::Zip->new();
+	foreach my $entrynode ($xc->findnodes("//weAllLoveNamespaces:ziplist/weAllLoveNamespaces:entry")) {
+		my $response = $multistatus->appendChild($responseDoc->createElement("response"));
+		$response->setNamespace( $DAVnsURI , undef );
+		my $responsehref = $response->appendChild($responseDoc->createElement("href"));
+		my $responsestatus = $response->appendChild($responseDoc->createElement("status"));
+		my $responsedesc = $response->appendChild($responseDoc->createElement("responsedescription"));
+		my $name = $xc->findvalue("./weAllLoveNamespaces:name", $entrynode);
+		my $href = $xc->findvalue("./weAllLoveNamespaces:href", $entrynode);
+		my ($scheme, $auth, $path, $query, $frag) = uri_split($href);
+		foreach my $username (@dotMacUsers) {
+			if($path =~m{^/$username/(.*)})  {
+				$XdmUser = $username;
+				$path = "/$username/Web/Sites/_gallery/$1";
+			}
+		}
+		my $filepath = $r->document_root.$path;
+		my $hreftextnode = $responseDoc->createTextNode($href);
+		$responsehref->appendChild($hreftextnode);
+		
+		$logging =~ m/Gallery/&&$r->log->info("name: $name - href: $href - path: $path");
+		if (!DotMac::CommonCode::check_for_dir_backref($path)) {
+			# I think we should be ok
+			if (-f $filepath) {
+				# do some fancy zip methods - adding the file to a zip file
+				my $file_member = $zip->addFile( $filepath, $name );
+				my $statustextnode = $responseDoc->createTextNode('HTTP/1.1 200 OK');
+				$responsestatus->appendChild($statustextnode);
+				my $desctextnode = $responseDoc->createTextNode('Zipped Successfully');
+				$responsedesc->appendChild($desctextnode);
+			}
+			else {
+				# ppl are trying to do things we don't like; set a 404 in the xml
+				my $statustextnode = $responseDoc->createTextNode('HTTP/1.1 404 Not Found');
+				$responsestatus->appendChild($statustextnode);
+				my $desctextnode = $responseDoc->createTextNode('Expected file did not exist');
+				$responsedesc->appendChild($desctextnode);
+			}
+		}
+		else {
+			# ppl are trying to do things we don't like; set a 404 in the xml
+			my $statustextnode = $responseDoc->createTextNode('HTTP/1.1 404 Not Found');
+			$responsestatus->appendChild($statustextnode);
+			my $desctextnode = $responseDoc->createTextNode('Expected file did not exist');
+			$responsedesc->appendChild($desctextnode);
+		}
+	}
+	if (! -d $r->dir_config( 'dotMacCachePath') . "/tmp") {
+		DotMac::CommonCode::recursiveMKdir($r->dir_config( 'dotMacCachePath'), "tmp");
+	}
+	# Save the Zip file
+   unless ( $zip->writeToFileNamed($r->dir_config( 'dotMacCachePath') . "/tmp/" . $xZipToken . ".zip" ) == AZ_OK ) {
+       # we should actually send a different responseXMLstring now
+       $logging =~ m/Gallery/&&$r->log->info("failed to create zip file");
+   }
+	my $responseXMLstring = $responseDoc->toString();
+	$logging =~ m/Gallery/&&$r->log->info($responseXMLstring);
+	
+##HTTP/1.1 207 Multi-Status
+##Content-Type	text/xml;charset=utf-8
+##Server	AppleIDiskServer-1E4131
+##x-responding-server	truthng001
+##X-dmUser	walinsky
+##Content-Location	/walinsky/100083/
+##X-Zip-Token	1g3s18hn-4ujp-13sjyju3eo-2cn617ze5k0
+##Content-Length	32067
+##Date	Sat, 03 Oct 2009 12:14:16 GMT
+##Connection	keep-alive
+##X-UA-Compatible	IE=Edge
+	$r->content_type("text/xml;charset=utf-8");
+	$r->header_out("Server" => "AppleIDiskServer-666");
+	$r->header_out("x-responding-server" => "truthng666");
+	$r->header_out("X-dmUser" => $XdmUser);
+	$r->header_out("X-Zip-Token" => $xZipToken);
+	$r->header_out('Content-Length', length( $responseXMLstring ));
+	$r->header_out("Connection" => "keep-alive");
+	$r->header_out("X-UA-Compatible" => "IE=Edge");
+	$r->print($responseXMLstring);
+	$r->status(207);
+	return Apache2::Const::OK;##HTTP/1.1 207 Multi-Status!!!
+	}
+
+sub zipgetHandler {
+	my $r = shift;
+	my $logging = $r->dir_config('LoggingTypes');
+	my @dotMacUsers = $r->dir_config->get('dotMacUsers');
+	my $XdmUser;
+	##	GET /walinsky/100083/somefile.zip?webdav-method=ZIPGET&token=1g3s18hn-4ujp-13sjyju3eo-2cn617ze5k0&disposition=download
+	
+	foreach my $username (@dotMacUsers) {
+		if($r->uri =~m{^/$username/(.*)})  {
+			$XdmUser = $username;
+		}
+	}
+	
+	my $dotMacCachePath = $r->dir_config('dotMacCachePath');
+	my $webdavmethod =  $r->notes->get('webdavmethod');
+	my $token =  $r->notes->get('token');
+	my $disposition =  $r->notes->get('disposition');
+	
+#HTTP/1.1 200 OK
+#Content-Length: 2298104
+#Content-Type: application/zip
+#Server: AppleIDiskServer-1E4131
+#x-responding-server: truthng002
+#X-dmUser: emily_parker
+#Last-Modified: Sun, 04 Oct 2009 17:19:47 GMT
+#Content-disposition: attachment;
+#Date: Sun, 04 Oct 2009 17:20:18 GMT
+#Connection: keep-alive
+#X-UA-Compatible: IE=Edge
+	if ( ($token =~ m/([a-zA-Z\-_0-9]+)/) && ( -f "$dotMacCachePath/tmp/" . $token . ".zip" ) ) {
+		#	$r->header_out("Content-Length" => "2298104"); should be handled by sendfile
+		$r->header_out("Content-Type" => "application/zip");
+		$r->header_out("Server" => "DotMobileUsServer-666");
+		$r->header_out("x-responding-server" => "truthng666");
+		$r->header_out("X-dmUser" => $XdmUser);
+		$r->header_out("Content-disposition" => "attachment");
+		$r->header_out("Connection" => "keep-alive");
+		$r->header_out("X-UA-Compatible" => "IE=Edge");
+		$r->sendfile("$dotMacCachePath/tmp/" . $token . ".zip");
+		unlink ( "$dotMacCachePath/tmp/" . $token . ".zip" ); ##unlink the file once sent completely
+	} else {
+		$r->status(404);
+	}
+	# do some cleanup routine here maybe - or set a post handler for cleanup tasks
+	# cleaning up files older than a certain amount of time
+	return Apache2::Const::OK;
+}
 
 sub truthgetHandler {
 	my $r = shift;

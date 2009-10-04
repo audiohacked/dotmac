@@ -40,7 +40,7 @@ sub handler {
 	my $rlog = $r->log;   
  	my $logging = $r->dir_config('LoggingTypes');
 	my $method = $r->method;
-    if ($r->method eq 'GET') {
+    if (($r->method eq 'GET') || ($r->method eq 'POST')) {
 		return TransHandler($r);
 	}
 	else {
@@ -63,7 +63,7 @@ sub TransHandler {
 	my $webdavMethod;
 	my $derivative;
 	my %params;
-	$logging =~ m/Sections/&&$rlog->info("GTH: my URI = $uri");
+	$logging =~ m/Gallery/&&$rlog->info("GTH: my URI = $uri");
 	#Allow robots to be used
 	if ($r->args()) {
 		my @args = split '&', $r->args();
@@ -84,14 +84,14 @@ sub TransHandler {
 	}
 				
 	foreach my $username (@dotMacUsers) {
-		$logging =~ m/Sections/&&$rlog->info("matching $username against $uri");
+		$logging =~ m/Gallery/&&$rlog->info("matching $username against $uri");
 		my $initialUri = $r->uri;
 		if($uri =~m{^/$username(.*)})  {
 			#fix uris that start with $username
 			if ($1 !~m{^/Web/Sites/_gallery}) {
 				$uri = "/$username/Web/Sites/_gallery$1";
 				$r->uri($uri);
-				$logging =~ m/Sections/&&$rlog->info("Modified URI $uri");
+				$logging =~ m/Gallery/&&$rlog->info("Modified URI $uri");
 			}
 			if (-d $r->document_root.$r->uri) { # we set our perlhandler on directories - files will be served by Apache
 				# add a trailing slash if its not on there
@@ -100,17 +100,22 @@ sub TransHandler {
 					$r->header_out('Content-Location',"$initialUri/");
 				}
 				if ($webdavMethod) {    
-					if (($webdavMethod eq 'truthget') || ($webdavMethod eq 'TRUTHGET')) {
-						$logging =~ m/Sections/&&$rlog->info("setting handler DotMac::Gallery::truthgetHandler");
+					if (uc($webdavMethod) eq 'TRUTHGET') {
+						$logging =~ m/Gallery/&&$rlog->info("setting handler DotMac::Gallery::truthgetHandler");
 						$r->handler('perl-script');
 						$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::truthgetHandler);
 					}
+					elsif (uc($webdavMethod) eq 'ZIPLIST') {
+						$logging =~ m/Gallery/&&$rlog->info("setting handler DotMac::Gallery::ziplistHandler");
+						$r->handler('perl-script');
+						$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::ziplistHandler);
+					}
 					else {
-						$logging =~ m/Sections/&&$rlog->info("no handler defined for webdavmethod: $webdavMethod");
+						$logging =~ m/Gallery/&&$rlog->info("no handler defined for webdavmethod: $webdavMethod");
 					}
 				}
 				else {
-					$logging =~ m/Sections/&&$rlog->info($r->uri . ": setting handler DotMac::Gallery::handler");
+					$logging =~ m/Gallery/&&$rlog->info($r->uri . ": setting handler DotMac::Gallery::handler");
 					$r->handler('perl-script');
 					$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::handler);
 				}
@@ -119,6 +124,18 @@ sub TransHandler {
 			}
 			elsif (-f $r->document_root.$r->uri) { # we set our perlhandler on directories - files will be served by Apache
 				return Apache2::Const::DECLINED; # signal that the *Uri Translation Phase* is done and let Apache handle things
+			}
+			elsif ($webdavMethod) { # it's not a directory nor a file but webdavmethod is called
+				if (uc($webdavMethod) eq 'ZIPGET') {
+					$logging =~ m/Gallery/&&$rlog->info("setting handler DotMac::Gallery::zipgetHandler");
+					$r->notes->set(webdavmethod => $params{'webdav-method'} || '');
+					$r->notes->set(token => $params{'token'} || '');
+					$r->notes->set(disposition => $params{'disposition'} || '');
+					$r->handler('perl-script');
+					$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::zipgetHandler);
+					$r->filename($r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
+					return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
+				}
 			}
 			elsif ($derivative) {
 			#http://gallery.walinsky.com/xhr/emily_parker/100002/IMG_2561.json?derivative=exif&source=web.jpg&type=exif
@@ -138,7 +155,7 @@ sub TransHandler {
 					$r->filename($r->document_root."$uri/$derivative.jpg");
 				}
 				if (-f $r->filename) {
-					$logging =~ m/Sections/&&$rlog->info($r->filename . "exists - bailing out");
+					$logging =~ m/Gallery/&&$rlog->info($r->filename . "exists - bailing out");
 					$r->uri("$uri/$derivative.jpg");
 					if ($derivative eq 'large') {
 						$uri =~ s/.jpg//s;
@@ -148,7 +165,7 @@ sub TransHandler {
 					return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and let Apache handle things
 				}
 				else {
-					$logging =~ m/Sections/&&$rlog->info($uri . ": $derivative setting handler DotMac::GalleryImager::handler");
+					$logging =~ m/Gallery/&&$rlog->info($uri . ": $derivative setting handler DotMac::GalleryImager::handler");
 					$r->uri($uri);
 					$r->notes->set(derivative => $params{'derivative'});
 					$r->notes->set(source => $params{'source'});#source=web.jpg
@@ -166,7 +183,7 @@ sub TransHandler {
 				$r->uri($uri);
 			}
 			$r->filename($r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
-			$logging =~ m/Sections/&&$rlog->info("$uri: setting handler DotMac::Gallery::truthgetHandler for user $username");
+			$logging =~ m/Gallery/&&$rlog->info("$uri: setting handler DotMac::Gallery::truthgetHandler for user $username");
 			$r->handler('perl-script');
 			$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::truthgetHandler);
 			return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
@@ -180,7 +197,7 @@ sub TransHandler {
 	foreach my $dotMacCachedDir ($r->dir_config->get('dotMacCachedDirs')) {
 		if($uri =~m{^/$dotMacCachedDir/})  {
 		if (-f $r->document_root.$r->uri) {
-			$logging =~ m/Sections/&&$rlog->info($r->document_root . "$uri: matched cache dir $dotMacCachedDir");
+			$logging =~ m/Gallery/&&$rlog->info($r->document_root . "$uri: matched cache dir $dotMacCachedDir");
 			$r->filename($r->document_root.$r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
 			return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
 		#} elsif ($r->dir_config('dotMacDownloadAppleResources') eq "YES") {
@@ -202,12 +219,12 @@ sub TransHandler {
 
 
    }
-			$logging =~ m/Sections/&&$rlog->info("gth $uri");
+			$logging =~ m/Gallery/&&$rlog->info("gth $uri");
 			my $fullpath=$r->document_root.$r->uri;
-			$logging =~ m/Sections/&&$rlog->info("gth $fullpath");
+			$logging =~ m/Gallery/&&$rlog->info("gth $fullpath");
 			if (-f $fullpath) {
 				
-				$logging =~ m/Sections/&&$rlog->info("GTH: mapping default url to $fullpath");
+				$logging =~ m/Gallery/&&$rlog->info("GTH: mapping default url to $fullpath");
 				$r->filename($fullpath);
 				return Apache2::Const::OK;
 			}
