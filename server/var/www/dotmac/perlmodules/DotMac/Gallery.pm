@@ -35,6 +35,7 @@ use DotMac::CommonCode;
 use Compress::Zlib;
 use URI::Split qw(uri_split);
 use XML::LibXML;
+use APR::Const;
 use APR::UUID;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 # $DotMac::Gallery::VERSION = '0.1';
@@ -178,7 +179,7 @@ sub zipgetHandler {
 	my $webdavmethod =  $r->notes->get('webdavmethod');
 	my $token =  $r->notes->get('token');
 	my $disposition =  $r->notes->get('disposition');
-	
+	my $tmpZipFile = "$dotMacCachePath/tmp/" . $token . ".zip";
 #HTTP/1.1 200 OK
 #Content-Length: 2298104
 #Content-Type: application/zip
@@ -190,7 +191,7 @@ sub zipgetHandler {
 #Date: Sun, 04 Oct 2009 17:20:18 GMT
 #Connection: keep-alive
 #X-UA-Compatible: IE=Edge
-	if ( ($token =~ m/([a-zA-Z\-_0-9]+)/) && ( -f "$dotMacCachePath/tmp/" . $token . ".zip" ) ) {
+	if ( ($token =~ m/([a-zA-Z\-_0-9]+)/) && ( -f $tmpZipFile ) ) {
 		#	$r->header_out("Content-Length" => "2298104"); should be handled by sendfile
 		$r->header_out("Content-Type" => "application/zip");
 		$r->header_out("Server" => "DotMobileUsServer-666");
@@ -199,13 +200,39 @@ sub zipgetHandler {
 		$r->header_out("Content-disposition" => "attachment");
 		$r->header_out("Connection" => "keep-alive");
 		$r->header_out("X-UA-Compatible" => "IE=Edge");
-		$r->sendfile("$dotMacCachePath/tmp/" . $token . ".zip");
-		unlink ( "$dotMacCachePath/tmp/" . $token . ".zip" ); ##unlink the file once sent completely
+		my $status = $r->sendfile($tmpZipFile);
+		die "sendfile has failed" unless $status == APR::Const::SUCCESS;
+		$r->pool->cleanup_register(\&cleanupTmpZipFile, $r);
 	} else {
 		$r->status(404);
 	}
 	# do some cleanup routine here maybe - or set a post handler for cleanup tasks
 	# cleaning up files older than a certain amount of time
+	return Apache2::Const::OK;
+}
+	
+sub cleanupTmpZipFile {
+	my $r = shift;
+	my $logging = $r->dir_config('LoggingTypes');
+	my $token =  $r->notes->get('token');
+	my $tmpdir = $r->dir_config( 'dotMacCachePath') . "/tmp/";
+	my $tmpZipFile = $tmpdir . $token . ".zip";
+	##delete the file
+	$logging =~ m/Gallery/&&$r->log->info("deleting $tmpZipFile");
+	unlink $tmpZipFile or die "failed to unlink $tmpZipFile" if -e $tmpZipFile;;
+	## if users haven't successfully downloaded their zip files successfully previously
+	## there'll be leftovers in the tmp dir_config
+	## we can safely assume we can delete these files after 1 day
+	## this value is hardcoded now - we might decide making this a configurable option
+	foreach my $tmpFile(glob("$tmpdir*")){
+		my $age=-M $tmpFile;
+		if($age>1){
+			if (-f $tmpFile) {
+				$logging =~ m/Gallery/&&$r->log->info("also deleting $tmpFile");
+				unlink $tmpFile or die "Error removing $tmpFile\n$!, stopped";
+			}
+		}
+	}
 	return Apache2::Const::OK;
 }
 
