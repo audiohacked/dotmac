@@ -86,7 +86,7 @@ sub handler {
 				
 				my @dirtree = split (/\//,$uri);
 				my $numdir = @dirtree;
-				my $filename = @dirtree[$numdir - 1 ];
+				my $filename = $dirtree[$numdir - 1 ];
 				$resultdata{data}{infoName} = $filename;
 				$resultdata{data}{infoDigitizedDate} = $exifTool->GetValue('CreateDate') || "--";
 				$resultdata{data}{infoFocalLength} = $exifTool->GetValue('FocalLength') || "--";
