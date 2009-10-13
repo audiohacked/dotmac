@@ -32,6 +32,7 @@ use DotMac::GalleryImager;
 use DotMac::CachingProxy;
 use DotMac::DMXWebdavMethods;
 use DotMac::NullStorageHandler;
+use DotMac::WebObjects::Comments::wa;
 
 $DotMac::GalleryTransHandler::VERSION = '0.1';
 
@@ -41,6 +42,40 @@ sub handler {
  	my $logging = $r->dir_config('LoggingTypes');
 	my $method = $r->method;
     if (($r->method eq 'GET') || ($r->method eq 'POST')) {
+    	
+    	##first let's see if we're hitting a cached dir
+		foreach my $dotMacCachedDir ($r->dir_config->get('dotMacCachedDirs')) {
+			if($r->uri =~m{^/$dotMacCachedDir/})  {
+				##it IS a cached dir
+				$r->document_root($r->dir_config->get('dotMacCachePath'));
+				if (-f $r->document_root.$r->uri) {
+					$logging =~ m/Gallery/&&$rlog->info($r->document_root . $r->uri . ": matched cache dir $dotMacCachedDir");
+					$r->filename($r->document_root.$r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
+					return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
+				#} elsif ($r->dir_config('dotMacDownloadAppleResources') eq "YES") {
+				} else {
+					$r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
+					$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
+					$r->filename($r->document_root.$r->uri);
+					$r->handler('perl-script');
+					$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::handler);
+					return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
+				}
+			}
+		}
+		##it's not a cached dir
+		##let's see if we're hitting /WebObjects/
+		if($r->uri =~m{^/WebObjects/Comments.woa/wa/}) {
+			$logging =~ m/Gallery/&&$rlog->info($r->document_root . $r->uri . ": matched WebObjects");
+			##WebObjects should be handled correctly from our apache conf; bail out
+			$r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);  
+			$r->filename($r->document_root.$r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
+			$r->set_handlers(PerlResponseHandler => \&DotMac::WebObjects::Comments::wa::handler);
+			return Apache2::Const::OK;
+		}
+		
+		##not /WebObjects either
+		##initiate our transhandler
 		return TransHandler($r);
 	}
 	else {
@@ -182,7 +217,7 @@ sub TransHandler {
 				$uri = "/$username/Web/Sites/_gallery$1";
 				$r->uri($uri);
 			}
-			$r->filename($r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
+			$r->filename($r->document_root.$r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
 			$logging =~ m/Gallery/&&$rlog->info("$uri: setting handler DotMac::Gallery::truthgetHandler for user $username");
 			$r->handler('perl-script');
 			$r->set_handlers(PerlResponseHandler => \&DotMac::Gallery::truthgetHandler);
@@ -193,32 +228,7 @@ sub TransHandler {
 		$r->uri("/index.html");
 	}
 	
-	$r->document_root($r->dir_config->get('dotMacCachePath'));
-	foreach my $dotMacCachedDir ($r->dir_config->get('dotMacCachedDirs')) {
-		if($uri =~m{^/$dotMacCachedDir/})  {
-		if (-f $r->document_root.$r->uri) {
-			$logging =~ m/Gallery/&&$rlog->info($r->document_root . "$uri: matched cache dir $dotMacCachedDir");
-			$r->filename($r->document_root.$r->uri); # we have no further trans handlers - we need to set $r->filename ourselves
-			return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
-		#} elsif ($r->dir_config('dotMacDownloadAppleResources') eq "YES") {
-		} else {
-			$r->set_handlers(PerlMapToStorageHandler => \&DotMac::NullStorageHandler::handler);    	
-			$r->hostname('gallery.mac.com'); ### if we don't do this - we'll keep calling ourselves - and lock up our server!!!
-			$r->filename($r->document_root.$r->uri);
-			$r->handler('perl-script');
-			$r->set_handlers(PerlResponseHandler => \&DotMac::CachingProxy::handler);
-			return Apache2::Const::OK; # signal that the *Uri Translation Phase* is done and no further handlers are called in this phase.
-		}
-	}
-    
-	my $fullpath=$r->document_root.$r->uri;
-	if (-f $fullpath) {
-		$r->filename($fullpath);
-		return Apache2::Const::OK;
-	}
 
-
-   }
 			$logging =~ m/Gallery/&&$rlog->info("gth $uri");
 			my $fullpath=$r->document_root.$r->uri;
 			$logging =~ m/Gallery/&&$rlog->info("gth $fullpath");
