@@ -1,0 +1,11 @@
+IPADDR|T||What is the primary IP address of this machine:
+NATIPADDR|T|NONE|What is the external/router IP address (if any) that you will use to connect to dotMobile.us
+LOCALIDISKNAME|T||What is the local name for idisk (ex: idisk.yourdomain.com):  
+LOCALPUBLISHNAME|T||What is the local name for the publish service (ex: publish.yourdomain.com):
+LOCALGALLERYNAME|T||What is the local name for the gallery service (ex: gallery.yourdomain.com)
+LOCALWWWMACNAME|T||What is the local name for the administrative scripts (can be the same as the idisk name)
+LOCALWEBNAME|T||What is the name that your iWeb sites should be viewable from (ex: homepages.yourdomain.com)
+GALLERYPROXYENABLE|B|NO|Should we proxy to other users Gallery Sites
+GALLERYRESOURCEDOWNLOAD|B|YES|Should we attempt to download missing resources and cache them locally for gallery
+DOTMOBILEROOT|D||Where is the root of the dotMobile installation (the folder that has idisk, private, etc...
+QUIETSTARTUP|B||Do you want to apache to be quiet on startup

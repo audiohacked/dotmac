@@ -52,9 +52,9 @@ sub handler {
 			}
 		#	$logging =~ m/Body/&&
 			$rlog->info("Content from POST: $content");
-			$r->print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse><params><param><value><struct><member><name>kDMRes
-ult</name><value><struct></struct></value></member><member><name>kDMErrorCode</name><value><int>0</int></valu
-e></member></struct></value></param></params></methodResponse>");
+			$r->print("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><methodResponse><params><param><value><struct><member><name>kDMResult</name>
+			<value><struct></struct></value></member><member><name>kDMErrorCode</name><value><int>0</int></value></member></struct></value>
+			</param></params></methodResponse>");
 			return Apache2::Const::DONE;
 		}
 
