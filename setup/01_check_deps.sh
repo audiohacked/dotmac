@@ -20,8 +20,8 @@ MD5
 XML::DOM
 HTTP::DAV
 XML::LibXML
-Embperl
 "
+
 echo "Checking Perl Modules"
 for X in ${REQUIRED_MODS}; do
 	perl -M${X} -e 1 2>/dev/null >/dev/null
