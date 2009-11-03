@@ -1,7 +1,7 @@
 #file:DotMac/iDiskUserAdmin.pm
 #----------------------
 
-## Copyright (C) 2007 Walinsky
+## Copyright (C) 2007 Walinsky, Sean Nelson 
 ## This program is free software; you can redistribute it and/or modify it
 ## under the terms of the GNU General Public License as published by the 
 ## Free Software Foundation; either version 2 of the License, or (at your option)
@@ -23,23 +23,48 @@ use DB_File;
 use Encode;#use encoding "utf8";
 use DotMac::CommonCode;
 use Apache2::RequestRec ();
+use DotMac::DotMacDB;
+use Data::Dumper;
+use CGI::Carp;
+
 # retrieve var, set by PerlSetVar in httpd.conf:
 # $foo = $r->dir_config('foo');
 sub handler
 	{
 	my $r = shift;
+	my $realm = $r->dir_config('dotMacRealm');
 	#If you really want to use this, uncomment the following line - and comment-out the next one
 	#Note: adapt your dotmac.conf in a way that this page _need_ a (secure) login!!!
-	my $dbFile = $r->dir_config('dotMacUserDB');
-	#my $dbFile = '/var/www/idiskAdmin/foobar.passwd';
+	my $dbadmin = DotMac::DotMacDB->new();
+
+	my @users = $dbadmin->list_users($realm);
+	if (param('ApacheRes') eq "Restart Apache") {
+		print header;
+		print "<meta http-equiv=\"refresh\" content=\"10\">";
+		print "<p>Please wait... Apache is restarting</p>";
+		$r->rflush;
+		system($r->dir_config('dotMacApacheRestart'));
+		
+	} elsif (param('htdigestGen') eq "Generate HTDigest Files") {
+		$dbadmin->generate_htdigest_files($r->dir_config('dotMacUserDB'),$r->dir_config('dotMacAdminDB'));
+	} 
+	my @idiskuserstat=stat($r->dir_config('dotMacUserDB'));
+	#print $r->dir_config('dotMacUserDB')." last modified on:". scalar localtime($idiskuserstat[9]);	
+	#print "<BR />";
+	@idiskuserstat=stat($r->dir_config('dotMacAdminDB'));
+	#print $r->dir_config('dotMacAdminDB')." last modified on:". scalar localtime($idiskuserstat[9]);		
+	@idiskuserstat=stat($r->dir_config('dotMacPrivatePath')."/dotmac.pid");
+	#print "<br />";
+	print "Apache last restarted on:". scalar localtime($idiskuserstat[9]);
 	
-	my @htfile = (	DBType => 'Text',
-					DB     => $dbFile,
-					Server => 'apache',
-					Encrypt => 'MD5');
-	my $userAdmin = new HTTPD::UserAdmin @htfile;
-	my @users = $userAdmin->list;
-	@users = sort @users;
+	my $apacheRestartButton = '';
+	my $htdigestGenerateButton = '';
+	
+	if($r->dir_config('dotMacApacheRestart') ne "none"){
+		$apacheRestartButton=submit(-name=>"ApacheRes", -value=>'Restart Apache');
+	}
+
+	#$htdigestGenerateButton=submit(-name=>"htdigestGen", -value=>'Generate HTDigest Files');
 	print 	header,
 			start_html('User management'),
 			h1('User management'),
@@ -47,7 +72,8 @@ sub handler
 			hidden(-name=>'getset',
 					-value=>'get',
 					-override=>1),
-
+			$apacheRestartButton,
+			$htdigestGenerateButton,
 			table({border=>1},
 				TR	(			
 					td(
@@ -84,7 +110,6 @@ sub handler
 			
 			end_form,
 			hr;
-	
 	if (param())
 		{
 		my $user	= param('user');
@@ -92,7 +117,11 @@ sub handler
 		my $newuser	= param('newuser');
 		if ($newuser) {
 			#validate if newuser already exists, and then:
-			if($userAdmin->exists($newuser))
+			my $user_exists = 0;
+			for (@users) { 
+				$user_exists = 1 if ($_ eq $newuser);
+			}
+			if($user_exists)
 				{
 				print h3("User $newuser already exists"),p,"tick $newuser in the left box for editing";
 				return Apache2::Const::OK;
@@ -109,23 +138,34 @@ sub handler
 				}
 			$user = $newuser;
 			my $newpass = param('newpass1');
-			$userAdmin->add($user, "$user:idisk.mac.com:$newpass")
+			$dbadmin->add_user($user, $newpass, $realm);
+
 			}
 		if ($getset eq 'get') {
-			&get_user ($r, $userAdmin, $user);
+			&get_user ($r, $user);
 			}
 		elsif ($getset eq 'set') {
-			&set_user ($r, $userAdmin, $user);
+			&set_user ($r, $user);
 			}
 		}
 	return Apache2::Const::OK;
 	}
 
 sub get_user {
-	my ($r, $userAdmin, $user) = @_;
+	my ($r, $user) = @_;
+	my $realm = $r->dir_config('dotMacRealm');
+
+	my $dbadmin = DotMac::DotMacDB->new();
+
+	my @users = $dbadmin->list_users($realm);
+	
 	# we already verified if we got sent here by ticking the list or by typing a username
 	# a typed username might already exist though
-	if($userAdmin->exists($user))
+	my $user_exists = 0;
+	for (@users) { 
+		$user_exists = 1 if ($_ eq $user);
+	}
+	if($user_exists)
 		{
 		print h3("edit user $user"),p;
 		}
@@ -133,19 +173,11 @@ sub get_user {
 		{
 		print h3("create user $user"),p;
 		}
-	my $dotMacUserDataPath = $r->dir_config('dotMacUserDataPath');
-	my $dotMacUdataDBname = $r->dir_config('dotMacUdataDBname');
-	unless (-d "$dotMacUserDataPath/$user")
-		{
-		DotMac::CommonCode::recursiveMKdir ($dotMacUserDataPath, $user);
-		}
-	my %userData = DotMac::CommonCode::readUserDB("$dotMacUserDataPath/$user/$dotMacUdataDBname", my %attributes);
 	
+	my $userValues = $dbadmin->fetch_user_info($user, $realm);
+	my $defaultQuota;
+	my $defaultEmail;
 
-	my $defaultQuota = '';
-	if (exists($userData{'quota'})) {$defaultQuota = $userData{'quota'}}
-	my $defaultEmail = '';
-	if (exists($userData{'email'})) {$defaultEmail = $userData{'email'}}
 	print start_form,
 		hidden(-name=>'user',
 				-value=>$user,
@@ -155,7 +187,7 @@ sub get_user {
 				-override=>1),
 		table({border=>1},
 			TR	(
-				th({valign=>'TOP',align=>'RIGHT'}, 'quota'),
+				th({valign=>'TOP',align=>'RIGHT'}, 'iDisk quota'),
 				td	(popup_menu(-name=>'quota',
                   -values=>[qw/0 1048576 2097152 5242880 10485760 15728640 20971520 104857600 157286400 209715200 419430400 524288000 629145600 734003200 786432000/],
                   -labels=>{'0'=>'-',                                                     
@@ -173,12 +205,28 @@ sub get_user {
 							'629145600'=>'600GB',                                                                       
 							'734003200'=>'700GB',
 							'786432000'=>'750GB'},
-					-defaults=> $defaultQuota)
+					-defaults=> $userValues->{'idisk_quota_limit'})
 					)
 				),
 			TR	(
 				th({valign=>'TOP',align=>'RIGHT'},"email"),
-				td(textfield(-name=>'email', -default=>$defaultEmail, -size=>40)) #-maxlength=>number
+				td(textfield(-name=>'email', -default=>$userValues->{'email_addr'}, -size=>40)) #-maxlength=>number
+				),
+			TR      (
+                                th({valign=>'TOP',align=>'RIGHT'},"firstname"),
+                                td(textfield(-name=>'firstname', -default=>$userValues->{'firstname'}, -size=>40)) #-maxlength=>number
+                                ),
+			TR      (
+                                th({valign=>'TOP',align=>'RIGHT'},"lastname"),
+                                td(textfield(-name=>'lastname', -default=>$userValues->{'lastname'}, -size=>40)) #-maxlength=>number
+                                ),
+			TR (
+				th({valign=>'TOP',align=>'RIGHT'},"Administrator"),
+				td(radio_group(-name=>'is_admin',-default=>$userValues->{'is_admin'}?$userValues->{'is_admin'}:0, -values=>[1,0] ,-labels=>{1=>'yes',0=>'no'}))
+				),
+			TR (
+				th({valign=>'TOP',align=>'RIGHT'},"iDisk"),
+				td(radio_group(-name=>'is_idisk',-default=>$userValues->{'is_idisk'}?$userValues->{'is_idisk'}:0, -values=>[1,0] ,-labels=>{1=>'Enabled',0=>'Disabled'}))
 				)
 			),
 		submit,
@@ -187,18 +235,22 @@ sub get_user {
 	}
 
 sub set_user {
-	my ($r, $userAdmin, $user) = @_;
-	my $dotMacUserDataPath = $r->dir_config('dotMacUserDataPath');
-	my $dotMacUdataDBname = $r->dir_config('dotMacUdataDBname');
-	unless (-d "$dotMacUserDataPath/$user")
-		{
-		DotMac::CommonCode::recursiveMKdir ($dotMacUserDataPath, $user);
-		}
-	my %userdata = ();
-	$userdata{'quota'} = param('quota');
-	$userdata{'email'} = param('email');
-	DotMac::CommonCode::writeUserDB("$dotMacUserDataPath/$user/$dotMacUdataDBname", %userdata);
-	return get_user($r, $userAdmin, $user);
+	my ($r, $user) = @_;
+	my $quota = param('quota');
+	my $email = param('email');
+	my $firstname = param('firstname');
+	my $lastname = param('lastname');
+	my $realm = $r->dir_config('dotMacRealm');
+	my @paramNames=param();
+	my $storageHash;
+	foreach (@paramNames) {
+	$storageHash->{$_} = param($_);
+	}
+	my $dbadmin = DotMac::DotMacDB->new();
+
+	$dbadmin->update_user_info($storageHash,$realm);
+
+	return get_user($r, $user);
 	}
 
 1;

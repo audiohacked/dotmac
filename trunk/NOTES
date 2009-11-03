@@ -1,0 +1,57 @@
+New PERL dependencies:
+
+HTML::Embperl
+
+
+There are some permissions that need to be setup:
+
+
+chown -R <apache user> <dotmac root>/cache
+chown -R <apache user> <dotmac root>/certs/csrs
+chown -R <apache user> <dotmac root>/certs/pkcs12
+chown -R <apache user> <dotmac root>/certs/dotmacCA
+chown -R <apache user> <dotmac root>/certs/dmSharedServices
+
+Clear out the .svn direcories from idisk.
+In <dotmac root>/idisk
+type: find <dotmac root>/idisk -name '.svn' -type d
+	If this prints out what you expect
+	type: find <dotmac root>/idisk -name '.svn' -type d -exec rm -r {} \;
+
+
+Added new really poorly coded cachingproxy. No one should actually use it in production. I'm not yet sanitizing the input
+
+
+We should really have a script for users to run that goes and downloads the gallery.html and gallery.js, and then does a search and replace for the local site name
+
+Also it looks like iWeb obeys the site names in publishConfiguration08.plist, but iPhoto doesn't. Its not a huge deal, but it when publishing is completed, it shows 
+your local URL in the dialog box. Also you could do away with publish.mac.com (but just for iWeb)
+
+There are a number of new sites that are being seen... really all the me.com versions of the oldies. They should all be added to the clients hosts file 
+idisk.me.com
+certmgmt.me.com
+certinfo.me.com
+gallery.me.com
+publish.me.com
+web.me.com
+fileservices.me.com
+etc...
+
+/idiskAdmin is now only on the SSL address, and is availble from any of the names (not just configuration.apple.com). Only the modify existing users page is completed
+
+
+
+In the new 2_27*/clientConfiguration.plist, it looks like you can override the address for idisk... maybe even make it use https. Apple uses it to point to fileservices.me.com
+   Yep, https works. I switched fileservices.me.com to idisk.mac.com to get rid of that dependency. 
+
+
+So the minimum host setup needed for initial sync to 10.6:
+
+idisk.mac.com
+certinfo.me.com
+certmgmt.me.com
+lcs.mac.com
+delta.mac.com
+
+
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain Certificate.cer

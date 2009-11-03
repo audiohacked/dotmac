@@ -1,0 +1,450 @@
+/*  (c) Copyright 2006 Apple Computer, Inc. All rights reserved.  */
+/*********** Local ***********/
+html, body {
+  background-color: #dfdfdf;
+  color: #000;
+  height: 100%;
+  margin: 0px;
+}
+
+textarea { 
+  width: 395px;
+  height: 137px;
+  background: #fff; 
+  border-left: 1px solid #C2C5C3;
+  border-right: 1px solid #C2C5C3;
+  border-top: 1px solid #7C7C7C;
+  border-bottom: 1px solid #DDDDDD;
+}
+
+.modulebody {
+	position: relative;
+	padding: 0px 20px 0px 20px;
+}
+
+#Wrapper {
+	position: relative;
+	overflow-x: hidden; 
+    overflow-y: auto;
+	width:435px;
+	height:529px;
+	background: top left repeat-x url(/Comments.woa/Contents/WebServerResources/English.lproj/images/bggradient.gif);
+}
+
+#footer
+{
+	position: relative;
+	width:435px;
+	height:50px;
+}
+
+.twocolumnbodycommentas {
+	position:relative; 
+	width: 100%; 
+	margin: 0px; 
+	text-align: left; 
+	border: 0px;
+	padding: 0px 0px 71px 0px;
+}
+
+.twocolumnbodydotmac {
+	position:relative; 
+	width: 100%; 
+	height: 130px;
+	margin: 0px; 
+	text-align: left; 
+	border: 0px;
+	padding: 0px 0px 0px 0px;
+}
+
+.twocolumnbodydotmacNotme {
+	position:relative; 
+	width: 100%; 
+	height: 30px;
+	margin: 0px; 
+	text-align: left; 
+	border: 0px;
+	padding: 0px 0px 0px 0px;
+}
+
+.twocolumnbodyimg {
+	position:relative; 
+	width: 100%; 
+	height: 110px;
+	margin: 0px; 
+	text-align: left; 
+	border: 0px;
+	padding: 0px 0px 0px 0px;
+}
+
+.leftcolumn {
+  position: relative;
+	display:inline; 
+	float:left; 
+	width:188px; 
+	margin: 0px; 
+	padding:0px 0px 0px 20px; 
+	border: 0px;
+}
+
+.rightcolumn {
+  position: relative;
+	display:inline; 
+	float:right; 
+	width:188px; 
+	margin: 0px; 
+	padding:0px 20px 0px 0px; 
+	border: 0px;
+}
+
+.mergecolumn {
+  position: relative;
+	display:inline; 
+	float:left; 
+	width:395px; 
+	margin: 0px; 
+	padding:0px 20px 0px 20px; 
+	border: 0px;
+}
+
+.twocolumnbodyheader {
+	position:relative; 
+	width: 100%; 
+	height: 177px;
+	margin: 0px; 
+	text-align: right; 
+	border: 0px;
+	padding: 0px 0px 0px 0px;
+}
+
+.leftcolumnheader {
+  position: relative;
+	display:inline; 
+	float:left; 
+	width:143px; 
+	margin: 0px; 
+	padding:15px 0px 7px 20px; 
+	border: 0px;
+}
+
+.rightcolumnheader {
+  position: relative;
+	display:inline; 
+	float:right; 
+	width:252px; 
+	margin-top: 3px; 
+	padding:20px 20px 4px 0px; 
+	border: 0px;
+}
+
+.twocolumnbodyatt {
+	position:relative; 
+	width: 100%; 
+	height: 102px;
+	margin: 0px; 
+	text-align: left;
+	border: 0px;
+	padding: 0px 0px 0px 0px;
+}
+
+div>.mergecolumnatt {
+	width:379px;  
+	margin-left: 20px;
+	margin-right: 20px;
+	padding:7px 7px 7px 7px; 
+	border-top: 0px;
+	border-bottom: 1px solid #B6B6B6;
+	border-left: 1px solid #B6B6B6;
+	border-right: 1px solid #B6B6B6;
+	background-color: #E9E9E9;
+}
+
+/* This style def for PC IE */
+.mergecolumnatt {
+	width:395px;  
+	margin-left: 20px;
+	margin-right: 20px;
+	padding:7px 7px 7px 7px; 
+	border-top: 0px;
+	border-bottom: 1px solid #B6B6B6;
+	border-left: 1px solid #B6B6B6;
+	border-right: 1px solid #B6B6B6;
+	background-color: #E9E9E9;
+}
+
+.addAttachmentzone {
+	padding:5px 0px 0px 1px; 
+}
+
+.labeltextzone {
+  position: relative;
+	display:inline; 
+	float:left; 
+	width:188px; 
+	margin: 0px; 
+	padding:9px 0px 2px 1px; 
+	border: 0px;
+}
+
+.instrtextzone {
+	padding:3px 0px 0px 1px; 
+}
+
+.errortextzone {
+	padding:3px 0px 0px 1px; 
+}
+
+/* Blue on dark gray */
+
+.buttonright_blue_darkgray {
+	margin:15px 20px 15px 7px;
+	text-align: center;
+	float: right;
+	height: 18px;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/blue_cap_right_dfdfdf.gif) no-repeat right top;
+	cursor: pointer;
+}
+
+.buttonleft_blue_darkgray {
+	margin:15px 5px 5px 0px;
+	text-align: center;
+	float: left;
+	height: 18px;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/blue_cap_right_dfdfdf.gif) no-repeat right top;
+	cursor: pointer;
+}
+
+.buttoncap_blue_darkgray {
+	float:left;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/blue_cap_left_dfdfdf.gif) no-repeat left top;
+	margin:0px 0px 0px 0px;
+	padding:0px 0px 0px 12px;
+	height: 18px;
+}
+
+.buttonright_blue_lightgray {
+	margin: 15px 0px 0px 0px;
+	text-align: center;
+	float: right;
+	height: 18px;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/blue_cap_right_dfdfdf.gif) no-repeat right top;
+	cursor: pointer;
+}
+
+.buttoncap_blue_lightgray {
+	float:left;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/blue_cap_left_fcfbfc.gif) no-repeat left top;
+	margin:0px 0px 0px 0px;
+	padding:0px 0px 0px 12px;
+	height: 18px;
+}
+
+/* Gray on dark gray */
+
+.buttonright_gray_darkgray {
+	margin:15px 0px 15px 7px;
+	text-align: center;
+	float: right;
+	height: 18px;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/gray_cap_right_dfdfdf.gif) no-repeat right top;
+	cursor: pointer;
+}
+
+.buttonleft_gray_darkgray {
+	margin:15px 5px 5px 0px;
+	text-align: center;
+	float: left;
+	height: 18px;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/gray_cap_right_dfdfdf.gif) no-repeat right top;
+	cursor: pointer;
+}
+
+.buttoncap_gray_darkgray {
+	float:left;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/gray_cap_left_dfdfdf.gif) no-repeat left top;
+	margin:0px 0px 0px 0px;
+	padding:0px 0px 0px 12px;
+	height: 18px;
+}
+
+.buttoncap_gray_lightgray {
+	float:left;
+	background:url(/Comments.woa/Contents/WebServerResources/English.lproj/images/gray_cap_left_fcfbfc.gif) no-repeat left top;
+	margin:0px 0px 0px 0px;
+	padding:0px 0px 0px 12px;
+	height: 18px;
+}
+
+.buttontext {
+	float:left;	
+	padding:2px 12px 2px 0px;
+	height: 18px; 
+	color: #ffffff; 
+	text-decoration: none;
+	font-size: 11px;
+	font-family: Lucida Grande,Arial,sans-serif;
+	/* hide from IE Mac \*/
+		line-height: 14px; 
+	/* end hiding */
+}
+
+.buttontext:hover {
+	text-decoration: none;
+}
+
+.iv_text {
+	color: #000000;
+	font-family: 'Lucida Grande', Arial, sans-serif;
+	font-size: 11px;
+	line-height: 15px;
+}
+
+.SeparatorTop {
+	width:435px;
+	height:1px;
+	background-color:#D2D2D2;
+}
+
+.SeparatorBottom {
+	width:435px;
+	height:1px;
+	background-color:#F3F3F3;
+}
+
+#overlay{
+	display:none;
+	position:absolute;
+	top:0;
+	left:0;
+	width:435px;
+	height:579px;
+	z-index:5000;
+	background-color:#FFFFFF;
+	filter:alpha(opacity=60);
+	-moz-opacity: 0.6;
+	opacity:.60;
+}
+
+#BoxMsg1{
+	position:absolute;
+	top:163px;
+	left:76px;
+	width:270px;
+	padding:4px 10px 10px 10px;
+	border: 2px solid #A5A5A5;
+	background-color: #FCFBFC;
+	z-index:9999;
+}
+
+#BoxMsg2{
+	position:absolute;
+	top:205px;
+	left:30px;
+	width:351px;
+	height:62px;
+	padding:0px 10px 0px 10px;
+	border: 2px solid #A5A5A5;
+	background-color: #FCFBFC;
+	z-index:9999;
+}
+
+#BoxMsg3{
+	position:absolute;
+	top:125px;
+	left:30px;
+	width:351px;
+	height:140px;
+	padding:10px 10px 10px 10px;
+	border: 2px solid #A5A5A5;
+	background-color: #FCFBFC;
+	z-index:9999;
+}
+
+#BoxMsg4{
+	position:absolute;
+	top:205px;
+	left:30px;
+	width:351px;
+	padding:8px 10px 10px 0px;
+	border: 2px solid #A5A5A5;
+	background-color: #FCFBFC;
+	z-index:9999;
+}
+
+div>.htmlarea { 
+  width: 393px;
+  height: 137px;
+  background: #fff; 
+  border-left: 1px solid #C2C5C3;
+  border-right: 1px solid #C2C5C3;
+  border-top: 1px solid #7C7C7C;
+  border-bottom: 1px solid #DDDDDD;
+}
+
+/* This style def for PC IE */
+.htmlarea { 
+  width: 395px;
+  height: 137px;
+  background: #fff; 
+  border-left: 1px solid #C2C5C3;
+  border-right: 1px solid #C2C5C3;
+  border-top: 1px solid #7C7C7C;
+  border-bottom: 1px solid #DDDDDD;
+}
+
+div>.htmlarea .toolbar {
+cursor: default;
+background: #d8d9da url(/Comments.woa/Contents/WebServerResources/English.lproj/images/gradient.gif) repeat-x;
+border-bottom: 1px solid #979C9F;
+padding: 0px;
+margin: 0px;
+text-align: left;
+width: 393px;
+}
+
+/* This style def for PC IE */
+.htmlarea .toolbar {
+cursor: default;
+background: #d8d9da url(/Comments.woa/Contents/WebServerResources/English.lproj/images/gradient.gif) repeat-x;
+border-bottom: 1px solid #979C9F;
+padding: 0px;
+margin: 0px;
+text-align: left;
+width: 395px;
+}
+
+.htmlarea .toolbar .button {
+  background: #FFFFFF;
+  padding: 0px;
+  margin: 0px;
+  width: 19px;
+  height: 17px;
+}
+.htmlarea .toolbar .buttonHover {
+  background: #DFE6F1;
+}
+.htmlarea .toolbar .buttonActive {
+  background: #F3F4F5;
+}
+.htmlarea .toolbar .buttonPressed {
+  background: #CFD0D0;
+}
+
+.htmlarea .toolbar .buttonDisabled img {
+  filter: alpha(opacity = 25);
+  -moz-opacity: 0.25;
+}
+
+.htmlarea .toolbar .separator {
+  position: relative;
+  border-left: 1px solid #C2C5C3;
+  width: 0px;
+  height: 17px;
+}
+
+.htmlarea .toolbar .separatorend {
+  position: relative;
+  border-left: 1px solid #979C9F;
+  width: 0px;
+  height: 17px;
+}

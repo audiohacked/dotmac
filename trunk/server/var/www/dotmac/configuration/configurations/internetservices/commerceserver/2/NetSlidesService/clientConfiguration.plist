@@ -1,0 +1,9 @@
+{
+     CommerceServerHost = "mercury.apple.com";
+     CommerceServerPath = "/WebObjects/FRCommerceServer.woa";
+     RequestRouterHost = "www.mac.com";
+     RequestRouterPath = "/WebObjects/RequestRouter.woa";
+     HomePageHost = homepage.mac.com;
+     IDiskHost = "idisk.mac.com";
+     ISVersionList = { NetSlidesService = (7, 8, 9, 10, 11); };
+}
